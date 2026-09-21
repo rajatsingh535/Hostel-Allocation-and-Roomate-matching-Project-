@@ -17,7 +17,7 @@ A modern, clean web application for managing hostel room allocation and roommate
 - **Database**: MongoDB with in-memory server for development
 - **Design**: Clean LPU orange theme (#FF6B35)
 
-## 🚀 Features
+##  Features
 
 ### **Student Portal**
 - **Dashboard**: Overview of current allocation and roommate status
@@ -94,7 +94,7 @@ node index.js
 npx next dev -p 3001
 ```
 
-## 🌐 Access Points
+##  Access Points
 
 - **Frontend**: http://localhost:3001
 - **Backend API**: http://localhost:5000
@@ -126,7 +126,7 @@ npx next dev -p 3001
 - Real-time occupancy data
 - AC/Non-AC room breakdown
 
-## 🔧 Technical Highlights
+##  Technical Highlights
 
 - **Modern Stack**: Latest Next.js 14 with App Router
 - **Type Safety**: Mongoose schemas for data validation
@@ -135,7 +135,7 @@ npx next dev -p 3001
 - **Security**: Input validation and sanitization
 - **SEO Friendly**: Server-side rendering with Next.js
 
-## 📈 System Statistics
+##  System Statistics
 
 - **Total Hostels**: 12 (BH1-9: Boys, GH1-3: Girls)
 - **Total Rooms**: 1,080 rooms
@@ -145,7 +145,7 @@ npx next dev -p 3001
 - **Floors per Hostel**: 9 floors
 - **Rooms per Floor**: 10 rooms
 
-## 🎯 Key Features
+##  Key Features
 
 ### **Smart Allocation**
 - Preference-based room assignment
@@ -165,7 +165,7 @@ npx next dev -p 3001
 - Student record maintenance
 - System reporting and analytics
 
-## 🔮 Future Enhancements
+##  Future Enhancements
 
 - **Mobile App**: React Native companion app
 - **Payment Integration**: Online fee payment system
