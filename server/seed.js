@@ -22,261 +22,210 @@ async function seedData() {
   ]);
   console.log("[Seeder] Cleared previous database collections.");
 
-  const hostelsData = [
-    {
-      name: "Himalaya Boys Hostel",
-      code: "HBH-01",
+  // Boys Hostels (BH1-9)
+  const boysHostels = [];
+  for (let i = 1; i <= 9; i++) {
+    const hostel = {
+      name: `Boys Hostel ${i}`,
+      code: `BH${i}`,
       genderAllowed: "Male",
-      campusLocation: "North Campus, Engineering Enclave",
-      totalCapacity: 120,
-      availableCapacity: 48,
-      amenities: ["High-Speed WiFi", "Gymnasium", "24/7 Study Room", "Table Tennis", "Solar Hot Water", "Biometric Access"],
+      campusLocation: "LPU Campus",
+      totalCapacity: 360, // 4 students per room, 10 rooms per floor, 9 floors
+      availableCapacity: Math.floor(Math.random() * 50 + 50), // Random availability
+      amenities: ["WiFi", "Laundry", "Mess", "Security", "Common Room", "Study Hall"],
       imageUrl: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80",
-      description: "Premier undergraduate residence designed for collaboration, sports facilities, and serene green surroundings.",
-    },
-    {
-      name: "Nilgiri Girls Hostel",
-      code: "NGH-02",
+      description: `Modern boys hostel with ${9} floors and comprehensive facilities for ${360} students.`
+    };
+    boysHostels.push(hostel);
+  }
+
+  // Girls Hostels (GH1-3)
+  const girlsHostels = [];
+  for (let i = 1; i <= 3; i++) {
+    const hostel = {
+      name: `Girls Hostel ${i}`,
+      code: `GH${i}`,
       genderAllowed: "Female",
-      campusLocation: "South Campus, Science Precinct",
-      totalCapacity: 100,
-      availableCapacity: 35,
-      amenities: ["24/7 Female Guard & CCTV", "Badminton Court", "Reading Room", "High-Speed WiFi", "Laundry Facility", "Infirmary Access"],
+      campusLocation: "LPU Campus",
+      totalCapacity: 360,
+      availableCapacity: Math.floor(Math.random() * 50 + 50),
+      amenities: ["WiFi", "Laundry", "Mess", "Security", "Common Room", "Study Hall", "Beauty Salon"],
       imageUrl: "https://images.unsplash.com/photo-1567496898669-ee935f5f647a?auto=format&fit=crop&w=800&q=80",
-      description: "Secure, modern, and vibrant accommodation featuring dedicated reading zones and landscaped courtyards.",
-    },
-    {
-      name: "Vindhya PG & Research Hall",
-      code: "VPG-03",
-      genderAllowed: "Co-ed",
-      campusLocation: "East Campus, Research Park",
-      totalCapacity: 60,
-      availableCapacity: 22,
-      amenities: ["Individual Study Desks", "Gigabit LAN", "Quiet Hours Policy", "Attached Bathrooms", "Coffee Lounge", "Elevator"],
-      imageUrl: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80",
-      description: "Specially tailored for postgraduate scholars and doctoral researchers needing an undisturbed academic ambience.",
-    },
-    {
-      name: "Sahyadri Executive & International Residence",
-      code: "SER-04",
-      genderAllowed: "Co-ed",
-      campusLocation: "Central Campus, Near Academic Plaza",
-      totalCapacity: 40,
-      availableCapacity: 14,
-      amenities: ["Central Air Conditioning", "En-Suite Kitchenette", "Weekly Housekeeping", "Multi-Cuisine Mess", "High-Speed WiFi"],
-      imageUrl: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80",
-      description: "Premium air-conditioned suite living with upscale housekeeping and proximity to core lecture theaters.",
-    },
-  ];
+      description: `Secure girls hostel with ${9} floors and enhanced amenities for ${360} students.`
+    };
+    girlsHostels.push(hostel);
+  }
 
-  const createdHostels = await Hostel.insertMany(hostelsData);
-  console.log(`[Seeder] Seeded ${createdHostels.length} Hostels.`);
+  const allHostels = [...boysHostels, ...girlsHostels];
+  const createdHostels = await Hostel.insertMany(allHostels);
+  console.log(`[Seeder] Seeded ${createdHostels.length} Hostels (BH1-9, GH1-3).`);
 
-  const roomTypes = ["Single", "Double", "Triple"];
-  const allBeds = [];
-
+  // Create floors, rooms, and beds for each hostel
+  let totalBeds = 0;
   for (const hostel of createdHostels) {
-    const blocksCount = hostel.genderAllowed === "Co-ed" ? 1 : 2;
-    for (let b = 1; b <= blocksCount; b++) {
-      const blockCode = `${hostel.code}-B${b}`;
-      const blockName = b === 1 ? "Alpha Wing" : "Beta Wing";
-      const block = await Block.create({
-        name: blockName,
-        code: blockCode,
+    const blocks = [];
+    
+    // Create 9 floors per hostel
+    for (let floor = 1; floor <= 9; floor++) {
+      const block = {
         hostelId: hostel._id,
-        floorsCount: 3,
-      });
-
-      for (let floor = 1; floor <= 3; floor++) {
-        for (let r = 1; r <= 2; r++) {
-          const roomNumber = `${floor}0${r}`;
-          const type = roomTypes[(floor + r) % roomTypes.length];
-          const bedsCount = type === "Single" ? 1 : type === "Double" ? 2 : 3;
-          const isAC = hostel.code === "SER-04" || (r === 2 && floor > 1);
-          const rent = isAC ? 32000 + (type === "Single" ? 8000 : 0) : 22000 + (type === "Single" ? 6000 : 0);
-          const occupiedCount = Math.floor(Math.random() * bedsCount);
-
-          const room = await Room.create({
-            roomNumber: `${blockCode}-${roomNumber}`,
-            floor,
-            blockId: block._id,
-            hostelId: hostel._id,
-            roomType: type,
-            acType: isAC ? "AC" : "Non-AC",
-            totalBeds: bedsCount,
-            availableBeds: bedsCount - occupiedCount,
-            rentPerSemester: rent,
-            isPwDAccessible: floor === 1,
-          });
-
-          for (let bedIdx = 1; bedIdx <= bedsCount; bedIdx++) {
-            const isOccupied = bedIdx <= occupiedCount;
-            allBeds.push({
-              bedNumber: `${room.roomNumber}-Bed${bedIdx}`,
-              roomId: room._id,
-              hostelId: hostel._id,
-              isOccupied,
-              occupiedBy: isOccupied
-                ? {
-                    rollNumber: `2024CS${100 + Math.floor(Math.random() * 800)}`,
-                    name: `Resident ${bedIdx}`,
-                    department: "Computer Science",
-                  }
-                : null,
-            });
-          }
+        name: `Floor ${floor}`,
+        code: `${hostel.code}-F${floor}`,
+        floorsCount: 1
+      };
+      blocks.push(block);
+    }
+    
+    const createdBlocks = await Block.insertMany(blocks);
+    
+    // Create rooms and beds for each floor
+    for (const block of createdBlocks) {
+      const rooms = [];
+      
+      // 10 rooms per floor (5 AC, 5 Non-AC)
+      for (let roomNum = 1; roomNum <= 10; roomNum++) {
+        const isAC = roomNum <= 5; // First 5 rooms are AC
+        const floorNum = blocks.indexOf(block) + 1;
+        const room = {
+          blockId: block._id,
+          hostelId: hostel._id,
+          roomNumber: `${floorNum}${roomNum.toString().padStart(2, '0')}`,
+          floor: floorNum,
+          roomType: "Quad", // 4 students per room
+          acType: isAC ? "AC" : "Non-AC",
+          totalBeds: 4,
+          availableBeds: Math.floor(Math.random() * 3 + 1), // 1-3 available beds
+          rentPerSemester: isAC ? 25000 : 18000,
+          isPwDAccessible: floorNum === 1 // Ground floor accessible
+        };
+        rooms.push(room);
+      }
+      
+      const createdRooms = await Room.insertMany(rooms);
+      
+      // Create beds for each room
+      for (const room of createdRooms) {
+        const beds = [];
+        for (let bedNum = 1; bedNum <= 4; bedNum++) {
+          const bed = {
+            roomId: room._id,
+            blockId: room.blockId,
+            hostelId: room.hostelId,
+            bedNumber: bedNum,
+            isOccupied: Math.random() > 0.7, // 30% occupancy rate
+            studentId: null
+          };
+          beds.push(bed);
+          totalBeds++;
         }
+        await Bed.insertMany(beds);
       }
     }
   }
 
-  const createdBeds = await Bed.insertMany(allBeds);
-  console.log(`[Seeder] Seeded ${createdBeds.length} Beds across rooms and blocks.`);
+  console.log(`[Seeder] Seeded ${totalBeds} Beds across all hostels.`);
 
-  const sampleApps = [
+  // Create sample students
+  const sampleStudents = [
     {
-      applicationId: "APP-2026-001",
-      studentRollNumber: "2024CS1042",
-      studentName: "Aarav Sharma",
-      studentEmail: "aarav.sharma@campus.edu",
-      department: "Computer Science & Engineering",
+      name: "Arjun Sharma",
+      email: "arjun.sharma@student.lpu.co.in",
+      rollNumber: "12345678",
+      department: "Computer Science",
+      gender: "Male",
       year: 2,
-      gender: "Male",
-      cgpa: 8.92,
-      preferences: [
-        {
-          hostelId: createdHostels[0]._id,
-          hostelName: createdHostels[0].name,
-          roomType: "Single",
-          acPreference: "Non-AC",
-          priority: 1,
-        },
-        {
-          hostelId: createdHostels[3]._id,
-          hostelName: createdHostels[3].name,
-          roomType: "Double",
-          acPreference: "AC",
-          priority: 2,
-        },
-      ],
-      specialAccommodations: "Prefers quiet study floor near elevator.",
-      status: "SUBMITTED",
-      submittedAt: new Date(Date.now() - 3600000 * 24 * 2),
+      cgpa: 8.5,
+      category: "General"
     },
     {
-      applicationId: "APP-2026-002",
-      studentRollNumber: "2024EC2015",
-      studentName: "Ananya Patel",
-      studentEmail: "ananya.patel@campus.edu",
-      department: "Electronics & Communication",
-      year: 3,
+      name: "Priya Patel",
+      email: "priya.patel@student.lpu.co.in", 
+      rollNumber: "12345679",
+      department: "Electronics",
       gender: "Female",
-      cgpa: 9.35,
-      preferences: [
-        {
-          hostelId: createdHostels[1]._id,
-          hostelName: createdHostels[1].name,
-          roomType: "Single",
-          acPreference: "AC",
-          priority: 1,
-        },
-        {
-          hostelId: createdHostels[2]._id,
-          hostelName: createdHostels[2].name,
-          roomType: "Double",
-          acPreference: "Non-AC",
-          priority: 2,
-        },
-      ],
-      specialAccommodations: "None",
-      status: "UNDER_REVIEW",
-      submittedAt: new Date(Date.now() - 3600000 * 18),
-    },
-    {
-      applicationId: "APP-2026-003",
-      studentRollNumber: "2023ME1088",
-      studentName: "Rohan Verma",
-      studentEmail: "rohan.verma@campus.edu",
-      department: "Mechanical Engineering",
-      year: 4,
-      gender: "Male",
-      cgpa: 7.84,
-      preferences: [
-        {
-          hostelId: createdHostels[0]._id,
-          hostelName: createdHostels[0].name,
-          roomType: "Double",
-          acPreference: "Non-AC",
-          priority: 1,
-        },
-      ],
-      specialAccommodations: "Ground floor preferred due to sports leg recovery.",
-      status: "SUBMITTED",
-      submittedAt: new Date(Date.now() - 3600000 * 5),
-    },
-    {
-      applicationId: "APP-2026-004",
-      studentRollNumber: "2025DS3004",
-      studentName: "Diya Mukherjee",
-      studentEmail: "diya.m@campus.edu",
-      department: "Data Science & AI",
       year: 1,
-      gender: "Female",
-      cgpa: 8.70,
-      preferences: [
-        {
-          hostelId: createdHostels[1]._id,
-          hostelName: createdHostels[1].name,
-          roomType: "Triple",
-          acPreference: "Non-AC",
-          priority: 1,
-        },
-      ],
-      specialAccommodations: "First year orientation cohort roommate requested.",
-      status: "SUBMITTED",
-      submittedAt: new Date(Date.now() - 3600000 * 2),
+      cgpa: 9.2,
+      category: "General"
     },
     {
-      applicationId: "APP-2026-005",
-      studentRollNumber: "2024EE1029",
-      studentName: "Vikram Malhotra",
-      studentEmail: "vikram.m@campus.edu",
-      department: "Electrical Engineering",
-      year: 2,
-      gender: "Male",
-      cgpa: 9.12,
-      preferences: [
-        {
-          hostelId: createdHostels[3]._id,
-          hostelName: createdHostels[3].name,
-          roomType: "Single",
-          acPreference: "AC",
-          priority: 1,
-        },
-      ],
-      specialAccommodations: "None",
-      status: "ALLOCATED",
-      submittedAt: new Date(Date.now() - 3600000 * 48),
+      name: "Rahul Verma",
+      email: "rahul.verma@student.lpu.co.in",
+      rollNumber: "12345680",
+      department: "Business Administration",
+      gender: "Male", 
+      year: 3,
+      cgpa: 7.8,
+      category: "OBC"
     },
+    {
+      name: "Sneha Singh",
+      email: "sneha.singh@student.lpu.co.in",
+      rollNumber: "12345681",
+      department: "Information Technology",
+      gender: "Female",
+      year: 2,
+      cgpa: 8.9,
+      category: "General"
+    },
+    {
+      name: "Aditya Kumar",
+      email: "aditya.kumar@student.lpu.co.in",
+      rollNumber: "12345682", 
+      department: "Mechanical Engineering",
+      gender: "Male",
+      year: 4,
+      cgpa: 8.1,
+      category: "SC"
+    }
   ];
 
-  await Application.insertMany(sampleApps);
-  console.log(`[Seeder] Seeded ${sampleApps.length} Initial Applications for Warden inspection.`);
+  const createdStudents = await Student.insertMany(sampleStudents);
+
+  // Create sample applications
+  const sampleApplications = [];
+  for (let i = 0; i < createdStudents.length; i++) {
+    const student = createdStudents[i];
+    const eligibleHostels = createdHostels.filter(h => h.genderAllowed === student.gender);
+    
+    const application = {
+      applicationId: `APP-2026-${(10000 + i).toString()}`,
+      studentRollNumber: student.rollNumber,
+      studentName: student.name,
+      studentEmail: student.email,
+      department: student.department,
+      year: student.year,
+      gender: student.gender,
+      cgpa: student.cgpa,
+      preferences: eligibleHostels.slice(0, 3).map((hostel, index) => ({
+        hostelId: hostel._id,
+        hostelName: hostel.name,
+        roomType: "Quad",
+        acPreference: Math.random() > 0.5 ? "AC" : "Non-AC",
+        priority: index + 1
+      })),
+      specialAccommodations: i === 0 ? "Ground floor room due to mobility issues" : "",
+      status: ["SUBMITTED", "UNDER_REVIEW", "ALLOCATED"][Math.floor(Math.random() * 3)],
+      submittedAt: new Date()
+    };
+    sampleApplications.push(application);
+  }
+
+  await Application.insertMany(sampleApplications);
+  console.log(`[Seeder] Seeded ${sampleApplications.length} Initial Applications.`);
 
   console.log("[Seeder] Database seeding successfully completed!");
-  return { hostelsCount: createdHostels.length, bedsCount: createdBeds.length, appsCount: sampleApps.length };
 }
+
+module.exports = seedData;
 
 if (require.main === module) {
   seedData()
     .then(() => {
-      console.log("[Seeder] Exiting seeder process cleanly.");
+      console.log("[Seeder] Standalone execution completed.");
       process.exit(0);
     })
     .catch((err) => {
-      console.error("[Seeder] Seeding error:", err);
+      console.error("[Seeder] Fatal error during seeding:", err);
       process.exit(1);
     });
 }
-
-module.exports = seedData;

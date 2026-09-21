@@ -2,199 +2,216 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <div className="container" style={{ display: "flex", flexDirection: "column", gap: "4rem" }}>
-
-      <section
-        className="glass-panel"
-        style={{
-          padding: "4rem 2.5rem",
-          textAlign: "center",
-          borderRadius: "var(--radius-xl)",
-          position: "relative",
-          overflow: "hidden",
-          background: "radial-gradient(ellipse at top, rgba(99, 102, 241, 0.15), transparent 70%), var(--bg-surface)",
-        }}
-      >
-        <div style={{ display: "inline-flex", gap: "0.5rem", marginBottom: "1.25rem" }}>
-          <span className="badge badge-primary">Week 5 Foundation</span>
-          <span className="badge badge-success">Academic Cycle 2026�2027</span>
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation */}
+      <nav className="bg-white shadow-lg border-b-4 border-orange-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-blue-600 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-lg">L</span>
+              </div>
+              <span className="ml-3 text-xl font-bold text-gray-900">LPU Hostel Portal</span>
+            </div>
+            <div className="flex space-x-4">
+              <Link href="/student/login" className="text-gray-700 hover:text-orange-500 px-3 py-2 rounded-md font-medium transition-colors">
+                Student Login
+              </Link>
+              <Link href="/admin/login" className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md font-medium transition-colors">
+                Admin Login
+              </Link>
+            </div>
+          </div>
         </div>
+      </nav>
 
-        <h1
-          style={{
-            fontSize: "clamp(2rem, 5vw, 3.25rem)",
-            fontWeight: 800,
-            maxWidth: "850px",
-            margin: "0 auto 1.25rem",
-            letterSpacing: "-0.03em",
-          }}
-        >
-          Digitized, Policy-Driven{" "}
-          <span style={{ background: "linear-gradient(135deg, var(--primary), var(--secondary))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            Hostel Room Allocation
-          </span>
-        </h1>
-
-        <p
-          style={{
-            fontSize: "1.1rem",
-            color: "var(--text-secondary)",
-            maxWidth: "680px",
-            margin: "0 auto 2rem",
-            lineHeight: 1.6,
-          }}
-        >
-          Replacing opaque paper applications with auditable bed-level inventory,
-          student preference ranking, and streamlined warden verification.
-        </p>
-
-        <div style={{ display: "flex", justifyContent: "center", gap: "1rem", flexWrap: "wrap" }}>
-          <Link href="/hostels" className="btn btn-primary" style={{ padding: "0.8rem 1.6rem", fontSize: "1rem" }}>
-            Explore Hostels & Beds ?
-          </Link>
-          <Link href="/apply" className="btn btn-secondary" style={{ padding: "0.8rem 1.6rem", fontSize: "1rem" }}>
-            Submit Application
-          </Link>
-          <Link href="/warden" className="btn btn-secondary" style={{ padding: "0.8rem 1.6rem", fontSize: "1rem" }}>
-            ??? Warden Station
-          </Link>
-        </div>
-      </section>
-
-      <section>
-        <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-          <h2 style={{ fontSize: "1.85rem", marginBottom: "0.5rem" }}>Core Architectural Pillars</h2>
-          <p style={{ color: "var(--text-secondary)", fontSize: "0.95rem" }}>
-            Modular system decomposition separating inventory, application workflows, and administrative review.
+      {/* Hero Section */}
+      <section className="py-20 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-5xl font-bold text-gray-900 mb-6">
+            LPU Hostel Room Allocation
+            <span className="block text-orange-500 mt-2">& Roommate Matching</span>
+          </h1>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            Modern, efficient hostel allocation system for Lovely Professional University students. 
+            Find your perfect room and compatible roommates with our smart matching algorithm.
           </p>
-        </div>
-
-        <div className="grid-3">
-          <div className="glass-panel" style={{ padding: "1.75rem", borderRadius: "var(--radius-lg)" }}>
-            <div style={{ fontSize: "2rem", marginBottom: "1rem" }}>??</div>
-            <h3 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>Bed-Level Inventory</h3>
-            <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>
-              Hierarchical data structure (<code style={{ color: "var(--primary)" }}>Hostel ? Block ? Room ? Bed</code>) tracking live occupancy, AC status, and floor-level accessibility.
-            </p>
-          </div>
-
-          <div className="glass-panel" style={{ padding: "1.75rem", borderRadius: "var(--radius-lg)" }}>
-            <div style={{ fontSize: "2rem", marginBottom: "1rem" }}>??</div>
-            <h3 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>Ranked Preferences</h3>
-            <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>
-              Students select and prioritize choices (1st, 2nd, 3rd) with room-type and AC requirements for the allocation matcher.
-            </p>
-          </div>
-
-          <div className="glass-panel" style={{ padding: "1.75rem", borderRadius: "var(--radius-lg)" }}>
-            <div style={{ fontSize: "2rem", marginBottom: "1rem" }}>???</div>
-            <h3 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>Warden Verification</h3>
-            <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>
-              Dedicated dashboard for hall wardens to review student queues, inspect special medical requests, and verify academic standing.
-            </p>
+          <div className="flex justify-center space-x-4 flex-wrap gap-4">
+            <Link href="/student/dashboard" className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-4 rounded-lg text-lg font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
+              Student Portal
+            </Link>
+            <Link href="/admin/dashboard" className="bg-white text-gray-900 px-8 py-4 rounded-lg text-lg font-semibold border-2 border-gray-200 hover:border-orange-500 hover:text-orange-500 shadow-lg transform hover:scale-105 transition-all duration-300">
+              Admin Portal
+            </Link>
           </div>
         </div>
       </section>
 
-      <section className="glass-panel" style={{ padding: "2.5rem", borderRadius: "var(--radius-xl)" }}>
-        <h2 style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>Primary User Journey Flow</h2>
-        <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", marginBottom: "2rem" }}>
-          From initial discovery to final published room allotment.
-        </p>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1.5rem" }}>
-          <div style={{ borderLeft: "3px solid var(--primary)", paddingLeft: "1rem" }}>
-            <div style={{ fontSize: "0.75rem", color: "var(--primary)", fontWeight: 700, textTransform: "uppercase" }}>Phase 1 (Active)</div>
-            <h4 style={{ fontSize: "1.05rem", margin: "0.25rem 0" }}>1. Browse & Filter</h4>
-            <p style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-              Student browses hostels by gender, AC, and inspects room layouts.
-            </p>
+      {/* Features */}
+      <section className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Complete Hostel Management Solution
+            </h2>
+            <p className="text-gray-600 text-lg">Everything you need for seamless hostel allocation</p>
           </div>
 
-          <div style={{ borderLeft: "3px solid var(--secondary)", paddingLeft: "1rem" }}>
-            <div style={{ fontSize: "0.75rem", color: "var(--secondary)", fontWeight: 700, textTransform: "uppercase" }}>Phase 2 (Active)</div>
-            <h4 style={{ fontSize: "1.05rem", margin: "0.25rem 0" }}>2. Rank & Submit</h4>
-            <p style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-              Student enters GPA, reorders ranked choices, and submits to MongoDB.
-            </p>
-          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center p-6 rounded-xl border border-gray-200 hover:shadow-lg hover:border-orange-200 transition-all duration-300 transform hover:-translate-y-2">
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900">Smart Room Allocation</h3>
+              <p className="text-gray-600">Intelligent allocation system for BH1-9 and GH1-3 hostels with AC/Non-AC options</p>
+            </div>
 
-          <div style={{ borderLeft: "3px solid var(--accent)", paddingLeft: "1rem" }}>
-            <div style={{ fontSize: "0.75rem", color: "var(--accent)", fontWeight: 700, textTransform: "uppercase" }}>Phase 3 (Active)</div>
-            <h4 style={{ fontSize: "1.05rem", margin: "0.25rem 0" }}>3. Warden Review</h4>
-            <p style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-              Warden reviews incoming queue and verifies academic standing.
-            </p>
-          </div>
+            <div className="text-center p-6 rounded-xl border border-gray-200 hover:shadow-lg hover:border-blue-200 transition-all duration-300 transform hover:-translate-y-2">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900">Roommate Matching</h3>
+              <p className="text-gray-600">Advanced compatibility algorithm to find perfect roommates based on preferences</p>
+            </div>
 
-          <div style={{ borderLeft: "3px solid var(--text-muted)", paddingLeft: "1rem", opacity: 0.7 }}>
-            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Phase 4 (Week 9)</div>
-            <h4 style={{ fontSize: "1.05rem", margin: "0.25rem 0" }}>4. Engine Allocation</h4>
-            <p style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-              Deterministic solver matches preferences and publishes allotment letters.
-            </p>
+            <div className="text-center p-6 rounded-xl border border-gray-200 hover:shadow-lg hover:border-green-200 transition-all duration-300 transform hover:-translate-y-2">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900">Admin Dashboard</h3>
+              <p className="text-gray-600">Comprehensive admin panel for managing hostels, rooms, and student allocations</p>
+            </div>
           </div>
         </div>
       </section>
 
-      <section>
-        <h2 style={{ fontSize: "1.5rem", marginBottom: "1.25rem" }}>Select Your Portal</h2>
-        <div className="grid-3">
-          <Link
-            href="/apply"
-            className="glass-panel"
-            style={{
-              padding: "1.5rem",
-              borderRadius: "var(--radius-lg)",
-              display: "block",
-              border: "1px solid var(--border-subtle)",
-              transition: "transform var(--transition-fast), border-color var(--transition-fast)",
-            }}
-          >
-            <div style={{ fontSize: "1.75rem", marginBottom: "0.5rem" }}>??</div>
-            <h3 style={{ fontSize: "1.1rem", marginBottom: "0.35rem" }}>Student Portal</h3>
-            <p style={{ fontSize: "0.825rem", color: "var(--text-muted)" }}>
-              Submit application, configure ranked hostel choices, and obtain submission receipt.
-            </p>
-          </Link>
+      {/* Available Hostels */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Available Hostels</h2>
+            <p className="text-gray-600">Choose from our premium hostel facilities</p>
+          </div>
 
-          <Link
-            href="/warden"
-            className="glass-panel"
-            style={{
-              padding: "1.5rem",
-              borderRadius: "var(--radius-lg)",
-              display: "block",
-              border: "1px solid var(--border-subtle)",
-              transition: "transform var(--transition-fast), border-color var(--transition-fast)",
-            }}
-          >
-            <div style={{ fontSize: "1.75rem", marginBottom: "0.5rem" }}>???</div>
-            <h3 style={{ fontSize: "1.1rem", marginBottom: "0.35rem" }}>Warden Portal</h3>
-            <p style={{ fontSize: "0.825rem", color: "var(--text-muted)" }}>
-              Review applicant queue, check GPA criteria, and monitor bed availability.
-            </p>
-          </Link>
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Boys Hostels */}
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <span className="text-blue-600 font-bold">BH</span>
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-xl font-bold text-gray-900">Boys Hostels</h3>
+                  <p className="text-gray-600">BH1 to BH9</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                {[1,2,3,4,5,6,7,8,9].map(num => (
+                  <div key={num} className="bg-blue-50 text-blue-700 text-center py-2 rounded-lg font-semibold">
+                    BH{num}
+                  </div>
+                ))}
+              </div>
+              <div className="text-sm text-gray-600">
+                <p>• 9 floors per hostel</p>
+                <p>• AC & Non-AC rooms available</p>
+                <p>• Modern facilities & amenities</p>
+              </div>
+            </div>
 
-          <Link
-            href="/hostels"
-            className="glass-panel"
-            style={{
-              padding: "1.5rem",
-              borderRadius: "var(--radius-lg)",
-              display: "block",
-              border: "1px solid var(--border-subtle)",
-              transition: "transform var(--transition-fast), border-color var(--transition-fast)",
-            }}
-          >
-            <div style={{ fontSize: "1.75rem", marginBottom: "0.5rem" }}>??</div>
-            <h3 style={{ fontSize: "1.1rem", marginBottom: "0.35rem" }}>Campus Directory</h3>
-            <p style={{ fontSize: "0.825rem", color: "var(--text-muted)" }}>
-              Explore real-time floor plans, room categories, and bed slot status.
-            </p>
-          </Link>
+            {/* Girls Hostels */}
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center">
+                  <span className="text-pink-600 font-bold">GH</span>
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-xl font-bold text-gray-900">Girls Hostels</h3>
+                  <p className="text-gray-600">GH1 to GH3</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                {[1,2,3].map(num => (
+                  <div key={num} className="bg-pink-50 text-pink-700 text-center py-2 rounded-lg font-semibold">
+                    GH{num}
+                  </div>
+                ))}
+              </div>
+              <div className="text-sm text-gray-600">
+                <p>• 9 floors per hostel</p>
+                <p>• AC & Non-AC rooms available</p>
+                <p>• Secure & comfortable environment</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
+
+      {/* CTA Section */}
+      <section className="py-16 bg-gradient-to-r from-orange-500 to-blue-600">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold text-white mb-4">Ready to Find Your Perfect Room?</h2>
+          <p className="text-white opacity-90 text-lg mb-8">Join thousands of LPU students who have found their ideal accommodation</p>
+          <div className="flex justify-center space-x-4 flex-wrap gap-4">
+            <Link href="/student/login" className="bg-white text-orange-500 px-8 py-3 rounded-lg text-lg font-semibold hover:shadow-xl transition">
+              Student Login
+            </Link>
+            <Link href="/admin/login" className="border-2 border-white text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-white hover:text-orange-500 transition">
+              Admin Login
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center mb-4">
+                <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-blue-600 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold">L</span>
+                </div>
+                <span className="ml-2 text-lg font-bold">LPU Hostel Portal</span>
+              </div>
+              <p className="text-gray-400">Modern hostel allocation system for LPU students</p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Quick Links</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/student/login" className="hover:text-white transition-colors">Student Login</Link></li>
+                <li><Link href="/admin/login" className="hover:text-white transition-colors">Admin Login</Link></li>
+                <li><Link href="/student/dashboard" className="hover:text-white transition-colors">Student Dashboard</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Hostels</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li>Boys Hostels (BH1-9)</li>
+                <li>Girls Hostels (GH1-3)</li>
+                <li>AC & Non-AC Rooms</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Contact</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li>Lovely Professional University</li>
+                <li>Phagwara, Punjab</li>
+                <li>hostel@lpu.co.in</li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; 2026 LPU Hostel Portal. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
