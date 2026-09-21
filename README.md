@@ -2,7 +2,7 @@
 
 A modern, clean web application for managing hostel room allocation and roommate matching at Lovely Professional University with LPU's signature orange theme.
 
-## 🏗️ Project Structure
+##  Project Structure
 
 ### **Hostels Configuration**
 - **Boys Hostels**: BH1 to BH9 (9 hostels)
@@ -34,7 +34,7 @@ A modern, clean web application for managing hostel room allocation and roommate
 - **Application Review**: Process and approve applications
 - **Reports**: Generate occupancy and allocation reports
 
-## 🎨 Design Features
+##  Design Features
 
 - **LPU Orange Theme**: Consistent branding with #FF6B35 orange accent
 - **Clean UI**: Modern, minimalist design with excellent UX
@@ -42,7 +42,7 @@ A modern, clean web application for managing hostel room allocation and roommate
 - **Accessibility**: WCAG compliant design patterns
 - **Modern Icons**: Lucide React icons throughout
 
-## 📊 Database Schema
+##  Database Schema
 
 ### **Hostels**
 - 12 hostels total (BH1-BH9, GH1-GH3)
@@ -66,7 +66,7 @@ A modern, clean web application for managing hostel room allocation and roommate
 - Status tracking workflow
 - Special accommodation requests
 
-## 🛠️ Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 - Node.js 18+ 
@@ -101,7 +101,7 @@ npx next dev -p 3001
 - **API Health**: http://localhost:5000/api/health
 - **Hostels API**: http://localhost:5000/api/hostels
 
-## 📱 User Interfaces
+##  User Interfaces
 
 ### **Landing Page**
 - Clean hero section with LPU branding
