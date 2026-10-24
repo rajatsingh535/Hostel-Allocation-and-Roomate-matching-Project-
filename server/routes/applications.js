@@ -61,6 +61,15 @@ router.post("/", async (req, res) => {
       });
     }
 
+    const normalizedPreferences = preferences.map((p, idx) => ({
+      hostelId: p.hostelId || null,
+      hostelCode: p.hostelCode || "",
+      hostelName: p.hostelName || p.hostelCode || "Hostel",
+      roomType: p.roomType || "Double",
+      acPreference: p.acPreference || p.acType || "Either",
+      priority: Number(p.priority) || idx + 1,
+    }));
+
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const applicationId = `APP-2026-${randomSuffix}`;
 
@@ -73,7 +82,7 @@ router.post("/", async (req, res) => {
       year: Number(year) || 1,
       gender: gender || "Other",
       cgpa: Number(cgpa) || 7.5,
-      preferences,
+      preferences: normalizedPreferences,
       specialAccommodations: specialAccommodations || "",
       status: "SUBMITTED",
       submittedAt: new Date(),
@@ -88,7 +97,7 @@ router.post("/", async (req, res) => {
     });
   } catch (err) {
     console.error("[API:Applications] Submission error:", err);
-    res.status(500).json({ success: false, message: "Failed to submit application. Please try again." });
+    res.status(500).json({ success: false, message: "Failed to submit application: " + err.message });
   }
 });
 

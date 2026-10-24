@@ -1,127 +1,202 @@
 "use client";
-
-import { useState } from 'react';
-import Link from 'next/link';
+import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 
 export default function StudentLogin() {
-  const [formData, setFormData] = useState({
-    regNo: '',
-    password: ''
-  });
+  const canvasRef = useRef(null);
+  const [formData, setFormData] = useState({ regNo: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    const particles = Array.from({ length: 60 }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      r: Math.random() * 2 + 1,
+      dx: (Math.random() - 0.5) * 0.6,
+      dy: (Math.random() - 0.5) * 0.6,
+      alpha: Math.random() * 0.4 + 0.2,
+      color: Math.random() > 0.5 ? "249, 115, 22" : "56, 189, 248",
+    }));
+
+    let animId;
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach((p) => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`;
+        ctx.fill();
+
+        p.x += p.dx;
+        p.y += p.dy;
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+      });
+      animId = requestAnimationFrame(draw);
+    };
+
+    draw();
+    const resize = () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+    window.addEventListener("resize", resize);
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  const handleAutofill = () => {
+    setFormData({ regNo: "12304567", password: "password123" });
+    setError("");
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Redirect to student dashboard for demo
-    window.location.href = '/student/dashboard';
-  };
+    if (!formData.regNo.trim() || !formData.password.trim()) {
+      setError("Please fill in your Registration Number and Password.");
+      return;
+    }
+    setLoading(true);
+    setError("");
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    // Simulate authentication
+    setTimeout(() => {
+      window.location.href = "/student/dashboard";
+    }, 600);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
-            <span className="text-white font-bold text-2xl">L</span>
-          </div>
-        </div>
-        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-          Student Login
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Access your hostel application portal
-        </p>
-      </div>
+    <div className="relative min-h-screen bg-[#070710] text-slate-100 flex items-center justify-center p-6 overflow-hidden">
+      {/* Ambient glow orbs */}
+      <div className="pointer-events-none fixed -top-32 -right-32 w-96 h-96 rounded-full bg-orange-500/20 blur-[120px] animate-orb" />
+      <div className="pointer-events-none fixed -bottom-32 -left-32 w-96 h-96 rounded-full bg-blue-600/20 blur-[120px] animate-orb-reverse" />
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-xl rounded-lg sm:px-10 border border-gray-100">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+      {/* Particle Canvas */}
+      <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />
+
+      <div className="relative z-10 w-full max-w-md">
+        <div className="text-center mb-8">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors mb-6 glass px-3.5 py-1.5 rounded-full"
+          >
+            ← Back to Home
+          </Link>
+
+          <div className="relative mx-auto w-16 h-16 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white font-black text-2xl shadow-xl shadow-orange-500/30 mb-4">
+            L
+            <span className="absolute -inset-1 rounded-2xl bg-orange-400 opacity-20 blur" />
+          </div>
+
+          <h1 className="text-3xl font-black tracking-tight text-white">Student Portal</h1>
+          <p className="text-sm text-slate-400 mt-1">Lovely Professional University Hostel Allocation</p>
+        </div>
+
+        <div className="glass-card rounded-3xl p-8 border border-white/10 shadow-2xl">
+          {error && (
+            <div className="mb-5 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-center gap-2">
+              <span>⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Quick Demo Autofill Pill */}
+          <button
+            type="button"
+            onClick={handleAutofill}
+            className="w-full mb-6 py-2.5 px-4 rounded-xl glass border border-orange-500/30 text-orange-300 hover:bg-orange-500/10 transition-all text-xs font-semibold flex items-center justify-center gap-2"
+          >
+            <span>✨ 1-Click Demo Credentials Autofill</span>
+          </button>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="regNo" className="block text-sm font-medium text-gray-700">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
                 Registration Number
               </label>
-              <div className="mt-1">
+              <div className="relative">
+                <span className="absolute left-4 top-3.5 text-slate-500">🎓</span>
                 <input
-                  id="regNo"
-                  name="regNo"
                   type="text"
                   required
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                  placeholder="Enter your registration number"
+                  placeholder="e.g. 12304567"
                   value={formData.regNo}
-                  onChange={handleChange}
+                  onChange={(e) => setFormData({ ...formData, regNo: e.target.value })}
+                  className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-sm focus:border-orange-500 transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="mt-1">
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">Password</label>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-xs text-orange-400 hover:text-orange-300 font-medium"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+              <div className="relative">
+                <span className="absolute left-4 top-3.5 text-slate-500">🔒</span>
                 <input
-                  id="password"
-                  name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                  placeholder="Enter your password"
+                  placeholder="Enter your student password"
                   value={formData.password}
-                  onChange={handleChange}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-sm focus:border-orange-500 transition-all"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Remember me
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <a href="#" className="font-medium text-orange-600 hover:text-orange-500">
-                  Forgot password?
-                </a>
-              </div>
+            <div className="flex items-center justify-between text-xs text-slate-400">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" defaultChecked className="rounded border-white/10 text-orange-500" />
+                <span>Remember on this device</span>
+              </label>
+              <span className="text-slate-500 hover:text-slate-400 cursor-pointer">Forgot credentials?</span>
             </div>
 
-            <div>
-              <button
-                type="submit"
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transform hover:scale-105 transition-all duration-200 shadow-lg"
-              >
-                Sign in
-              </button>
-            </div>
-
-            <div className="text-center">
-              <p className="text-sm text-gray-600">
-                Don't have an account?{' '}
-                <Link href="/student/register" className="font-medium text-orange-600 hover:text-orange-500">
-                  Register here
-                </Link>
-              </p>
-            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-sm shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                  <span>Verifying Credentials...</span>
+                </>
+              ) : (
+                <>
+                  <span>Sign In to Student Portal</span>
+                  <span>→</span>
+                </>
+              )}
+            </button>
           </form>
-        </div>
-      </div>
 
-      <div className="mt-8 text-center">
-        <Link href="/" className="text-orange-600 hover:text-orange-500 font-medium">
-          ← Back to Home
-        </Link>
+          <div className="mt-6 pt-6 border-t border-white/10 text-center">
+            <p className="text-xs text-slate-400">
+              Need assistance? Contact{" "}
+              <span className="text-orange-400 font-medium">hostel@lpu.co.in</span>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

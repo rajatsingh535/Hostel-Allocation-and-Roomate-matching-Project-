@@ -8,17 +8,15 @@ async function connectDB() {
     return mongoose.connection;
   }
 
-  const uri = process.env.MONGODB_URI;
+  const defaultUri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/hostel_db";
 
-  if (uri) {
-    try {
-      console.log(`[Database] Attempting connection to configured MONGODB_URI...`);
-      await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 });
-      console.log(`[Database] Successfully connected to external MongoDB.`);
-      return mongoose.connection;
-    } catch (err) {
-      console.warn(`[Database] External MongoDB connection failed (${err.message}). Falling back to in-memory instance...`);
-    }
+  try {
+    console.log(`[Database] Attempting connection to MongoDB at ${defaultUri}...`);
+    await mongoose.connect(defaultUri, { serverSelectionTimeoutMS: 3000 });
+    console.log(`[Database] Successfully connected to MongoDB.`);
+    return mongoose.connection;
+  } catch (err) {
+    console.warn(`[Database] MongoDB connection failed (${err.message}). Falling back to in-memory instance...`);
   }
 
   try {

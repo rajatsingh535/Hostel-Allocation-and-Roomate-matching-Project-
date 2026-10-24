@@ -2,11 +2,12 @@ const mongoose = require("mongoose");
 
 const PreferenceSchema = new mongoose.Schema({
   hostelId: { type: mongoose.Schema.Types.ObjectId, ref: "Hostel" },
-  hostelName: { type: String, required: true },
-  roomType: { type: String, required: true },
+  hostelCode: { type: String },
+  hostelName: { type: String, default: "Hostel" },
+  roomType: { type: String, default: "Double" },
   acPreference: { type: String, default: "Either" },
-  priority: { type: Number, required: true },
-});
+  priority: { type: Number, default: 1 },
+}, { _id: false });
 
 const ApplicationSchema = new mongoose.Schema(
   {

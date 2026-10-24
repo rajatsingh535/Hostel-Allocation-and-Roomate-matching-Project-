@@ -14,13 +14,14 @@ app.use(express.json());
 app.use("/api/hostels", require("./routes/hostels"));
 app.use("/api/applications", require("./routes/applications"));
 app.use("/api/stats", require("./routes/stats"));
+app.use("/api/rooms", require("./routes/rooms"));
 
 app.get("/api/health", (req, res) => {
   res.json({
     status: "ok",
     service: "Hostel Allocation API",
     timestamp: new Date().toISOString(),
-    version: "1.0.0 (Week 5 Checkpoint)",
+    version: "2.0.0 (3D Edition)",
   });
 });
 
@@ -38,11 +39,12 @@ async function startServer() {
     }
 
     app.listen(PORT, () => {
-      console.log(`[Server] ? Backend API running on http://localhost:${PORT}`);
-      console.log(`[Server] ?? Health Check: http://localhost:${PORT}/api/health`);
-      console.log(`[Server] ?? Hostels Endpoint: http://localhost:${PORT}/api/hostels`);
-      console.log(`[Server] ?? Applications Endpoint: http://localhost:${PORT}/api/applications`);
-      console.log(`[Server] ?? Stats Endpoint: http://localhost:${PORT}/api/stats`);
+      console.log(`[Server] 🚀 Backend API running on http://localhost:${PORT}`);
+      console.log(`[Server] 🏥 Health Check: http://localhost:${PORT}/api/health`);
+      console.log(`[Server] 🏨 Hostels Endpoint: http://localhost:${PORT}/api/hostels`);
+      console.log(`[Server] 📋 Applications Endpoint: http://localhost:${PORT}/api/applications`);
+      console.log(`[Server] 📊 Stats Endpoint: http://localhost:${PORT}/api/stats`);
+      console.log(`[Server] 🛏️  Rooms Endpoint: http://localhost:${PORT}/api/rooms`);
     });
   } catch (err) {
     console.error("[Server] Fatal startup failure:", err);
