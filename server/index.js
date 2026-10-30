@@ -14,8 +14,12 @@ app.use(express.json());
 app.use("/api/hostels", require("./routes/hostels"));
 app.use("/api/applications", require("./routes/applications"));
 app.use("/api/stats", require("./routes/stats"));
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/admin-auth", require("./routes/adminAuth"));
 app.use("/api/rooms", require("./routes/rooms"));
 app.use("/api/allocations", require("./routes/allocations"));
+app.use("/api/students", require("./routes/students"));
+
 
 app.get("/api/health", (req, res) => {
   res.json({

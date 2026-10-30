@@ -38,7 +38,7 @@ const StudentSchema = new mongoose.Schema(
         enum: ["Introvert", "Extrovert", "Ambivert"],
         default: "Ambivert"
       },
-      snoiseTolerance: {
+      noiseTolerance: {
       type: String,
       enum: ["Low", "Moderate", "High"],
       default: "Moderate"

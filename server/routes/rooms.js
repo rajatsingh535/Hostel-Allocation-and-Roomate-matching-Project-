@@ -1,11 +1,10 @@
-
 const express = require("express");
 const router = express.Router();
 
 const Room = require("../models/Room");
 const Bed = require("../models/Bed");
 const Hostel = require("../models/Hostel");
-
+const adminMiddleware = require("../middleware/adminMiddleware");
 // GET /api/rooms
 router.get("/", async (req, res) => {
   try {
@@ -43,7 +42,7 @@ router.get("/", async (req, res) => {
 });
 
 // DELETE /api/rooms/:id
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", adminMiddleware, async (req, res) => {
   try {
     const room = await Room.findById(req.params.id);
 

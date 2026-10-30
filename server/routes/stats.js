@@ -18,8 +18,7 @@ router.get("/", async (req, res) => {
       ]);
 
     const availableBeds = totalBeds - occupiedBeds;
-    const occupancyRate = totalBeds > 0 ? Math.round((occupiedBeds / totalBeds) * 100) : 0;
-
+   const occupancyRate = totalBeds > 0 ? Number(((occupiedBeds / totalBeds) * 100).toFixed(2)) : 0;
     res.json({
       success: true,
       data: {

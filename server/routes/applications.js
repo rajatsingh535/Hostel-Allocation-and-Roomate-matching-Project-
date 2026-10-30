@@ -1,8 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const Application = require("../models/Application");
-
-router.get("/", async (req, res) => {
+const authMiddleware = require("../middleware/authMiddleware");
+const adminMiddleware = require("../middleware/adminMiddleware");
+const Student = require("../models/Student");
+const Hostel = require("../models/Hostel");
+const mongoose = require("mongoose");
+router.get("/", adminMiddleware, async (req, res) => {
   try {
     const { status, search } = req.query;
     const query = {};
@@ -33,85 +37,156 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+
+router.post("/", authMiddleware, async (req, res) => {
   try {
-    const {
-      studentRollNumber,
-      studentName,
-      studentEmail,
-      department,
-      year,
-      gender,
-      cgpa,
-      preferences,
-      specialAccommodations,
-    } = req.body;
+    const normalizedRoll = req.user.rollNumber.trim().toUpperCase();
 
-    if (!studentRollNumber || !studentName || !studentEmail || !department) {
-      return res.status(400).json({
+    // Fetch trusted student details from the database
+    const student = await Student.findOne({
+      rollNumber: normalizedRoll
+    });
+
+    if (!student) {
+      return res.status(404).json({
         success: false,
-        message: "Missing required student details (Roll Number, Name, Email, Department).",
+        message: "Student profile not found. Please complete your profile first."
       });
     }
 
-    if (!preferences || !Array.isArray(preferences) || preferences.length === 0) {
+    const { preferences, specialAccommodations } = req.body;
+
+    if (!Array.isArray(preferences) || preferences.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "At least one hostel preference must be provided.",
+        message: "At least one hostel preference must be provided."
       });
     }
 
-    const normalizedPreferences = preferences.map((p, idx) => ({
-      hostelId: p.hostelId || null,
-      hostelCode: p.hostelCode || "",
-      hostelName: p.hostelName || p.hostelCode || "Hostel",
-      roomType: p.roomType || "Double",
-      acPreference: p.acPreference || p.acType || "Either",
-      priority: Number(p.priority) || idx + 1,
-    }));
+    // Validate preference fields
+    const validRoomTypes = ["Single", "Double", "Triple", "Quad"];
+    const validAcPreferences = ["AC", "Non-AC", "Either"];
 
-    const normalizedRoll = studentRollNumber.trim().toUpperCase();
-    const existingApplication = await Application.findOne({ studentRollNumber: normalizedRoll, status: { $ne: "REJECTED" } });
+    const normalizedPreferences = [];
+
+    for (let i = 0; i < preferences.length; i++) {
+  const p = preferences[i];
+
+  if (!p || typeof p !== "object") {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid hostel preference at position ${i + 1}.`
+    });
+  }
+
+  const acPreference = p.acPreference || p.acType || "Either";
+
+  if (
+    !validRoomTypes.includes(p.roomType) ||
+    !validAcPreferences.includes(acPreference)
+  ) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid room type or AC preference at position ${i + 1}.`
+    });
+  }
+
+  // Find the hostel using its ID or hostel code
+  let hostel;
+
+  if (p.hostelId) {
+    if (!mongoose.Types.ObjectId.isValid(p.hostelId)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid hostel ID at position ${i + 1}.`
+      });
+    }
+
+    hostel = await Hostel.findById(p.hostelId);
+  } else if (p.hostelCode) {
+    hostel = await Hostel.findOne({ code: p.hostelCode });
+  }
+
+  if (!hostel) {
+    return res.status(400).json({
+      success: false,
+      message: `Selected hostel does not exist at position ${i + 1}.`
+    });
+  }
+
+  if (
+    hostel.genderAllowed !== "Co-ed" &&
+    hostel.genderAllowed !== student.gender
+  ) {
+    return res.status(400).json({
+      success: false,
+      message: `Selected hostel is not available for your gender at position ${i + 1}.`
+    });
+  }
+
+  normalizedPreferences.push({
+    hostelId: hostel._id,
+    hostelCode: hostel.code,
+    hostelName: hostel.name,
+    roomType: p.roomType,
+    acPreference,
+    priority: i + 1
+  });
+}
+
+    // Prevent duplicate active applications
+    const existingApplication = await Application.findOne({
+      studentRollNumber: normalizedRoll,
+      status: { $ne: "REJECTED" }
+    });
+
     if (existingApplication) {
-      return res.status(409).json({ success: false, message: "An active application already exists for this roll number.", data: { applicationId: existingApplication.applicationId } });
+      return res.status(409).json({
+        success: false,
+        message: "An active application already exists for this roll number.",
+        data: { applicationId: existingApplication.applicationId }
+      });
     }
-    if (!Number.isFinite(Number(year)) || Number(year) < 1 || Number(year) > 8) {
-      return res.status(400).json({ success: false, message: "Year must be a number between 1 and 8." });
-    }
-    if (!Number.isFinite(Number(cgpa)) || Number(cgpa) < 0 || Number(cgpa) > 10) {
-      return res.status(400).json({ success: false, message: "CGPA must be between 0 and 10." });
-    }
-    const applicationId = `APP-${new Date().getFullYear()}-${Date.now().toString().slice(-8)}${Math.floor(Math.random() * 10)}`;
+
+    const applicationId =
+      `APP-${new Date().getFullYear()}-${Date.now().toString().slice(-8)}${Math.floor(Math.random() * 10)}`;
 
     const newApp = await Application.create({
       applicationId,
       studentRollNumber: normalizedRoll,
-      studentName: studentName.trim(),
-      studentEmail: studentEmail.trim().toLowerCase(),
-      department,
-      year: Number(year) || 1,
-      gender: gender || "Other",
-      cgpa: Number(cgpa) || 7.5,
+      studentName: student.name,
+      studentEmail: student.email,
+      department: student.department,
+      year: student.year,
+      gender: student.gender,
+      cgpa: student.cgpa,
       preferences: normalizedPreferences,
       specialAccommodations: specialAccommodations || "",
       status: "SUBMITTED",
-      submittedAt: new Date(),
+      submittedAt: new Date()
     });
 
-    console.log(`[API:Applications] Created new application ${applicationId} for student ${studentName}`);
+    console.log(
+      `[API:Applications] Created application ${applicationId} for ${normalizedRoll}`
+    );
 
     res.status(201).json({
       success: true,
       message: "Hostel application successfully submitted!",
-      data: newApp,
+      data: newApp
     });
+
   } catch (err) {
     console.error("[API:Applications] Submission error:", err);
-    res.status(500).json({ success: false, message: "Failed to submit application: " + err.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to submit application."
+    });
   }
 });
 
-router.patch("/:id/status", async (req, res) => {
+
+router.patch("/:id/status",adminMiddleware, async (req, res) => {
   try {
     const { status } = req.body;
     const allowed = ["DRAFT", "SUBMITTED", "UNDER_REVIEW", "REJECTED"];
