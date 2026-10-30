@@ -125,7 +125,7 @@ router.post("/:id/rooms", async (req, res) => {
       block = await Block.create({
         name: "Block A",
         hostelId: hostel._id,
-        floors: Number(floor) || 1,
+        floorsCount: Number(floor) || 1,
       });
     }
 
@@ -145,7 +145,7 @@ router.post("/:id/rooms", async (req, res) => {
     // Create bed records
     const beds = [];
     for (let i = 1; i <= Number(totalBeds); i++) {
-      beds.push({ bedNumber: i, roomId: room._id, hostelId: hostel._id, status: "Available" });
+      beds.push({ bedNumber: String(i), roomId: room._id, hostelId: hostel._id, isOccupied: false });
     }
     await Bed.insertMany(beds);
 
@@ -171,8 +171,11 @@ router.delete("/:id", async (req, res) => {
     const hostel = await Hostel.findById(req.params.id);
     if (!hostel) return res.status(404).json({ success: false, message: "Hostel not found." });
 
+    const occupiedBeds = await Bed.countDocuments({ hostelId: hostel._id, isOccupied: true });
+    if (occupiedBeds > 0) {
+      return res.status(409).json({ success: false, message: "Cannot delete a hostel with occupied beds. Reassign students first." });
+    }
     const rooms = await Room.find({ hostelId: hostel._id });
-    const roomIds = rooms.map((r) => r._id);
 
     await Bed.deleteMany({ hostelId: hostel._id });
     await Room.deleteMany({ hostelId: hostel._id });

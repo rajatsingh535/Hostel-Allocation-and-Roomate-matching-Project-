@@ -21,6 +21,12 @@ const ApplicationSchema = new mongoose.Schema(
     cgpa: { type: Number, required: true },
     preferences: [PreferenceSchema],
     specialAccommodations: { type: String, default: "" },
+    assignedHostelId: { type: mongoose.Schema.Types.ObjectId, ref: "Hostel", default: null },
+    assignedHostelName: { type: String, default: "" },
+    assignedRoomId: { type: mongoose.Schema.Types.ObjectId, ref: "Room", default: null },
+    assignedRoomNumber: { type: String, default: "" },
+    assignedBedNumber: { type: String, default: "" },
+    allocatedAt: { type: Date, default: null },
     status: {
       type: String,
       enum: ["DRAFT", "SUBMITTED", "UNDER_REVIEW", "ALLOCATED", "REJECTED"],

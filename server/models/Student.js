@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const StudentSchema = new mongoose.Schema(
@@ -10,6 +11,39 @@ const StudentSchema = new mongoose.Schema(
     gender: { type: String, enum: ["Male", "Female", "Other"], required: true },
     cgpa: { type: Number, required: true },
     category: { type: String, default: "General" },
+
+    roommatePreferences: {
+      sleepSchedule: {
+        type: String,
+        enum: ["Early Bird", "Night Owl", "Flexible"],
+        default: "Flexible"
+      },
+      foodPreference: {
+        type: String,
+        enum: ["Vegetarian", "Non-Vegetarian", "Eggetarian", "Flexible"],
+        default: "Flexible"
+      },
+      cleanliness: {
+        type: String,
+        enum: ["Very Clean", "Moderate", "Relaxed"],
+        default: "Moderate"
+      },
+      studyHabits: {
+        type: String,
+        enum: ["Quiet", "Group Study", "Flexible"],
+        default: "Flexible"
+      },
+      socialHabits: {
+        type: String,
+        enum: ["Introvert", "Extrovert", "Ambivert"],
+        default: "Ambivert"
+      },
+      snoiseTolerance: {
+      type: String,
+      enum: ["Low", "Moderate", "High"],
+      default: "Moderate"
+}
+    }
   },
   { timestamps: true }
 );

@@ -70,12 +70,22 @@ router.post("/", async (req, res) => {
       priority: Number(p.priority) || idx + 1,
     }));
 
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const applicationId = `APP-2026-${randomSuffix}`;
+    const normalizedRoll = studentRollNumber.trim().toUpperCase();
+    const existingApplication = await Application.findOne({ studentRollNumber: normalizedRoll, status: { $ne: "REJECTED" } });
+    if (existingApplication) {
+      return res.status(409).json({ success: false, message: "An active application already exists for this roll number.", data: { applicationId: existingApplication.applicationId } });
+    }
+    if (!Number.isFinite(Number(year)) || Number(year) < 1 || Number(year) > 8) {
+      return res.status(400).json({ success: false, message: "Year must be a number between 1 and 8." });
+    }
+    if (!Number.isFinite(Number(cgpa)) || Number(cgpa) < 0 || Number(cgpa) > 10) {
+      return res.status(400).json({ success: false, message: "CGPA must be between 0 and 10." });
+    }
+    const applicationId = `APP-${new Date().getFullYear()}-${Date.now().toString().slice(-8)}${Math.floor(Math.random() * 10)}`;
 
     const newApp = await Application.create({
       applicationId,
-      studentRollNumber: studentRollNumber.trim().toUpperCase(),
+      studentRollNumber: normalizedRoll,
       studentName: studentName.trim(),
       studentEmail: studentEmail.trim().toLowerCase(),
       department,
@@ -104,7 +114,10 @@ router.post("/", async (req, res) => {
 router.patch("/:id/status", async (req, res) => {
   try {
     const { status } = req.body;
-    const allowed = ["DRAFT", "SUBMITTED", "UNDER_REVIEW", "ALLOCATED", "REJECTED"];
+    const allowed = ["DRAFT", "SUBMITTED", "UNDER_REVIEW", "REJECTED"];
+    if (status === "ALLOCATED") {
+      return res.status(400).json({ success: false, message: "Use POST /api/allocations/run to allocate a real bed." });
+    }
     if (!allowed.includes(status)) {
       return res.status(400).json({ success: false, message: "Invalid status value." });
     }

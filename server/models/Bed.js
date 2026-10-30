@@ -10,6 +10,7 @@ const BedSchema = new mongoose.Schema(
       rollNumber: String,
       name: String,
       department: String,
+      gender: String,
     },
   },
   { timestamps: true }

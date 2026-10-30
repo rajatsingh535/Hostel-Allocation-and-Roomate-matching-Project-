@@ -15,6 +15,7 @@ app.use("/api/hostels", require("./routes/hostels"));
 app.use("/api/applications", require("./routes/applications"));
 app.use("/api/stats", require("./routes/stats"));
 app.use("/api/rooms", require("./routes/rooms"));
+app.use("/api/allocations", require("./routes/allocations"));
 
 app.get("/api/health", (req, res) => {
   res.json({
