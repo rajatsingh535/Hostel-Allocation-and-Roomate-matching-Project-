@@ -58,11 +58,11 @@ export default function AdminLogin() {
   }, []);
 
   const handleAutofill = () => {
-    setFormData({ adminId: "admin_lpu", password: "adminpassword" });
+    setFormData({ adminId: "admin@lpu.co.in", password: "adminpassword" });
     setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.adminId.trim() || !formData.password.trim()) {
       setError("Please enter your Administrative Credentials.");
@@ -71,9 +71,31 @@ export default function AdminLogin() {
     setLoading(true);
     setError("");
 
-    setTimeout(() => {
-      window.location.href = "/admin/dashboard";
-    }, 600);
+    try {
+      const res = await fetch("http://localhost:5000/api/admin-auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          adminId: formData.adminId.trim(),
+          password: formData.password,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success && data.token) {
+        localStorage.setItem("admin_token", data.token);
+        if (data.admin) {
+          localStorage.setItem("admin_user", JSON.stringify(data.admin));
+        }
+        window.location.href = "/admin/dashboard";
+      } else {
+        setError(data.message || "Invalid administrator credentials.");
+      }
+    } catch (err) {
+      setError("Backend connection error. Please ensure the API server is running on port 5000.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -117,20 +139,20 @@ export default function AdminLogin() {
             onClick={handleAutofill}
             className="w-full mb-6 py-2.5 px-4 rounded-xl glass border border-blue-500/30 text-blue-300 hover:bg-blue-500/10 transition-all text-xs font-semibold flex items-center justify-center gap-2"
           >
-            <span>✨ 1-Click Demo Admin Autofill</span>
+            <span>✨ 1-Click Demo Admin Autofill (admin@lpu.co.in)</span>
           </button>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
-                Administrator ID / Username
+                Administrator ID / Email
               </label>
               <div className="relative">
                 <span className="absolute left-4 top-3.5 text-slate-500">🛡️</span>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. admin_lpu"
+                  placeholder="e.g. admin@lpu.co.in or admin_lpu"
                   value={formData.adminId}
                   onChange={(e) => setFormData({ ...formData, adminId: e.target.value })}
                   className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-sm focus:border-blue-500 transition-all"
@@ -170,7 +192,7 @@ export default function AdminLogin() {
               {loading ? (
                 <>
                   <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                  <span>Verifying Authorization...</span>
+                  <span>Verifying Authorization with MongoDB...</span>
                 </>
               ) : (
                 <>
@@ -183,7 +205,7 @@ export default function AdminLogin() {
 
           <div className="mt-6 pt-6 border-t border-white/10 text-center">
             <p className="text-xs text-slate-400">
-              Session secured with TLS 1.3 • Lovely Professional University
+              Session secured with JWT &amp; Role-Based Access Control • Lovely Professional University
             </p>
           </div>
         </div>

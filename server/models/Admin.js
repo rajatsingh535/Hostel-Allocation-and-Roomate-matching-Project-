@@ -9,6 +9,15 @@ const adminSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    username: {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
+    name: {
+      type: String,
+      default: "Hostel Administrator",
+    },
     passwordHash: {
       type: String,
       required: true,
@@ -16,10 +25,10 @@ const adminSchema = new mongoose.Schema(
     role: {
       type: String,
       default: "admin",
-      enum: ["admin"],
+      enum: ["admin", "warden"],
     },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Admin", adminSchema);
+module.exports = mongoose.models.Admin || mongoose.model("Admin", adminSchema);

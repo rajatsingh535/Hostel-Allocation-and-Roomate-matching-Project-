@@ -58,11 +58,11 @@ export default function StudentLogin() {
   }, []);
 
   const handleAutofill = () => {
-    setFormData({ regNo: "12304567", password: "password123" });
+    setFormData({ regNo: "12345678", password: "password123" });
     setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.regNo.trim() || !formData.password.trim()) {
       setError("Please fill in your Registration Number and Password.");
@@ -71,10 +71,31 @@ export default function StudentLogin() {
     setLoading(true);
     setError("");
 
-    // Simulate authentication
-    setTimeout(() => {
-      window.location.href = "/student/dashboard";
-    }, 600);
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rollNumber: formData.regNo.trim(),
+          password: formData.password,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success && data.token) {
+        localStorage.setItem("student_token", data.token);
+        if (data.student) {
+          localStorage.setItem("student_user", JSON.stringify(data.student));
+        }
+        window.location.href = "/student/dashboard";
+      } else {
+        setError(data.message || "Authentication failed. Please check your credentials.");
+      }
+    } catch (err) {
+      setError("Backend connection error. Please ensure the API server is running on port 5000.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -118,7 +139,7 @@ export default function StudentLogin() {
             onClick={handleAutofill}
             className="w-full mb-6 py-2.5 px-4 rounded-xl glass border border-orange-500/30 text-orange-300 hover:bg-orange-500/10 transition-all text-xs font-semibold flex items-center justify-center gap-2"
           >
-            <span>✨ 1-Click Demo Credentials Autofill</span>
+            <span>✨ 1-Click Demo Credentials Autofill (Roll: 12345678)</span>
           </button>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -131,7 +152,7 @@ export default function StudentLogin() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. 12304567"
+                  placeholder="e.g. 12345678"
                   value={formData.regNo}
                   onChange={(e) => setFormData({ ...formData, regNo: e.target.value })}
                   className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-sm focus:border-orange-500 transition-all"
@@ -179,7 +200,7 @@ export default function StudentLogin() {
               {loading ? (
                 <>
                   <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                  <span>Verifying Credentials...</span>
+                  <span>Verifying Credentials with MongoDB...</span>
                 </>
               ) : (
                 <>

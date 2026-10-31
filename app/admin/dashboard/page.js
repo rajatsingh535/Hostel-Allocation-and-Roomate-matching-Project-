@@ -5,6 +5,9 @@ import Link from "next/link";
 const API = "http://localhost:5000/api";
 
 export default function AdminDashboard() {
+  const [adminToken, setAdminToken] = useState(null);
+  const [adminUser, setAdminUser] = useState(null);
+
   const [tab, setTab] = useState("hostels");
   const [hostels, setHostels] = useState([]);
   const [applications, setApplications] = useState([]);
@@ -49,14 +52,34 @@ export default function AdminDashboard() {
   const [appSearch, setAppSearch] = useState("");
 
   useEffect(() => {
-    fetchAll();
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("admin_token");
+      const user = localStorage.getItem("admin_user");
+      if (token) setAdminToken(token);
+      if (user) {
+        try {
+          setAdminUser(JSON.parse(user));
+        } catch {}
+      }
+    }
   }, []);
+
+  const getAuthHeaders = () => {
+    const token = adminToken || (typeof window !== "undefined" ? localStorage.getItem("admin_token") : null);
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
+  useEffect(() => {
+    fetchAll();
+  }, [adminToken]);
 
   const fetchAll = async () => {
     setLoading(true);
+    const headers = getAuthHeaders();
+
     const [hRes, aRes, sRes] = await Promise.all([
       fetch(`${API}/hostels`).then((r) => r.json()).catch(() => ({ data: [] })),
-      fetch(`${API}/applications`).then((r) => r.json()).catch(() => ({ data: [] })),
+      fetch(`${API}/applications`, { headers }).then((r) => r.json()).catch(() => ({ data: [] })),
       fetch(`${API}/stats`).then((r) => r.json()).catch(() => ({ data: {} })),
     ]);
 
@@ -73,7 +96,7 @@ export default function AdminDashboard() {
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 3500);
   };
 
   // ── Hostel Actions ──
@@ -94,12 +117,12 @@ export default function AdminDashboard() {
 
       const res = await fetch(`${API}/hostels`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify(body),
       });
       const data = await res.json();
       if (data.success) {
-        showToast(`✅ Hostel ${data.data.code} added successfully!`);
+        showToast(`✅ Hostel ${data.data.code} added successfully to database!`);
         setShowAddHostel(false);
         setAddHostelForm({
           name: "",
@@ -123,7 +146,10 @@ export default function AdminDashboard() {
 
   const confirmDeleteHostel = async (hostel) => {
     try {
-      const res = await fetch(`${API}/hostels/${hostel._id}`, { method: "DELETE" });
+      const res = await fetch(`${API}/hostels/${hostel._id}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+      });
       const data = await res.json();
       if (data.success) {
         showToast(`🗑️ Hostel ${hostel.code} deleted.`);
@@ -146,7 +172,9 @@ export default function AdminDashboard() {
     setSelectedHostel(hostel);
     setRoomsLoading(true);
     try {
-      const res = await fetch(`${API}/hostels/${hostel._id}/rooms`).then((r) => r.json());
+      const res = await fetch(`${API}/hostels/${hostel._id}/rooms`, {
+        headers: getAuthHeaders(),
+      }).then((r) => r.json());
       if (res.success) setHostelRooms(res.data);
     } catch {}
     setRoomsLoading(false);
@@ -168,7 +196,7 @@ export default function AdminDashboard() {
 
       const res = await fetch(`${API}/hostels/${selectedHostel._id}/rooms`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify(body),
       });
       const data = await res.json();
@@ -188,7 +216,10 @@ export default function AdminDashboard() {
 
   const confirmDeleteRoom = async (room) => {
     try {
-      const res = await fetch(`${API}/rooms/${room._id}`, { method: "DELETE" });
+      const res = await fetch(`${API}/rooms/${room._id}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+      });
       const data = await res.json();
       if (data.success) {
         showToast(`🗑️ Room ${room.roomNumber} deleted.`);
@@ -208,19 +239,49 @@ export default function AdminDashboard() {
     try {
       const res = await fetch(`${API}/applications/${app._id}/status`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify({ status }),
       });
       const data = await res.json();
       if (data.success) {
-        showToast(`✅ ${app.studentName}'s application marked as ${status}`);
+        showToast(data.message || `✅ ${app.studentName}'s application marked as ${status}`);
         fetchAll();
+        if (selectedHostel) selectHostel(selectedHostel);
       } else {
-        showToast(data.message, "error");
+        showToast(data.message || "Status update failed", "error");
       }
     } catch {
       showToast("Network error updating status", "error");
     }
+  };
+
+  // ── Batch Policy Engine Solver ──
+  const handleRunBatchSolver = async () => {
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API}/allocations/run`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`🚀 ${data.message}`);
+        fetchAll();
+        if (selectedHostel) selectHostel(selectedHostel);
+      } else {
+        showToast(data.message || "Batch allocation failed", "error");
+      }
+    } catch {
+      showToast("Network error running allocation solver", "error");
+    }
+    setSubmitting(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("admin_token");
+    localStorage.removeItem("admin_user");
+    window.location.href = "/admin/login";
   };
 
   const filteredApps = applications.filter((app) => {
@@ -242,7 +303,7 @@ export default function AdminDashboard() {
       {toast && (
         <div
           className={`fixed top-6 right-6 z-[9999] px-5 py-3 rounded-2xl text-xs font-bold shadow-2xl animate-bounce ${
-            toast.type === "error" ? "bg-red-500/90 text-white" : "bg-emerald-500/90 text-white"
+            toast.type === "error" ? "bg-red-500 text-white" : "bg-emerald-500 text-white"
           }`}
         >
           {toast.msg}
@@ -264,7 +325,9 @@ export default function AdminDashboard() {
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex items-center gap-2.5 px-3.5 py-1.5 rounded-full glass border border-white/10 text-xs">
             <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-            <span className="text-slate-300 font-medium">Hostel Administrator</span>
+            <span className="text-slate-300 font-medium">
+              {adminUser ? adminUser.email : "Chief Warden / Admin"}
+            </span>
           </div>
           <Link
             href="/"
@@ -272,12 +335,12 @@ export default function AdminDashboard() {
           >
             ← Home
           </Link>
-          <Link
-            href="/admin/login"
+          <button
+            onClick={handleLogout}
             className="px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-all"
           >
             Logout
-          </Link>
+          </button>
         </div>
       </nav>
 
@@ -287,7 +350,7 @@ export default function AdminDashboard() {
           {[
             { label: "Active Hostels", value: stats.totalHostels || hostels.length, sub: "12 Blocks Configured", icon: "🏢" },
             { label: "Total Rooms", value: (stats.totalRooms || 1080).toLocaleString(), sub: "Across all floors", icon: "🚪" },
-            { label: "Available Beds", value: (stats.availableBeds || 4320).toLocaleString(), sub: "Vacant inventory", icon: "🛏️" },
+            { label: "Available Beds", value: (stats.availableBeds !== undefined ? stats.availableBeds : 4320).toLocaleString(), sub: "Vacant inventory", icon: "🛏️" },
             { label: "Student Queue", value: applications.length, sub: "Fall 2026 submissions", icon: "📋" },
           ].map((m, i) => (
             <div key={i} className="glass-card rounded-2xl p-5 group hover:-translate-y-1 transition-transform">
@@ -339,7 +402,7 @@ export default function AdminDashboard() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {hostels.map((h) => {
                 const totalBeds = h.totalBeds || h.totalCapacity || 360;
-                const availBeds = h.availableBeds || h.availableCapacity || 100;
+                const availBeds = h.availableBeds !== undefined ? h.availableBeds : h.availableCapacity || 100;
                 const occPercent = Math.min(100, Math.round(((totalBeds - availBeds) / totalBeds) * 100));
 
                 return (
@@ -359,48 +422,50 @@ export default function AdminDashboard() {
                               {h.genderAllowed}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-300 font-semibold mt-1">{h.name}</p>
-                          <p className="text-[11px] text-slate-500">📍 {h.campusLocation || "LPU Campus"}</p>
+                          <h3 className="text-sm font-bold text-slate-300 mt-1">{h.name}</h3>
                         </div>
 
                         <button
                           onClick={() => setDeleteConfirmation({ type: "hostel", item: h })}
-                          title="Delete Hostel"
                           className="w-8 h-8 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center transition-colors"
+                          title="Delete Hostel"
                         >
                           🗑️
                         </button>
                       </div>
 
-                      {/* Capacity progress */}
-                      <div className="my-4">
-                        <div className="flex justify-between text-[11px] font-medium mb-1">
-                          <span className="text-slate-400">Available Beds</span>
-                          <span className="text-emerald-400 font-bold">{availBeds} Vacant</span>
+                      <div className="text-xs text-slate-400 mb-4">{h.campusLocation}</div>
+
+                      {/* Capacity metrics */}
+                      <div className="space-y-2 mb-4">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-slate-400">Occupancy</span>
+                          <span className="text-white font-bold">{occPercent}%</span>
                         </div>
-                        <div className="w-full h-1.5 rounded-full bg-white/5 overflow-hidden">
+                        <div className="w-full h-2 rounded-full bg-white/5 overflow-hidden">
                           <div
                             className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"
                             style={{ width: `${occPercent}%` }}
                           />
                         </div>
-                        <div className="flex justify-between text-[10px] text-slate-500 mt-1">
-                          <span>{occPercent}% Occupied</span>
-                          <span>{totalBeds} Total Beds</span>
+                        <div className="flex justify-between text-[11px] text-slate-500">
+                          <span>{availBeds} Available</span>
+                          <span>{totalBeds} Capacity</span>
                         </div>
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => {
-                        selectHostel(h);
-                        setTab("rooms");
-                      }}
-                      className="w-full py-2.5 rounded-xl glass border border-white/10 hover:border-blue-500/40 text-xs font-bold text-slate-300 hover:text-white transition-all flex items-center justify-center gap-1.5"
-                    >
-                      <span>Manage Rooms ({h.totalRooms || 0})</span>
-                      <span>→</span>
-                    </button>
+                    <div className="pt-4 border-t border-white/5 flex gap-2">
+                      <button
+                        onClick={() => {
+                          selectHostel(h);
+                          setTab("rooms");
+                        }}
+                        className="flex-1 py-2 rounded-xl glass border border-white/10 text-xs font-semibold hover:border-blue-500/30 hover:text-blue-300 transition-all text-center"
+                      >
+                        Manage Rooms →
+                      </button>
+                    </div>
                   </div>
                 );
               })}
@@ -408,105 +473,94 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* ── TAB 2: ROOMS CRUD ── */}
+        {/* ── TAB 2: ROOM ALLOTMENTS & MANAGEMENT ── */}
         {tab === "rooms" && (
-          <div className="grid lg:grid-cols-4 gap-6">
-            {/* Hostel Selector Sidebar */}
-            <div className="lg:col-span-1 glass-card rounded-3xl p-5 border border-white/10 h-fit">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Select Hostel</h3>
-              <div className="space-y-1.5 max-h-[60vh] overflow-y-auto pr-1">
+          <div className="grid lg:grid-cols-4 gap-8">
+            {/* Left sidebar: Select Hostel */}
+            <div className="lg:col-span-1 space-y-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Select Hostel Block</h3>
+              <div className="space-y-1.5 max-h-[70vh] overflow-y-auto pr-1">
                 {hostels.map((h) => (
                   <button
                     key={h._id}
                     onClick={() => selectHostel(h)}
-                    className={`w-full text-left p-3 rounded-2xl text-xs font-semibold transition-all flex items-center justify-between ${
+                    className={`w-full p-3 rounded-2xl text-left text-xs font-bold transition-all flex items-center justify-between ${
                       selectedHostel?._id === h._id
-                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20"
-                        : "glass text-slate-300 hover:text-white border border-white/5"
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+                        : "glass text-slate-400 hover:text-white"
                     }`}
                   >
-                    <span>{h.code} • {h.name}</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/20">
-                      {h.genderAllowed === "Female" ? "GH" : "BH"}
-                    </span>
+                    <span>{h.code} - {h.name}</span>
+                    <span className="text-[10px] opacity-75">{h.genderAllowed}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Rooms Grid for Selected Hostel */}
+            {/* Right panel: Rooms in selected hostel */}
             <div className="lg:col-span-3">
               {selectedHostel ? (
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-xl font-bold text-white">
-                        {selectedHostel.code} — Rooms Inventory
-                      </h2>
+                      <h2 className="text-xl font-bold text-white">{selectedHostel.name} ({selectedHostel.code}) Rooms</h2>
                       <p className="text-xs text-slate-400 mt-1">
-                        {selectedHostel.name} • {hostelRooms.length} rooms configured
+                        Total {hostelRooms.length} rooms configured • Floor-wise layout and bed slot management.
                       </p>
                     </div>
 
                     <button
                       onClick={() => setShowAddRoom(true)}
-                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-500/25 hover:scale-105 transition-all flex items-center gap-2"
                     >
-                      <span>+ Add Room to {selectedHostel.code}</span>
+                      <span>+ Add New Room</span>
                     </button>
                   </div>
 
                   {roomsLoading ? (
-                    <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-                      {Array.from({ length: 6 }).map((_, i) => (
-                        <div key={i} className="glass-card rounded-2xl h-36 animate-pulse" />
-                      ))}
-                    </div>
+                    <div className="py-20 text-center glass rounded-3xl animate-pulse">Loading room records...</div>
                   ) : hostelRooms.length === 0 ? (
-                    <div className="text-center py-20 glass rounded-3xl border border-white/10">
-                      <div className="text-5xl mb-3">🚪</div>
-                      <h3 className="text-lg font-bold text-white">No Rooms Configured</h3>
-                      <p className="text-xs text-slate-400 mt-1 mb-4">Click "Add Room" to create the first room for {selectedHostel.code}.</p>
+                    <div className="py-20 text-center glass rounded-3xl border border-white/10">
+                      <div className="text-4xl mb-2">🚪</div>
+                      <div className="text-white font-bold">No Rooms In This Block</div>
+                      <p className="text-xs text-slate-400 mt-1">Click "+ Add New Room" to add rooms to {selectedHostel.code}.</p>
                     </div>
                   ) : (
                     <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
                       {hostelRooms.map((room) => (
-                        <div key={room._id} className="glass-card rounded-2xl p-5 border border-white/10 flex flex-col justify-between">
-                          <div>
-                            <div className="flex items-start justify-between mb-2">
-                              <div>
-                                <span className="font-black text-lg text-white">Room {room.roomNumber}</span>
-                                <p className="text-[11px] text-slate-400">Floor {room.floor}</p>
-                              </div>
-
-                              <button
-                                onClick={() => setDeleteConfirmation({ type: "room", item: room })}
-                                title="Delete Room"
-                                className="w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs flex items-center justify-center transition-colors"
-                              >
-                                🗑️
-                              </button>
+                        <div key={room._id} className="glass-card rounded-2xl p-4 border border-white/10">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <span className="text-lg font-black text-white">Room {room.roomNumber}</span>
+                              <span className="text-xs text-slate-400 block">Floor {room.floor}</span>
                             </div>
+                            <button
+                              onClick={() => setDeleteConfirmation({ type: "room", item: room })}
+                              className="text-slate-500 hover:text-red-400 text-xs p-1"
+                              title="Delete Room"
+                            >
+                              🗑️
+                            </button>
+                          </div>
 
-                            <div className="flex flex-wrap gap-1.5 my-3">
-                              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/5 border border-white/10 text-slate-300">
-                                {room.roomType}
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/5 border border-white/10 text-slate-300">
+                              {room.roomType}
+                            </span>
+                            <span
+                              className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                                room.acType === "AC"
+                                  ? "bg-cyan-500/10 text-cyan-300 border-cyan-500/20"
+                                  : "bg-amber-500/10 text-amber-300 border-amber-500/20"
+                              }`}
+                            >
+                              {room.acType}
+                            </span>
+                            {room.isPwDAccessible && (
+                              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                                ♿ PwD
                               </span>
-                              <span
-                                className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
-                                  room.acType === "AC"
-                                    ? "bg-cyan-500/10 text-cyan-300 border-cyan-500/20"
-                                    : "bg-slate-500/10 text-slate-300 border-slate-500/20"
-                                }`}
-                              >
-                                {room.acType}
-                              </span>
-                              {room.isPwDAccessible && (
-                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-500/10 text-purple-300 border border-purple-500/20">
-                                  ♿ Accessible
-                                </span>
-                              )}
-                            </div>
+                            )}
                           </div>
 
                           <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs">
@@ -521,13 +575,13 @@ export default function AdminDashboard() {
                   )}
                 </div>
               ) : (
-                <div className="text-center py-20 text-slate-400">Select a hostel from the left panel to manage its rooms.</div>
+                <div className="text-center py-20 text-slate-400">Select a hostel from the left panel to inspect rooms.</div>
               )}
             </div>
           </div>
         )}
 
-        {/* ── TAB 3: APPLICATIONS WORKFLOW ── */}
+        {/* ── TAB 3: APPLICATIONS WORKFLOW & ALLOCATION SOLVER ── */}
         {tab === "applications" && (
           <div>
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
@@ -536,21 +590,32 @@ export default function AdminDashboard() {
                 <p className="text-xs text-slate-400 mt-1">Review student profiles, verify CGPA score, and allocate rooms.</p>
               </div>
 
-              {/* Status Filters */}
-              <div className="flex items-center gap-1.5 glass p-1 rounded-2xl overflow-x-auto">
-                {["ALL", "SUBMITTED", "UNDER_REVIEW", "ALLOCATED", "REJECTED"].map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setAppStatusFilter(s)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                      appStatusFilter === s
-                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20"
-                        : "text-slate-400 hover:text-white"
-                    }`}
-                  >
-                    {s}
-                  </button>
-                ))}
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Policy Engine Batch Solver Button */}
+                <button
+                  onClick={handleRunBatchSolver}
+                  disabled={submitting}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-xs shadow-lg shadow-emerald-500/25 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 whitespace-nowrap"
+                >
+                  <span>🚀 Run Policy Batch Allocation Solver</span>
+                </button>
+
+                {/* Status Filters */}
+                <div className="flex items-center gap-1.5 glass p-1 rounded-2xl overflow-x-auto">
+                  {["ALL", "SUBMITTED", "UNDER_REVIEW", "ALLOCATED", "REJECTED"].map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setAppStatusFilter(s)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                        appStatusFilter === s
+                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -583,32 +648,44 @@ export default function AdminDashboard() {
                         >
                           {app.status}
                         </span>
+
+                        {app.status === "ALLOCATED" && (
+                          <span className="text-xs font-bold text-emerald-400">
+                            🏨 {app.assignedHostelName} • Room {app.assignedRoomNumber} (Bed #{app.assignedBedNumber})
+                          </span>
+                        )}
                       </div>
 
                       <p className="text-xs text-slate-300">
                         Applicant: <strong className="text-white">{app.studentName}</strong> (Roll: {app.studentRollNumber}) •{" "}
-                        {app.department} • Year {app.year} • CGPA: <strong className="text-emerald-400">{app.cgpa}</strong>
+                        {app.department} • Year {app.year} • Gender: {app.gender} • CGPA: <strong className="text-emerald-400">{app.cgpa}</strong>
                       </p>
 
                       {app.preferences && app.preferences.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-2">
                           {app.preferences.map((p, idx) => (
                             <span key={idx} className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/5 text-[11px] text-slate-300">
-                              Target: <strong>{p.hostelCode || p.hostelName}</strong> ({p.roomType || "Room"} • {p.acPreference || "AC"})
+                              Choice {idx + 1}: <strong>{p.hostelCode || p.hostelName}</strong> ({p.roomType || "Room"} • {p.acPreference || "AC"})
                             </span>
                           ))}
                         </div>
+                      )}
+
+                      {app.specialAccommodations && (
+                        <p className="text-[11px] text-purple-300 mt-2">
+                          ♿ Note: {app.specialAccommodations}
+                        </p>
                       )}
                     </div>
 
                     {/* Status Mutation Buttons */}
                     <div className="flex items-center gap-2">
-                      {app.status !== "UNDER_REVIEW" && (
+                      {app.status !== "UNDER_REVIEW" && app.status !== "ALLOCATED" && (
                         <button
                           onClick={() => updateAppStatus(app, "UNDER_REVIEW")}
                           className="px-3.5 py-2 rounded-xl glass border border-blue-500/30 text-blue-300 hover:bg-blue-500/10 text-xs font-semibold transition-all"
                         >
-                          🔍 Review
+                          🔍 Mark Review
                         </button>
                       )}
                       {app.status !== "ALLOCATED" && (
@@ -723,7 +800,7 @@ export default function AdminDashboard() {
                 disabled={submitting}
                 className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold shadow-lg shadow-indigo-500/25 transition-all mt-4"
               >
-                {submitting ? "Creating Hostel Block..." : "Create Hostel Block"}
+                {submitting ? "Persisting Hostel Block to MongoDB..." : "Create Hostel Block"}
               </button>
             </form>
           </div>
@@ -753,7 +830,7 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-300 block mb-1">Floor (1-9)</label>
+                  <label className="text-[11px] font-semibold text-slate-300 block mb-1">Floor Level</label>
                   <input
                     type="number"
                     min="1"
@@ -768,7 +845,7 @@ export default function AdminDashboard() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-300 block mb-1">Sharing Type</label>
+                  <label className="text-[11px] font-semibold text-slate-300 block mb-1">Room Type</label>
                   <select
                     value={addRoomForm.roomType}
                     onChange={(e) => setAddRoomForm({ ...addRoomForm, roomType: e.target.value })}
@@ -781,7 +858,7 @@ export default function AdminDashboard() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-300 block mb-1">AC Type</label>
+                  <label className="text-[11px] font-semibold text-slate-300 block mb-1">Climate</label>
                   <select
                     value={addRoomForm.acType}
                     onChange={(e) => setAddRoomForm({ ...addRoomForm, acType: e.target.value })}

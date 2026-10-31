@@ -5,12 +5,14 @@ const Room = require("../models/Room");
 const Bed = require("../models/Bed");
 const Hostel = require("../models/Hostel");
 const adminMiddleware = require("../middleware/adminMiddleware");
+
 // GET /api/rooms
 router.get("/", async (req, res) => {
   try {
     const rooms = await Room.find()
       .populate("hostelId", "name code genderAllowed")
-      .sort({ roomNumber: 1 });
+      .sort({ roomNumber: 1 })
+      .lean();
 
     const data = await Promise.all(
       rooms.map(async (room) => {
@@ -20,7 +22,7 @@ router.get("/", async (req, res) => {
         });
 
         return {
-          ...room.toObject(),
+          ...room,
           occupiedBeds,
           hostel: room.hostelId,
         };
@@ -41,7 +43,19 @@ router.get("/", async (req, res) => {
   }
 });
 
-// DELETE /api/rooms/:id
+// GET /api/rooms/:id
+router.get("/:id", async (req, res) => {
+  try {
+    const room = await Room.findById(req.params.id).populate("hostelId", "name code genderAllowed").lean();
+    if (!room) return res.status(404).json({ success: false, message: "Room not found." });
+    const beds = await Bed.find({ roomId: room._id }).sort({ bedNumber: 1 }).lean();
+    res.json({ success: true, data: { ...room, beds } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Error fetching room." });
+  }
+});
+
+// DELETE /api/rooms/:id  — Admin only
 router.delete("/:id", adminMiddleware, async (req, res) => {
   try {
     const room = await Room.findById(req.params.id);
@@ -61,8 +75,7 @@ router.delete("/:id", adminMiddleware, async (req, res) => {
     if (occupiedBeds > 0) {
       return res.status(409).json({
         success: false,
-        message:
-          "Cannot delete a room with occupied beds. Reassign students first.",
+        message: `Cannot delete room ${room.roomNumber}: ${occupiedBeds} bed(s) are currently occupied. Reassign students first.`,
       });
     }
 
