@@ -2,15 +2,14 @@
   "name": "hostel-room-allocation",
   "version": "1.0.0",
   "private": true,
-  "description": "Policy-Driven Hostel Allocation & Roommate Matching Engine - Week 9 Functional System",
+  "description": "Policy-Driven Hostel Allocation Engine - Week 5 Foundation",
   "scripts": {
     "dev": "concurrently -n \"NEXT,SERVER\" -c \"cyan,magenta\" \"npm run dev:client\" \"npm run dev:server\"",
-    "dev:client": "node node_modules/next/dist/bin/next dev -p 3000",
+    "dev:client": "next dev -p 3000",
     "dev:server": "node server/index.js",
-    "build": "node node_modules/next/dist/bin/next build",
-    "start": "node node_modules/next/dist/bin/next start -p 3000",
-    "seed": "node server/seed.js",
-    "test:week9": "node server/test_week9.js"
+    "build": "next build",
+    "start": "next start -p 3000",
+    "seed": "node server/seed.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

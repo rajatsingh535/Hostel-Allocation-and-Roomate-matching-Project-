@@ -4,25 +4,33 @@ import Link from "next/link";
 
 const API = "http://localhost:5000/api";
 
-export default function AdminDashboard() {
-  const [adminToken, setAdminToken] = useState(null);
-  const [adminUser, setAdminUser] = useState(null);
+// ── Application status badge ──
+function StatusBadge({ status }) {
+  const cls = {
+    ALLOCATED:    "status-allocated",
+    UNDER_REVIEW: "status-review",
+    REJECTED:     "status-rejected",
+    SUBMITTED:    "status-submitted",
+  }[status] || "status-submitted";
+  return <span className={`status-badge ${cls}`}>{status}</span>;
+}
 
+export default function AdminDashboard() {
   const [tab, setTab] = useState("hostels");
   const [hostels, setHostels] = useState([]);
   const [applications, setApplications] = useState([]);
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
 
-  // Selected Hostel for Room Management
+  // Room management
   const [selectedHostel, setSelectedHostel] = useState(null);
   const [hostelRooms, setHostelRooms] = useState([]);
   const [roomsLoading, setRoomsLoading] = useState(false);
 
-  // Modals State
+  // Modals
   const [showAddHostel, setShowAddHostel] = useState(false);
   const [showAddRoom, setShowAddRoom] = useState(false);
-  const [deleteConfirmation, setDeleteConfirmation] = useState(null); // { type: 'hostel'|'room', item }
+  const [deleteConfirmation, setDeleteConfirmation] = useState(null);
 
   // Forms
   const [addHostelForm, setAddHostelForm] = useState({
@@ -51,43 +59,18 @@ export default function AdminDashboard() {
   const [appStatusFilter, setAppStatusFilter] = useState("ALL");
   const [appSearch, setAppSearch] = useState("");
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("admin_token");
-      const user = localStorage.getItem("admin_user");
-      if (token) setAdminToken(token);
-      if (user) {
-        try {
-          setAdminUser(JSON.parse(user));
-        } catch {}
-      }
-    }
-  }, []);
-
-  const getAuthHeaders = () => {
-    const token = adminToken || (typeof window !== "undefined" ? localStorage.getItem("admin_token") : null);
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
-
-  useEffect(() => {
-    fetchAll();
-  }, [adminToken]);
+  useEffect(() => { fetchAll(); }, []);
 
   const fetchAll = async () => {
     setLoading(true);
-    const headers = getAuthHeaders();
-
     const [hRes, aRes, sRes] = await Promise.all([
       fetch(`${API}/hostels`).then((r) => r.json()).catch(() => ({ data: [] })),
-      fetch(`${API}/applications`, { headers }).then((r) => r.json()).catch(() => ({ data: [] })),
+      fetch(`${API}/applications`).then((r) => r.json()).catch(() => ({ data: [] })),
       fetch(`${API}/stats`).then((r) => r.json()).catch(() => ({ data: {} })),
     ]);
-
     if (hRes.success) {
       setHostels(hRes.data);
-      if (!selectedHostel && hRes.data.length > 0) {
-        selectHostel(hRes.data[0]);
-      }
+      if (!selectedHostel && hRes.data.length > 0) selectHostel(hRes.data[0]);
     }
     if (aRes.success) setApplications(aRes.data);
     if (sRes.success) setStats(sRes.data);
@@ -99,7 +82,7 @@ export default function AdminDashboard() {
     setTimeout(() => setToast(null), 3500);
   };
 
-  // ── Hostel Actions ──
+  // ── Hostel CRUD ──
   const handleAddHostel = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -114,67 +97,43 @@ export default function AdminDashboard() {
         description: addHostelForm.description,
         amenities: addHostelForm.amenities.split(",").map((a) => a.trim()).filter(Boolean),
       };
-
       const res = await fetch(`${API}/hostels`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
       const data = await res.json();
       if (data.success) {
-        showToast(`✅ Hostel ${data.data.code} added successfully to database!`);
+        showToast(`Hostel ${data.data.code} added successfully!`);
         setShowAddHostel(false);
-        setAddHostelForm({
-          name: "",
-          code: "",
-          genderAllowed: "Male",
-          campusLocation: "LPU Campus Block E",
-          totalCapacity: "360",
-          availableCapacity: "120",
-          description: "Modern university residential block with elevators and dining facilities.",
-          amenities: "WiFi, AC, Laundry, Gym, Mess, Study Hall",
-        });
+        setAddHostelForm({ name: "", code: "", genderAllowed: "Male", campusLocation: "LPU Campus Block E", totalCapacity: "360", availableCapacity: "120", description: "Modern university residential block with elevators and dining facilities.", amenities: "WiFi, AC, Laundry, Gym, Mess, Study Hall" });
         fetchAll();
       } else {
         showToast(data.message || "Failed to create hostel", "error");
       }
-    } catch {
-      showToast("Network error creating hostel", "error");
-    }
+    } catch { showToast("Network error creating hostel", "error"); }
     setSubmitting(false);
   };
 
   const confirmDeleteHostel = async (hostel) => {
     try {
-      const res = await fetch(`${API}/hostels/${hostel._id}`, {
-        method: "DELETE",
-        headers: getAuthHeaders(),
-      });
+      const res = await fetch(`${API}/hostels/${hostel._id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
-        showToast(`🗑️ Hostel ${hostel.code} deleted.`);
+        showToast(`Hostel ${hostel.code} deleted.`);
         setDeleteConfirmation(null);
         fetchAll();
-        if (selectedHostel?._id === hostel._id) {
-          setSelectedHostel(null);
-          setHostelRooms([]);
-        }
-      } else {
-        showToast(data.message, "error");
-      }
-    } catch {
-      showToast("Network error deleting hostel", "error");
-    }
+        if (selectedHostel?._id === hostel._id) { setSelectedHostel(null); setHostelRooms([]); }
+      } else { showToast(data.message, "error"); }
+    } catch { showToast("Network error deleting hostel", "error"); }
   };
 
-  // ── Room Actions ──
+  // ── Room CRUD ──
   const selectHostel = async (hostel) => {
     setSelectedHostel(hostel);
     setRoomsLoading(true);
     try {
-      const res = await fetch(`${API}/hostels/${hostel._id}/rooms`, {
-        headers: getAuthHeaders(),
-      }).then((r) => r.json());
+      const res = await fetch(`${API}/hostels/${hostel._id}/rooms`).then((r) => r.json());
       if (res.success) setHostelRooms(res.data);
     } catch {}
     setRoomsLoading(false);
@@ -193,95 +152,49 @@ export default function AdminDashboard() {
         rentPerSemester: Number(addRoomForm.rentPerSemester),
         isPwDAccessible: addRoomForm.isPwDAccessible,
       };
-
       const res = await fetch(`${API}/hostels/${selectedHostel._id}/rooms`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
       const data = await res.json();
       if (data.success) {
-        showToast(`✅ Room ${addRoomForm.roomNumber} added to ${selectedHostel.code}!`);
+        showToast(`Room ${addRoomForm.roomNumber} added to ${selectedHostel.code}!`);
         setShowAddRoom(false);
         selectHostel(selectedHostel);
         fetchAll();
-      } else {
-        showToast(data.message, "error");
-      }
-    } catch {
-      showToast("Network error adding room", "error");
-    }
+      } else { showToast(data.message, "error"); }
+    } catch { showToast("Network error adding room", "error"); }
     setSubmitting(false);
   };
 
   const confirmDeleteRoom = async (room) => {
     try {
-      const res = await fetch(`${API}/rooms/${room._id}`, {
-        method: "DELETE",
-        headers: getAuthHeaders(),
-      });
+      const res = await fetch(`${API}/rooms/${room._id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
-        showToast(`🗑️ Room ${room.roomNumber} deleted.`);
+        showToast(`Room ${room.roomNumber} deleted.`);
         setDeleteConfirmation(null);
         selectHostel(selectedHostel);
         fetchAll();
-      } else {
-        showToast(data.message, "error");
-      }
-    } catch {
-      showToast("Network error deleting room", "error");
-    }
+      } else { showToast(data.message, "error"); }
+    } catch { showToast("Network error deleting room", "error"); }
   };
 
-  // ── Application Status Actions ──
+  // ── Application actions ──
   const updateAppStatus = async (app, status) => {
     try {
       const res = await fetch(`${API}/applications/${app._id}/status`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
       const data = await res.json();
       if (data.success) {
-        showToast(data.message || `✅ ${app.studentName}'s application marked as ${status}`);
+        showToast(`${app.studentName}'s application marked as ${status}`);
         fetchAll();
-        if (selectedHostel) selectHostel(selectedHostel);
-      } else {
-        showToast(data.message || "Status update failed", "error");
-      }
-    } catch {
-      showToast("Network error updating status", "error");
-    }
-  };
-
-  // ── Batch Policy Engine Solver ──
-  const handleRunBatchSolver = async () => {
-    setSubmitting(true);
-    try {
-      const res = await fetch(`${API}/allocations/run`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-        body: JSON.stringify({}),
-      });
-      const data = await res.json();
-      if (data.success) {
-        showToast(`🚀 ${data.message}`);
-        fetchAll();
-        if (selectedHostel) selectHostel(selectedHostel);
-      } else {
-        showToast(data.message || "Batch allocation failed", "error");
-      }
-    } catch {
-      showToast("Network error running allocation solver", "error");
-    }
-    setSubmitting(false);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("admin_token");
-    localStorage.removeItem("admin_user");
-    window.location.href = "/admin/login";
+      } else { showToast(data.message, "error"); }
+    } catch { showToast("Network error updating status", "error"); }
   };
 
   const filteredApps = applications.filter((app) => {
@@ -298,174 +211,155 @@ export default function AdminDashboard() {
   });
 
   return (
-    <div className="relative min-h-screen bg-[#070710] text-slate-100 selection:bg-blue-500 selection:text-white">
-      {/* Toast Notification */}
+    <div className="min-h-screen bg-[var(--bg-alt)] text-stone-900">
+
+      {/* ── Toast ── */}
       {toast && (
         <div
-          className={`fixed top-6 right-6 z-[9999] px-5 py-3 rounded-2xl text-xs font-bold shadow-2xl animate-bounce ${
-            toast.type === "error" ? "bg-red-500 text-white" : "bg-emerald-500 text-white"
+          className={`fixed top-5 right-5 z-[9999] px-5 py-3.5 rounded-2xl text-sm font-semibold shadow-xl flex items-center gap-3 ${
+            toast.type === "error" ? "toast-error" : "toast-success"
           }`}
         >
-          {toast.msg}
+          <span>{toast.type === "error" ? "⚠️" : "✅"}</span>
+          <span>{toast.msg}</span>
         </div>
       )}
 
-      {/* ── Top Bar ── */}
-      <nav className="sticky top-0 z-40 glass-dark border-b border-white/10 px-6 h-20 flex items-center justify-between">
+      {/* ── Top Navbar ── */}
+      <nav className="sticky top-0 z-40 bg-white border-b border-[var(--border)] shadow-sm px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-black text-white text-lg shadow-lg shadow-indigo-500/25">
+          <div className="w-9 h-9 rounded-xl bg-[var(--primary)] flex items-center justify-center text-white text-sm font-black">
             🔐
           </div>
           <div>
-            <span className="font-extrabold text-base tracking-tight">LPU Administrative Command Center</span>
-            <p className="text-[11px] text-slate-400">Chief Warden Office • Residential Allotments</p>
+            <span className="font-bold text-[15px] text-stone-900">LPU Administrative Command Center</span>
+            <p className="text-[11px] text-stone-400 leading-none">Chief Warden Office · Residential Allotments</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-2.5 px-3.5 py-1.5 rounded-full glass border border-white/10 text-xs">
-            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-            <span className="text-slate-300 font-medium">
-              {adminUser ? adminUser.email : "Chief Warden / Admin"}
-            </span>
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--bg-alt)] border border-[var(--border)] text-xs text-stone-600">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] animate-pulse inline-block" />
+            Hostel Administrator
           </div>
-          <Link
-            href="/"
-            className="px-4 py-2 rounded-xl glass border border-white/10 text-xs font-semibold hover:border-blue-500/40 hover:text-blue-300 transition-all"
-          >
+          <Link href="/" className="btn-ghost text-xs px-3 py-2 rounded-lg border border-[var(--border)]">
             ← Home
           </Link>
-          <button
-            onClick={handleLogout}
-            className="px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-all"
+          <Link
+            href="/admin/login"
+            className="text-xs font-semibold px-3 py-2 rounded-lg border border-red-100 bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
           >
             Logout
-          </button>
+          </Link>
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* ── Metric Highlights ── */}
+      <main className="max-w-[1200px] mx-auto px-6 py-8">
+
+        {/* ── Metric Cards ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
-            { label: "Active Hostels", value: stats.totalHostels || hostels.length, sub: "12 Blocks Configured", icon: "🏢" },
-            { label: "Total Rooms", value: (stats.totalRooms || 1080).toLocaleString(), sub: "Across all floors", icon: "🚪" },
-            { label: "Available Beds", value: (stats.availableBeds !== undefined ? stats.availableBeds : 4320).toLocaleString(), sub: "Vacant inventory", icon: "🛏️" },
-            { label: "Student Queue", value: applications.length, sub: "Fall 2026 submissions", icon: "📋" },
+            { label: "Active Hostels",  value: stats.totalHostels || hostels.length, sub: "12 Blocks Configured", icon: "🏢", accent: "text-[var(--primary)]" },
+            { label: "Total Rooms",     value: (stats.totalRooms || 1080).toLocaleString(), sub: "Across all floors", icon: "🚪", accent: "text-blue-600" },
+            { label: "Available Beds",  value: (stats.availableBeds || 4320).toLocaleString(), sub: "Vacant inventory", icon: "🛏️", accent: "text-[var(--success)]" },
+            { label: "Student Queue",   value: applications.length, sub: "Fall 2026 submissions", icon: "📋", accent: "text-amber-600" },
           ].map((m, i) => (
-            <div key={i} className="glass-card rounded-2xl p-5 group hover:-translate-y-1 transition-transform">
-              <div className="text-2xl mb-1">{m.icon}</div>
-              <div className="text-3xl font-black text-white">{m.value}</div>
-              <div className="text-xs font-bold text-blue-400 mt-0.5">{m.label}</div>
-              <div className="text-[11px] text-slate-500 mt-1">{m.sub}</div>
+            <div key={i} className="stat-card">
+              <div className="text-2xl mb-2">{m.icon}</div>
+              <div className="text-[28px] font-black text-stone-900 leading-none">{m.value}</div>
+              <div className={`text-xs font-bold mt-1 ${m.accent}`}>{m.label}</div>
+              <div className="text-[11px] text-stone-400 mt-0.5">{m.sub}</div>
             </div>
           ))}
         </div>
 
-        {/* ── Main Navigation Tabs ── */}
-        <div className="flex gap-2 glass p-1.5 rounded-2xl w-fit mb-8">
+        {/* ── Tab Navigation ── */}
+        <div className="filter-bar mb-8 overflow-x-auto">
           {[
-            { id: "hostels", label: `🏢 Hostels Management (${hostels.length})` },
-            { id: "rooms", label: "🚪 Room Allotments" },
-            { id: "applications", label: `📋 Student Applications (${applications.length})` },
+            { id: "hostels",      label: `🏢 Hostels (${hostels.length})` },
+            { id: "rooms",        label: "🚪 Room Allotments" },
+            { id: "applications", label: `📋 Applications (${applications.length})` },
           ].map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                tab === t.id
-                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20"
-                  : "text-slate-400 hover:text-white"
-              }`}
+              className={`admin-tab ${tab === t.id ? "active" : ""}`}
             >
               {t.label}
             </button>
           ))}
         </div>
 
-        {/* ── TAB 1: HOSTELS CRUD ── */}
+        {/* ══════════════════════════════════════════
+            TAB 1: HOSTELS MANAGEMENT
+            ══════════════════════════════════════════ */}
         {tab === "hostels" && (
           <div>
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-xl font-bold text-white">Configured Hostel Blocks</h2>
-                <p className="text-xs text-slate-400 mt-1">Manage residential buildings, add new blocks, or delete hostels.</p>
+                <h2 className="text-lg font-bold text-stone-900">Configured Hostel Blocks</h2>
+                <p className="text-xs text-stone-500 mt-0.5">Manage residential buildings, add new blocks, or delete hostels.</p>
               </div>
               <button
                 onClick={() => setShowAddHostel(true)}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold shadow-lg shadow-indigo-500/25 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                className="btn-primary text-sm px-4 py-2.5 rounded-[10px]"
               >
-                <span>+ Add New Hostel</span>
+                + Add New Hostel
               </button>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
               {hostels.map((h) => {
                 const totalBeds = h.totalBeds || h.totalCapacity || 360;
-                const availBeds = h.availableBeds !== undefined ? h.availableBeds : h.availableCapacity || 100;
+                const availBeds = h.availableBeds || h.availableCapacity || 100;
                 const occPercent = Math.min(100, Math.round(((totalBeds - availBeds) / totalBeds) * 100));
 
                 return (
-                  <div key={h._id} className="glass-card rounded-3xl p-6 border border-white/10 flex flex-col justify-between">
+                  <div key={h._id} className="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
                     <div>
                       <div className="flex items-start justify-between mb-3">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-2xl font-black text-white">{h.code}</span>
-                            <span
-                              className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold border ${
-                                h.genderAllowed === "Female"
-                                  ? "bg-pink-500/10 text-pink-300 border-pink-500/20"
-                                  : "bg-blue-500/10 text-blue-300 border-blue-500/20"
-                              }`}
-                            >
+                            <span className="text-xl font-black text-stone-900">{h.code}</span>
+                            <span className={`text-[11px] font-bold ${h.genderAllowed === "Female" ? "badge-pink" : "badge-blue"}`}>
                               {h.genderAllowed}
                             </span>
                           </div>
-                          <h3 className="text-sm font-bold text-slate-300 mt-1">{h.name}</h3>
+                          <p className="text-sm text-stone-700 font-medium mt-0.5">{h.name}</p>
+                          <p className="text-[11px] text-stone-400">📍 {h.campusLocation || "LPU Campus"}</p>
                         </div>
-
+                        {/* Delete button */}
                         <button
                           onClick={() => setDeleteConfirmation({ type: "hostel", item: h })}
-                          className="w-8 h-8 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center transition-colors"
                           title="Delete Hostel"
+                          className="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 text-red-500 flex items-center justify-center transition-colors text-sm"
                         >
                           🗑️
                         </button>
                       </div>
 
-                      <div className="text-xs text-slate-400 mb-4">{h.campusLocation}</div>
-
-                      {/* Capacity metrics */}
-                      <div className="space-y-2 mb-4">
-                        <div className="flex justify-between text-xs">
-                          <span className="text-slate-400">Occupancy</span>
-                          <span className="text-white font-bold">{occPercent}%</span>
+                      {/* Capacity bar */}
+                      <div className="my-4">
+                        <div className="flex justify-between text-[11px] font-medium mb-1.5">
+                          <span className="text-stone-500">Available Beds</span>
+                          <span className="text-[var(--success)] font-bold">{availBeds} Vacant</span>
                         </div>
-                        <div className="w-full h-2 rounded-full bg-white/5 overflow-hidden">
-                          <div
-                            className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"
-                            style={{ width: `${occPercent}%` }}
-                          />
+                        <div className="progress-bar-track">
+                          <div className="progress-bar-fill" style={{ width: `${occPercent}%` }} />
                         </div>
-                        <div className="flex justify-between text-[11px] text-slate-500">
-                          <span>{availBeds} Available</span>
-                          <span>{totalBeds} Capacity</span>
+                        <div className="flex justify-between text-[10px] text-stone-400 mt-1">
+                          <span>{occPercent}% Occupied</span>
+                          <span>{totalBeds} Total Beds</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="pt-4 border-t border-white/5 flex gap-2">
-                      <button
-                        onClick={() => {
-                          selectHostel(h);
-                          setTab("rooms");
-                        }}
-                        className="flex-1 py-2 rounded-xl glass border border-white/10 text-xs font-semibold hover:border-blue-500/30 hover:text-blue-300 transition-all text-center"
-                      >
-                        Manage Rooms →
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => { selectHostel(h); setTab("rooms"); }}
+                      className="btn-secondary w-full text-sm py-2.5 rounded-[10px] mt-2"
+                    >
+                      Manage Rooms ({h.totalRooms || 0}) →
+                    </button>
                   </div>
                 );
               })}
@@ -473,101 +367,108 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* ── TAB 2: ROOM ALLOTMENTS & MANAGEMENT ── */}
+        {/* ══════════════════════════════════════════
+            TAB 2: ROOM MANAGEMENT
+            ══════════════════════════════════════════ */}
         {tab === "rooms" && (
-          <div className="grid lg:grid-cols-4 gap-8">
-            {/* Left sidebar: Select Hostel */}
-            <div className="lg:col-span-1 space-y-2">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Select Hostel Block</h3>
-              <div className="space-y-1.5 max-h-[70vh] overflow-y-auto pr-1">
+          <div className="grid lg:grid-cols-4 gap-6">
+            {/* Hostel sidebar */}
+            <div className="lg:col-span-1 bg-white border border-[var(--border)] rounded-2xl p-4 h-fit shadow-sm">
+              <h3 className="text-[11px] font-bold uppercase tracking-wider text-stone-400 mb-3">Select Hostel</h3>
+              <div className="space-y-1 max-h-[60vh] overflow-y-auto pr-1">
                 {hostels.map((h) => (
                   <button
                     key={h._id}
                     onClick={() => selectHostel(h)}
-                    className={`w-full p-3 rounded-2xl text-left text-xs font-bold transition-all flex items-center justify-between ${
-                      selectedHostel?._id === h._id
-                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/20"
-                        : "glass text-slate-400 hover:text-white"
-                    }`}
+                    className={`sidebar-item ${selectedHostel?._id === h._id ? "active" : ""}`}
                   >
-                    <span>{h.code} - {h.name}</span>
-                    <span className="text-[10px] opacity-75">{h.genderAllowed}</span>
+                    <div className="flex items-center justify-between">
+                      <span>{h.code} · {h.name}</span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                        h.genderAllowed === "Female" ? "bg-pink-100 text-pink-700" : "bg-blue-100 text-blue-700"
+                      }`}>
+                        {h.genderAllowed === "Female" ? "GH" : "BH"}
+                      </span>
+                    </div>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Right panel: Rooms in selected hostel */}
+            {/* Rooms grid */}
             <div className="lg:col-span-3">
               {selectedHostel ? (
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-xl font-bold text-white">{selectedHostel.name} ({selectedHostel.code}) Rooms</h2>
-                      <p className="text-xs text-slate-400 mt-1">
-                        Total {hostelRooms.length} rooms configured • Floor-wise layout and bed slot management.
+                      <h2 className="text-lg font-bold text-stone-900">{selectedHostel.code} — Rooms Inventory</h2>
+                      <p className="text-xs text-stone-500 mt-0.5">
+                        {selectedHostel.name} · {hostelRooms.length} rooms configured
                       </p>
                     </div>
-
                     <button
                       onClick={() => setShowAddRoom(true)}
-                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-500/25 hover:scale-105 transition-all flex items-center gap-2"
+                      className="btn-primary text-sm px-4 py-2.5 rounded-[10px]"
                     >
-                      <span>+ Add New Room</span>
+                      + Add Room to {selectedHostel.code}
                     </button>
                   </div>
 
                   {roomsLoading ? (
-                    <div className="py-20 text-center glass rounded-3xl animate-pulse">Loading room records...</div>
+                    <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+                      {Array.from({ length: 6 }).map((_, i) => (
+                        <div key={i} className="bg-stone-100 rounded-2xl h-32 animate-pulse" />
+                      ))}
+                    </div>
                   ) : hostelRooms.length === 0 ? (
-                    <div className="py-20 text-center glass rounded-3xl border border-white/10">
-                      <div className="text-4xl mb-2">🚪</div>
-                      <div className="text-white font-bold">No Rooms In This Block</div>
-                      <p className="text-xs text-slate-400 mt-1">Click "+ Add New Room" to add rooms to {selectedHostel.code}.</p>
+                    <div className="text-center py-16 bg-white border border-[var(--border)] rounded-2xl">
+                      <div className="text-5xl mb-3">🚪</div>
+                      <h3 className="text-base font-bold text-stone-800">No Rooms Configured</h3>
+                      <p className="text-sm text-stone-500 mt-1">
+                        Click &quot;Add Room&quot; to create the first room for {selectedHostel.code}.
+                      </p>
                     </div>
                   ) : (
                     <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
                       {hostelRooms.map((room) => (
-                        <div key={room._id} className="glass-card rounded-2xl p-4 border border-white/10">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <span className="text-lg font-black text-white">Room {room.roomNumber}</span>
-                              <span className="text-xs text-slate-400 block">Floor {room.floor}</span>
+                        <div key={room._id} className="room-card flex flex-col justify-between">
+                          <div>
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <span className="font-black text-base text-stone-900">Room {room.roomNumber}</span>
+                                <p className="text-[11px] text-stone-400">Floor {room.floor}</p>
+                              </div>
+                              <button
+                                onClick={() => setDeleteConfirmation({ type: "room", item: room })}
+                                className="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 text-xs flex items-center justify-center transition-colors"
+                              >
+                                🗑️
+                              </button>
                             </div>
-                            <button
-                              onClick={() => setDeleteConfirmation({ type: "room", item: room })}
-                              className="text-slate-500 hover:text-red-400 text-xs p-1"
-                              title="Delete Room"
-                            >
-                              🗑️
-                            </button>
-                          </div>
 
-                          <div className="flex items-center gap-2 mb-3">
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/5 border border-white/10 text-slate-300">
-                              {room.roomType}
-                            </span>
-                            <span
-                              className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                            {/* Type chips */}
+                            <div className="flex flex-wrap gap-1.5 my-3">
+                              <span className="chip">{room.roomType}</span>
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
                                 room.acType === "AC"
-                                  ? "bg-cyan-500/10 text-cyan-300 border-cyan-500/20"
-                                  : "bg-amber-500/10 text-amber-300 border-amber-500/20"
-                              }`}
-                            >
-                              {room.acType}
-                            </span>
-                            {room.isPwDAccessible && (
-                              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-500/10 text-purple-300 border border-purple-500/20">
-                                ♿ PwD
+                                  ? "bg-blue-50 text-blue-700 border-blue-100"
+                                  : "bg-stone-100 text-stone-600 border-stone-200"
+                              }`}>
+                                {room.acType}
                               </span>
-                            )}
+                              {room.isPwDAccessible && (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-100">
+                                  ♿ Accessible
+                                </span>
+                              )}
+                            </div>
                           </div>
 
-                          <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs">
-                            <span className="text-slate-400">
-                              <strong className="text-emerald-400">{room.availableBeds}</strong> / {room.totalBeds} Beds Vacant
+                          <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between text-xs">
+                            <span className="text-stone-500">
+                              <strong className="text-[var(--success)]">{room.availableBeds}</strong> / {room.totalBeds} Beds Vacant
                             </span>
-                            <span className="font-semibold text-slate-200">₹{room.rentPerSemester?.toLocaleString()}/sem</span>
+                            <span className="font-semibold text-stone-700">₹{room.rentPerSemester?.toLocaleString()}/sem</span>
                           </div>
                         </div>
                       ))}
@@ -575,131 +476,110 @@ export default function AdminDashboard() {
                   )}
                 </div>
               ) : (
-                <div className="text-center py-20 text-slate-400">Select a hostel from the left panel to inspect rooms.</div>
+                <div className="text-center py-20 bg-white border border-[var(--border)] rounded-2xl text-stone-400">
+                  Select a hostel from the left panel to manage its rooms.
+                </div>
               )}
             </div>
           </div>
         )}
 
-        {/* ── TAB 3: APPLICATIONS WORKFLOW & ALLOCATION SOLVER ── */}
+        {/* ══════════════════════════════════════════
+            TAB 3: APPLICATIONS WORKFLOW
+            ══════════════════════════════════════════ */}
         {tab === "applications" && (
           <div>
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
               <div>
-                <h2 className="text-xl font-bold text-white">Student Room Applications Queue</h2>
-                <p className="text-xs text-slate-400 mt-1">Review student profiles, verify CGPA score, and allocate rooms.</p>
+                <h2 className="text-lg font-bold text-stone-900">Student Room Applications Queue</h2>
+                <p className="text-xs text-stone-500 mt-0.5">Review student profiles, verify CGPA score, and allocate rooms.</p>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3">
-                {/* Policy Engine Batch Solver Button */}
-                <button
-                  onClick={handleRunBatchSolver}
-                  disabled={submitting}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-xs shadow-lg shadow-emerald-500/25 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 whitespace-nowrap"
-                >
-                  <span>🚀 Run Policy Batch Allocation Solver</span>
-                </button>
-
-                {/* Status Filters */}
-                <div className="flex items-center gap-1.5 glass p-1 rounded-2xl overflow-x-auto">
-                  {["ALL", "SUBMITTED", "UNDER_REVIEW", "ALLOCATED", "REJECTED"].map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setAppStatusFilter(s)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                        appStatusFilter === s
-                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20"
-                          : "text-slate-400 hover:text-white"
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
+              {/* Status filters */}
+              <div className="filter-bar overflow-x-auto">
+                {["ALL", "SUBMITTED", "UNDER_REVIEW", "ALLOCATED", "REJECTED"].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setAppStatusFilter(s)}
+                    className={`filter-tab whitespace-nowrap ${appStatusFilter === s ? "active" : ""}`}
+                  >
+                    {s}
+                  </button>
+                ))}
               </div>
             </div>
 
+            {/* Search */}
+            <div className="relative w-full sm:w-72 mb-6">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 text-sm">🔍</span>
+              <input
+                type="text"
+                placeholder="Search by name, roll no…"
+                value={appSearch}
+                onChange={(e) => setAppSearch(e.target.value)}
+                className="input-light pl-10"
+              />
+            </div>
+
             {filteredApps.length === 0 ? (
-              <div className="text-center py-20 glass rounded-3xl border border-white/10">
+              <div className="text-center py-20 bg-white border border-[var(--border)] rounded-2xl">
                 <div className="text-5xl mb-3">📋</div>
-                <h3 className="text-lg font-bold text-white">No Applications Found</h3>
-                <p className="text-xs text-slate-400 mt-1">There are no applications matching the status filter.</p>
+                <h3 className="text-base font-bold text-stone-800">No Applications Found</h3>
+                <p className="text-sm text-stone-500 mt-1">No applications matching the current filter.</p>
               </div>
             ) : (
               <div className="space-y-4">
                 {filteredApps.map((app) => (
                   <div
                     key={app._id}
-                    className="glass-card rounded-3xl p-6 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-6"
+                    className="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6"
                   >
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="font-mono font-black text-lg text-white">{app.applicationId}</span>
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-bold border ${
-                            app.status === "ALLOCATED"
-                              ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
-                              : app.status === "UNDER_REVIEW"
-                              ? "bg-blue-500/20 text-blue-300 border-blue-500/30"
-                              : app.status === "REJECTED"
-                              ? "bg-red-500/20 text-red-300 border-red-500/30"
-                              : "bg-amber-500/20 text-amber-300 border-amber-500/30"
-                          }`}
-                        >
-                          {app.status}
-                        </span>
-
-                        {app.status === "ALLOCATED" && (
-                          <span className="text-xs font-bold text-emerald-400">
-                            🏨 {app.assignedHostelName} • Room {app.assignedRoomNumber} (Bed #{app.assignedBedNumber})
-                          </span>
-                        )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-2 flex-wrap">
+                        <span className="font-mono font-black text-base text-stone-900">{app.applicationId}</span>
+                        <StatusBadge status={app.status} />
                       </div>
 
-                      <p className="text-xs text-slate-300">
-                        Applicant: <strong className="text-white">{app.studentName}</strong> (Roll: {app.studentRollNumber}) •{" "}
-                        {app.department} • Year {app.year} • Gender: {app.gender} • CGPA: <strong className="text-emerald-400">{app.cgpa}</strong>
+                      <p className="text-sm text-stone-600">
+                        Applicant:{" "}
+                        <strong className="text-stone-900">{app.studentName}</strong>{" "}
+                        (Roll: {app.studentRollNumber}) · {app.department} · Year {app.year} · CGPA:{" "}
+                        <strong className="text-[var(--success)]">{app.cgpa}</strong>
                       </p>
 
                       {app.preferences && app.preferences.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
+                        <div className="flex flex-wrap gap-2 mt-3">
                           {app.preferences.map((p, idx) => (
-                            <span key={idx} className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/5 text-[11px] text-slate-300">
-                              Choice {idx + 1}: <strong>{p.hostelCode || p.hostelName}</strong> ({p.roomType || "Room"} • {p.acPreference || "AC"})
+                            <span key={idx} className="chip">
+                              Target: <strong>{p.hostelCode || p.hostelName}</strong> ({p.roomType || "Room"} · {p.acPreference || "AC"})
                             </span>
                           ))}
                         </div>
                       )}
-
-                      {app.specialAccommodations && (
-                        <p className="text-[11px] text-purple-300 mt-2">
-                          ♿ Note: {app.specialAccommodations}
-                        </p>
-                      )}
                     </div>
 
-                    {/* Status Mutation Buttons */}
-                    <div className="flex items-center gap-2">
-                      {app.status !== "UNDER_REVIEW" && app.status !== "ALLOCATED" && (
+                    {/* Action buttons */}
+                    <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
+                      {app.status !== "UNDER_REVIEW" && (
                         <button
                           onClick={() => updateAppStatus(app, "UNDER_REVIEW")}
-                          className="px-3.5 py-2 rounded-xl glass border border-blue-500/30 text-blue-300 hover:bg-blue-500/10 text-xs font-semibold transition-all"
+                          className="text-xs font-semibold px-3.5 py-2 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
                         >
-                          🔍 Mark Review
+                          🔍 Review
                         </button>
                       )}
                       {app.status !== "ALLOCATED" && (
                         <button
                           onClick={() => updateAppStatus(app, "ALLOCATED")}
-                          className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold shadow-md shadow-emerald-500/20 hover:scale-105 transition-all"
+                          className="btn-primary text-xs px-3.5 py-2 rounded-xl"
                         >
-                          ✅ Allocate Room
+                          ✅ Allocate
                         </button>
                       )}
                       {app.status !== "REJECTED" && (
                         <button
                           onClick={() => updateAppStatus(app, "REJECTED")}
-                          className="px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-red-400 hover:bg-red-500/10 text-xs font-semibold transition-all"
+                          className="text-xs font-semibold px-3.5 py-2 rounded-xl border border-red-100 bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
                         >
                           ✕ Reject
                         </button>
@@ -713,144 +593,110 @@ export default function AdminDashboard() {
         )}
       </main>
 
-      {/* ── MODAL: ADD HOSTEL ── */}
+      {/* ══════════════════════════════════════════
+          MODAL: ADD HOSTEL
+          ══════════════════════════════════════════ */}
       {showAddHostel && (
         <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowAddHostel(false)}>
-          <div className="glass-card rounded-3xl border border-blue-500/40 w-full max-w-lg p-6 shadow-2xl">
-            <div className="flex items-center justify-between mb-5 pb-3 border-b border-white/10">
-              <h3 className="text-lg font-black text-white">🏢 Add New Hostel Block</h3>
-              <button onClick={() => setShowAddHostel(false)} className="text-slate-400 hover:text-white">✕</button>
+          <div className="modal-card w-full max-w-lg">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
+              <h3 className="text-base font-black text-stone-900">🏢 Add New Hostel Block</h3>
+              <button onClick={() => setShowAddHostel(false)} className="text-stone-400 hover:text-stone-700 text-xl leading-none">✕</button>
             </div>
 
-            <form onSubmit={handleAddHostel} className="space-y-4">
+            <form onSubmit={handleAddHostel} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-300 block mb-1">Hostel Name *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Boys Hostel 10"
-                    value={addHostelForm.name}
+                  <label className="block text-xs font-semibold text-stone-600 mb-1.5">Hostel Name *</label>
+                  <input type="text" required placeholder="e.g. Boys Hostel 10" value={addHostelForm.name}
                     onChange={(e) => setAddHostelForm({ ...addHostelForm, name: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:border-blue-500 transition-all"
-                  />
+                    className="input-light" />
                 </div>
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-300 block mb-1">Hostel Code *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. BH10"
-                    value={addHostelForm.code}
+                  <label className="block text-xs font-semibold text-stone-600 mb-1.5">Hostel Code *</label>
+                  <input type="text" required placeholder="e.g. BH10" value={addHostelForm.code}
                     onChange={(e) => setAddHostelForm({ ...addHostelForm, code: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:border-blue-500 transition-all uppercase"
-                  />
+                    className="input-light uppercase" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-300 block mb-1">Gender Allowed</label>
-                  <select
-                    value={addHostelForm.genderAllowed}
+                  <label className="block text-xs font-semibold text-stone-600 mb-1.5">Gender Allowed</label>
+                  <select value={addHostelForm.genderAllowed}
                     onChange={(e) => setAddHostelForm({ ...addHostelForm, genderAllowed: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-[#121220] border border-white/10 text-white text-xs focus:border-blue-500 transition-all"
-                  >
+                    className="input-light">
                     <option>Male</option>
                     <option>Female</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-300 block mb-1">Campus Location</label>
-                  <input
-                    type="text"
-                    required
-                    value={addHostelForm.campusLocation}
+                  <label className="block text-xs font-semibold text-stone-600 mb-1.5">Campus Location</label>
+                  <input type="text" required value={addHostelForm.campusLocation}
                     onChange={(e) => setAddHostelForm({ ...addHostelForm, campusLocation: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:border-blue-500 transition-all"
-                  />
+                    className="input-light" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-300 block mb-1">Total Bed Capacity</label>
-                  <input
-                    type="number"
-                    required
-                    value={addHostelForm.totalCapacity}
+                  <label className="block text-xs font-semibold text-stone-600 mb-1.5">Total Bed Capacity</label>
+                  <input type="number" required value={addHostelForm.totalCapacity}
                     onChange={(e) => setAddHostelForm({ ...addHostelForm, totalCapacity: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:border-blue-500 transition-all"
-                  />
+                    className="input-light" />
                 </div>
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-300 block mb-1">Initial Available Beds</label>
-                  <input
-                    type="number"
-                    required
-                    value={addHostelForm.availableCapacity}
+                  <label className="block text-xs font-semibold text-stone-600 mb-1.5">Initial Available Beds</label>
+                  <input type="number" required value={addHostelForm.availableCapacity}
                     onChange={(e) => setAddHostelForm({ ...addHostelForm, availableCapacity: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:border-blue-500 transition-all"
-                  />
+                    className="input-light" />
                 </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold shadow-lg shadow-indigo-500/25 transition-all mt-4"
-              >
-                {submitting ? "Persisting Hostel Block to MongoDB..." : "Create Hostel Block"}
+              <button type="submit" disabled={submitting}
+                className="btn-primary w-full py-3.5 rounded-[10px] text-[15px] disabled:opacity-60 mt-2">
+                {submitting ? "Creating Hostel Block…" : "Create Hostel Block"}
               </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* ── MODAL: ADD ROOM ── */}
+      {/* ══════════════════════════════════════════
+          MODAL: ADD ROOM
+          ══════════════════════════════════════════ */}
       {showAddRoom && selectedHostel && (
         <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowAddRoom(false)}>
-          <div className="glass-card rounded-3xl border border-emerald-500/40 w-full max-w-md p-6 shadow-2xl">
-            <div className="flex items-center justify-between mb-5 pb-3 border-b border-white/10">
-              <h3 className="text-lg font-black text-white">🚪 Add Room to {selectedHostel.code}</h3>
-              <button onClick={() => setShowAddRoom(false)} className="text-slate-400 hover:text-white">✕</button>
+          <div className="modal-card w-full max-w-md">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
+              <h3 className="text-base font-black text-stone-900">🚪 Add Room to {selectedHostel.code}</h3>
+              <button onClick={() => setShowAddRoom(false)} className="text-stone-400 hover:text-stone-700 text-xl leading-none">✕</button>
             </div>
 
-            <form onSubmit={handleAddRoom} className="space-y-4">
+            <form onSubmit={handleAddRoom} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-300 block mb-1">Room Number *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. 201"
-                    value={addRoomForm.roomNumber}
+                  <label className="block text-xs font-semibold text-stone-600 mb-1.5">Room Number *</label>
+                  <input type="text" required placeholder="e.g. 201" value={addRoomForm.roomNumber}
                     onChange={(e) => setAddRoomForm({ ...addRoomForm, roomNumber: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:border-emerald-500 transition-all"
-                  />
+                    className="input-light" />
                 </div>
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-300 block mb-1">Floor Level</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="9"
-                    required
-                    value={addRoomForm.floor}
+                  <label className="block text-xs font-semibold text-stone-600 mb-1.5">Floor (1-9)</label>
+                  <input type="number" min="1" max="9" required value={addRoomForm.floor}
                     onChange={(e) => setAddRoomForm({ ...addRoomForm, floor: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:border-emerald-500 transition-all"
-                  />
+                    className="input-light" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-300 block mb-1">Room Type</label>
-                  <select
-                    value={addRoomForm.roomType}
+                  <label className="block text-xs font-semibold text-stone-600 mb-1.5">Sharing Type</label>
+                  <select value={addRoomForm.roomType}
                     onChange={(e) => setAddRoomForm({ ...addRoomForm, roomType: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-[#121220] border border-white/10 text-white text-xs focus:border-emerald-500 transition-all"
-                  >
+                    className="input-light">
                     <option>Single</option>
                     <option>Double</option>
                     <option>Triple</option>
@@ -858,12 +704,10 @@ export default function AdminDashboard() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-300 block mb-1">Climate</label>
-                  <select
-                    value={addRoomForm.acType}
+                  <label className="block text-xs font-semibold text-stone-600 mb-1.5">AC Type</label>
+                  <select value={addRoomForm.acType}
                     onChange={(e) => setAddRoomForm({ ...addRoomForm, acType: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-[#121220] border border-white/10 text-white text-xs focus:border-emerald-500 transition-all"
-                  >
+                    className="input-light">
                     <option>AC</option>
                     <option>Non-AC</option>
                   </select>
@@ -872,88 +716,74 @@ export default function AdminDashboard() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-300 block mb-1">Total Beds</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="6"
-                    required
-                    value={addRoomForm.totalBeds}
+                  <label className="block text-xs font-semibold text-stone-600 mb-1.5">Total Beds</label>
+                  <input type="number" min="1" max="6" required value={addRoomForm.totalBeds}
                     onChange={(e) => setAddRoomForm({ ...addRoomForm, totalBeds: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:border-emerald-500 transition-all"
-                  />
+                    className="input-light" />
                 </div>
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-300 block mb-1">Rent / Sem (₹)</label>
-                  <input
-                    type="number"
-                    required
-                    value={addRoomForm.rentPerSemester}
+                  <label className="block text-xs font-semibold text-stone-600 mb-1.5">Rent / Sem (₹)</label>
+                  <input type="number" required value={addRoomForm.rentPerSemester}
                     onChange={(e) => setAddRoomForm({ ...addRoomForm, rentPerSemester: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:border-emerald-500 transition-all"
-                  />
+                    className="input-light" />
                 </div>
               </div>
 
-              <label className="flex items-center gap-2 cursor-pointer pt-1">
+              {/* PwD toggle */}
+              <label className="flex items-center gap-2.5 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={addRoomForm.isPwDAccessible}
                   onChange={(e) => setAddRoomForm({ ...addRoomForm, isPwDAccessible: e.target.checked })}
-                  className="rounded border-white/10 text-emerald-500"
+                  className="rounded border-stone-300 text-[var(--primary)]"
                 />
-                <span className="text-xs text-slate-300">♿ PwD / Wheelchair Accessible Room</span>
+                <span className="text-sm text-stone-600">♿ PwD / Wheelchair Accessible Room</span>
               </label>
 
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-500/25 transition-all mt-4"
-              >
-                {submitting ? "Adding Room..." : "Add Room to Inventory"}
+              <button type="submit" disabled={submitting}
+                className="btn-primary w-full py-3.5 rounded-[10px] text-[15px] disabled:opacity-60 mt-2">
+                {submitting ? "Adding Room…" : "Add Room to Inventory"}
               </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* ── MODAL: CUSTOM DELETE CONFIRMATION ── */}
+      {/* ══════════════════════════════════════════
+          MODAL: DELETE CONFIRMATION
+          ══════════════════════════════════════════ */}
       {deleteConfirmation && (
         <div className="modal-overlay" onClick={() => setDeleteConfirmation(null)}>
           <div
-            className="glass-card rounded-3xl border border-red-500/40 w-full max-w-sm p-6 shadow-2xl text-center"
+            className="modal-card w-full max-w-sm p-7 text-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-14 h-14 rounded-2xl bg-red-50 border border-red-200 text-red-500 text-2xl flex items-center justify-center mx-auto mb-4">
               ⚠️
             </div>
-            <h3 className="text-lg font-black text-white mb-1">Confirm Deletion</h3>
-            <p className="text-xs text-slate-400 mb-6">
+            <h3 className="text-lg font-black text-stone-900 mb-1">Confirm Deletion</h3>
+            <p className="text-sm text-stone-500 mb-6">
               Are you sure you want to delete{" "}
-              <strong className="text-white">
+              <strong className="text-stone-900">
                 {deleteConfirmation.type === "hostel"
                   ? deleteConfirmation.item.code
                   : `Room ${deleteConfirmation.item.roomNumber}`}
               </strong>
               ? This action cannot be reversed.
             </p>
-
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteConfirmation(null)}
-                className="flex-1 py-2.5 rounded-xl glass border border-white/10 text-xs font-semibold text-slate-300 hover:text-white"
+                className="btn-secondary flex-1 py-2.5 rounded-[10px] text-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={() => {
-                  if (deleteConfirmation.type === "hostel") {
-                    confirmDeleteHostel(deleteConfirmation.item);
-                  } else {
-                    confirmDeleteRoom(deleteConfirmation.item);
-                  }
+                  if (deleteConfirmation.type === "hostel") confirmDeleteHostel(deleteConfirmation.item);
+                  else confirmDeleteRoom(deleteConfirmation.item);
                 }}
-                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold shadow-lg shadow-red-500/25"
+                className="flex-1 py-2.5 rounded-[10px] text-sm font-bold bg-red-500 hover:bg-red-600 text-white transition-colors"
               >
                 Yes, Delete
               </button>

@@ -7,24 +7,24 @@ const authMiddleware = (req, res, next) => {
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
         success: false,
-        message: "Access denied. Authentication token required.",
+        message: "Access denied. Token required.",
       });
     }
 
     const token = authHeader.split(" ")[1];
-    const secret = process.env.JWT_SECRET || "lpu_hostel_week9_secure_jwt_secret_key_2026";
 
-    const decoded = jwt.verify(token, secret);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
     req.user = decoded;
 
     // Students can access only their own records
     if (
       req.params.rollNumber &&
-      req.params.rollNumber.toUpperCase() !== (req.user.rollNumber || "").toUpperCase()
+      req.params.rollNumber !== req.user.rollNumber
     ) {
       return res.status(403).json({
         success: false,
-        message: "You are not authorized to access this student's data.",
+        message: "You are not authorized to access this student's data",
       });
     }
 
@@ -32,7 +32,7 @@ const authMiddleware = (req, res, next) => {
   } catch (error) {
     return res.status(401).json({
       success: false,
-      message: "Invalid or expired token.",
+      message: "Invalid or expired token",
     });
   }
 };

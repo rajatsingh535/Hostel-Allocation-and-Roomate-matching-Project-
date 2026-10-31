@@ -8,7 +8,8 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}</body>
+      {/* Inter font loaded via CSS @import in globals.css */}
+      <body className="antialiased bg-white text-stone-900">{children}</body>
     </html>
   )
 }

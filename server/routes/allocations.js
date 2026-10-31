@@ -1,6 +1,6 @@
+
 const express = require("express");
 const router = express.Router();
-const jwt = require("jsonwebtoken");
 
 const Application = require("../models/Application");
 const Hostel = require("../models/Hostel");
@@ -9,79 +9,92 @@ const Bed = require("../models/Bed");
 const Student = require("../models/Student");
 
 const { calculateCompatibility } = require("../utils/roommateMatching");
+const authMiddleware = require("../middleware/authMiddleware");
 const adminMiddleware = require("../middleware/adminMiddleware");
 
-const JWT_SECRET = process.env.JWT_SECRET || "lpu_hostel_week9_secure_jwt_secret_key_2026";
-
-// Prevent overlapping allocation runs
+// Prevent overlapping allocation runs in the same server process.
 let allocationRunInProgress = false;
 
-// Release a reserved bed
+
+// Release a reserved bed.
 async function releaseBed(bed, application) {
   await Bed.updateOne(
     {
       _id: bed._id,
       isOccupied: true,
-      "occupiedBy.rollNumber": application.studentRollNumber,
+      "occupiedBy.rollNumber": application.studentRollNumber
     },
     {
       $set: { isOccupied: false },
-      $unset: { occupiedBy: 1 },
+      $unset: { occupiedBy: 1 }
     }
   );
 }
 
-// Clear the room gender only when the room has no occupied beds
+
+// Clear the room gender only when the room has no occupied beds.
 async function clearRoomGenderIfEmpty(roomId, gender) {
   const occupiedBeds = await Bed.countDocuments({
     roomId,
-    isOccupied: true,
+    isOccupied: true
   });
 
   if (occupiedBeds === 0) {
     await Room.updateOne(
       {
         _id: roomId,
-        occupancyGender: gender,
+        occupancyGender: gender
       },
       {
-        $set: { occupancyGender: null },
+        $set: { occupancyGender: null }
       }
     );
   }
 }
 
-// Restore completed allocation steps if allocation fails
+
+// Restore completed allocation steps if allocation fails.
 async function rollbackAllocation({
   bed,
   room,
   hostel,
   application,
   roomCountUpdated,
-  hostelCountUpdated,
+  hostelCountUpdated
 }) {
   if (hostelCountUpdated) {
-    await Hostel.updateOne({ _id: hostel._id }, { $inc: { availableCapacity: 1 } });
+    await Hostel.updateOne(
+      { _id: hostel._id },
+      { $inc: { availableCapacity: 1 } }
+    );
   }
 
   if (roomCountUpdated) {
-    await Room.updateOne({ _id: room._id }, { $inc: { availableBeds: 1 } });
+    await Room.updateOne(
+      { _id: room._id },
+      { $inc: { availableBeds: 1 } }
+    );
   }
 
   if (bed) {
     await releaseBed(bed, application);
   }
 
-  await clearRoomGenderIfEmpty(room._id, application.gender);
+  await clearRoomGenderIfEmpty(
+    room._id,
+    application.gender
+  );
 }
 
+
 // POST /api/allocations/run
-// Policy engine: Allocate rooms according to merit (CGPA desc) and student preferences
+// Allocate rooms according to student preferences.
 router.post("/run", adminMiddleware, async (req, res) => {
+
   if (allocationRunInProgress) {
     return res.status(409).json({
       success: false,
-      message: "An allocation run is already in progress. Please try again in a moment.",
+      message: "An allocation run is already in progress. Please try again later."
     });
   }
 
@@ -89,29 +102,34 @@ router.post("/run", adminMiddleware, async (req, res) => {
 
   const results = {
     allocated: [],
-    notAllocated: [],
+    notAllocated: []
   };
 
   try {
     const filter = {
-      status: { $in: ["SUBMITTED", "UNDER_REVIEW"] },
+      status: { $in: ["SUBMITTED", "UNDER_REVIEW"] }
     };
 
-    if (req.body && req.body.applicationId) {
-      if (typeof req.body.applicationId !== "string" || !req.body.applicationId.trim()) {
+    if (req.body.applicationId !== undefined) {
+      if (
+        typeof req.body.applicationId !== "string" ||
+        !req.body.applicationId.trim()
+      ) {
         return res.status(400).json({
           success: false,
-          message: "A valid application ID is required.",
+          message: "A valid application ID is required."
         });
       }
+
       filter.applicationId = req.body.applicationId.trim();
     }
 
-    // Merit-based ordering: Higher CGPA gets priority, then earliest submission
-    const applications = await Application.find(filter).sort({ cgpa: -1, submittedAt: 1 });
+    const applications = await Application.find(filter)
+      .sort({ cgpa: -1, submittedAt: 1 });
 
     for (const application of applications) {
-      const preferences = [...(application.preferences || [])].sort((a, b) => a.priority - b.priority);
+      const preferences = [...(application.preferences || [])]
+        .sort((a, b) => a.priority - b.priority);
 
       let assigned = null;
       let applicationChanged = false;
@@ -120,54 +138,72 @@ router.post("/run", adminMiddleware, async (req, res) => {
         const hostelQuery = preference.hostelId
           ? { _id: preference.hostelId }
           : preference.hostelCode
-          ? { code: preference.hostelCode.toUpperCase() }
-          : preference.hostelName
-          ? { name: preference.hostelName }
-          : null;
+            ? { code: preference.hostelCode.toUpperCase() }
+            : preference.hostelName
+              ? { name: preference.hostelName }
+              : null;
 
         if (!hostelQuery) continue;
 
         const hostel = await Hostel.findOne(hostelQuery);
+
         if (!hostel) continue;
 
-        if (hostel.genderAllowed !== "Co-ed" && hostel.genderAllowed !== application.gender) {
+        if (
+          hostel.genderAllowed !== "Co-ed" &&
+          hostel.genderAllowed !== application.gender
+        ) {
           continue;
         }
 
         const roomQuery = {
           hostelId: hostel._id,
-          availableBeds: { $gt: 0 },
+          availableBeds: { $gt: 0 }
         };
 
         if (preference.roomType) {
           roomQuery.roomType = preference.roomType;
         }
 
-        if (preference.acPreference && preference.acPreference !== "Either") {
+        if (
+          preference.acPreference &&
+          preference.acPreference !== "Either"
+        ) {
           roomQuery.acType = preference.acPreference;
         }
 
         if (
           application.specialAccommodations &&
-          /ground|mobility|wheelchair|accessible/i.test(application.specialAccommodations)
+          /ground|mobility|wheelchair|accessible/i.test(
+            application.specialAccommodations
+          )
         ) {
           roomQuery.isPwDAccessible = true;
         }
 
-        const rooms = await Room.find(roomQuery).sort({ floor: 1, roomNumber: 1 });
+        const rooms = await Room.find(roomQuery)
+          .sort({ floor: 1, roomNumber: 1 });
 
         for (const room of rooms) {
-          // Atomically lock room to student's gender
+
+          // Atomically lock the room to the student's gender.
           const lockedRoom = await Room.findOneAndUpdate(
             {
               _id: room._id,
               availableBeds: { $gt: 0 },
-              $or: [{ occupancyGender: null }, { occupancyGender: application.gender }],
+              $or: [
+                { occupancyGender: null },
+                { occupancyGender: application.gender }
+              ]
             },
             {
-              $set: { occupancyGender: application.gender },
+              $set: {
+                occupancyGender: application.gender
+              }
             },
-            { new: true }
+            {
+              new: true
+            }
           );
 
           if (!lockedRoom) continue;
@@ -177,11 +213,11 @@ router.post("/run", adminMiddleware, async (req, res) => {
           let hostelCountUpdated = false;
 
           try {
-            // Atomically reserve bed
+            // Atomically reserve an unoccupied bed.
             bed = await Bed.findOneAndUpdate(
               {
                 roomId: room._id,
-                isOccupied: false,
+                isOccupied: false
               },
               {
                 $set: {
@@ -190,28 +226,35 @@ router.post("/run", adminMiddleware, async (req, res) => {
                     rollNumber: application.studentRollNumber,
                     name: application.studentName,
                     department: application.department,
-                    gender: application.gender,
-                  },
-                },
+                    gender: application.gender
+                  }
+                }
               },
               {
                 new: true,
                 sort: { bedNumber: 1 },
+                runValidators: true
               }
             );
 
             if (!bed) {
-              await clearRoomGenderIfEmpty(room._id, application.gender);
+              await clearRoomGenderIfEmpty(
+                room._id,
+                application.gender
+              );
               continue;
             }
 
+            // Atomically decrease room availability.
             const roomUpdate = await Room.updateOne(
               {
                 _id: room._id,
                 availableBeds: { $gt: 0 },
-                occupancyGender: application.gender,
+                occupancyGender: application.gender
               },
-              { $inc: { availableBeds: -1 } }
+              {
+                $inc: { availableBeds: -1 }
+              }
             );
 
             if (roomUpdate.modifiedCount !== 1) {
@@ -219,11 +262,18 @@ router.post("/run", adminMiddleware, async (req, res) => {
               error.code = "ALLOCATION_CONFLICT";
               throw error;
             }
+
             roomCountUpdated = true;
 
+            // Atomically decrease hostel availability.
             const hostelUpdate = await Hostel.updateOne(
-              { _id: hostel._id, availableCapacity: { $gt: 0 } },
-              { $inc: { availableCapacity: -1 } }
+              {
+                _id: hostel._id,
+                availableCapacity: { $gt: 0 }
+              },
+              {
+                $inc: { availableCapacity: -1 }
+              }
             );
 
             if (hostelUpdate.modifiedCount !== 1) {
@@ -231,30 +281,42 @@ router.post("/run", adminMiddleware, async (req, res) => {
               error.code = "ALLOCATION_CONFLICT";
               throw error;
             }
+
             hostelCountUpdated = true;
 
-            const updatedApplication = await Application.findOneAndUpdate(
-              {
-                _id: application._id,
-                status: { $in: ["SUBMITTED", "UNDER_REVIEW"] },
-              },
-              {
-                $set: {
-                  status: "ALLOCATED",
-                  assignedHostelId: hostel._id,
-                  assignedHostelName: hostel.name,
-                  assignedRoomId: room._id,
-                  assignedRoomNumber: room.roomNumber,
-                  assignedBedNumber: String(bed.bedNumber),
-                  allocatedAt: new Date(),
+            // Update only if the application is still pending.
+            const updatedApplication =
+              await Application.findOneAndUpdate(
+                {
+                  _id: application._id,
+                  status: {
+                    $in: ["SUBMITTED", "UNDER_REVIEW"]
+                  }
                 },
-              },
-              { new: true }
-            );
+                {
+                  $set: {
+                    status: "ALLOCATED",
+                    assignedHostelId: hostel._id,
+                    assignedHostelName: hostel.name,
+                    assignedRoomId: room._id,
+                    assignedRoomNumber: room.roomNumber,
+                    assignedBedNumber: String(bed.bedNumber),
+                    allocatedAt: new Date()
+                  }
+                },
+                {
+                  new: true,
+                  runValidators: true
+                }
+              );
 
             if (!updatedApplication) {
               applicationChanged = true;
-              const error = new Error("Application status changed during allocation.");
+
+              const error = new Error(
+                "Application status changed during allocation."
+              );
+
               error.code = "ALLOCATION_CONFLICT";
               throw error;
             }
@@ -266,24 +328,28 @@ router.post("/run", adminMiddleware, async (req, res) => {
               hostel: hostel.name,
               roomNumber: room.roomNumber,
               bedNumber: String(bed.bedNumber),
-              preferencePriority: preference.priority,
+              preferencePriority: preference.priority
             };
 
             break;
+
           } catch (error) {
+
+            // Perform rollback only once.
             await rollbackAllocation({
               bed,
               room,
               hostel,
               application,
               roomCountUpdated,
-              hostelCountUpdated,
+              hostelCountUpdated
             });
 
             if (error.code === "ALLOCATION_CONFLICT") {
               if (applicationChanged) break;
               continue;
             }
+
             throw error;
           }
         }
@@ -298,118 +364,125 @@ router.post("/run", adminMiddleware, async (req, res) => {
           applicationId: application.applicationId,
           studentRollNumber: application.studentRollNumber,
           studentName: application.studentName,
-          reason: "Application status changed during allocation.",
+          reason: "Application status changed during allocation."
         });
       } else {
         results.notAllocated.push({
           applicationId: application.applicationId,
           studentRollNumber: application.studentRollNumber,
           studentName: application.studentName,
-          reason: "No available bed matched the student's preferences, gender, and accessibility constraints.",
+          reason:
+            "No available bed matched the student's hostel, room, AC, gender, and accessibility preferences."
         });
       }
     }
 
     return res.json({
       success: true,
-      message: `Policy engine allocation run completed: ${results.allocated.length} allocated, ${results.notAllocated.length} unallocated.`,
-      data: results,
+      message: `Allocation run complete: ${results.allocated.length} allocated, ${results.notAllocated.length} not allocated.`,
+      data: results
     });
+
   } catch (err) {
     console.error("[API:Allocations] Allocation run failed:", err);
+
     return res.status(500).json({
       success: false,
-      message: "Allocation solver failed: " + err.message,
+      message:
+        "Allocation failed. Check the server logs and current bed occupancy before retrying."
     });
+
   } finally {
     allocationRunInProgress = false;
   }
 });
 
+
 // GET /api/allocations/roommates/:rollNumber
-// Retrieve assigned room, roommates and algorithmic compatibility breakdown
-router.get("/roommates/:rollNumber", async (req, res) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ success: false, message: "Token required" });
-    }
-    const token = authHeader.split(" ")[1];
-    let decoded;
+// Retrieve roommates and compatibility scores.
+router.get(
+  "/roommates/:rollNumber",
+  authMiddleware,
+  async (req, res) => {
     try {
-      decoded = jwt.verify(token, JWT_SECRET);
-    } catch {
-      return res.status(401).json({ success: false, message: "Invalid token" });
-    }
+      const rollNumber = req.params.rollNumber.trim().toUpperCase();
 
-    const rollNumber = req.params.rollNumber.trim().toUpperCase();
+      const application = await Application.findOne({
+        studentRollNumber: rollNumber,
+        status: "ALLOCATED",
+        assignedRoomId: { $ne: null }
+      });
 
-    // Verify authorized user (either the student themselves or an admin)
-    if (decoded.role !== "admin" && (decoded.rollNumber || "").toUpperCase() !== rollNumber) {
-      return res.status(403).json({ success: false, message: "Unauthorized to access this roommate data" });
-    }
+      if (!application) {
+        return res.status(404).json({
+          success: false,
+          message: "Student has no confirmed room allocation yet."
+        });
+      }
 
-    const application = await Application.findOne({
-      studentRollNumber: rollNumber,
-      status: "ALLOCATED",
-      assignedRoomId: { $ne: null },
-    });
+      const currentStudent = await Student.findOne({
+        rollNumber
+      }).lean();
 
-    if (!application) {
-      return res.status(404).json({
+      if (!currentStudent) {
+        return res.status(404).json({
+          success: false,
+          message: "Student profile not found."
+        });
+      }
+
+      const beds = await Bed.find({
+        roomId: application.assignedRoomId,
+        isOccupied: true
+      }).lean();
+
+      const roommateRollNumbers = beds
+        .filter(
+          bed => bed.occupiedBy?.rollNumber !== rollNumber
+        )
+        .map(bed => bed.occupiedBy?.rollNumber)
+        .filter(Boolean);
+
+      const roommates = [];
+
+      for (const roommateRollNumber of roommateRollNumbers) {
+        const roommate = await Student.findOne({
+          rollNumber: roommateRollNumber
+        }).lean();
+
+        if (!roommate) continue;
+
+        const compatibility = calculateCompatibility(
+          currentStudent,
+          roommate
+        );
+
+        roommates.push({
+          rollNumber: roommate.rollNumber,
+          name: roommate.name,
+          department: roommate.department,
+          compatibility
+        });
+      }
+
+      return res.json({
+        success: true,
+        data: {
+          hostel: application.assignedHostelName,
+          roomNumber: application.assignedRoomNumber,
+          roommates
+        }
+      });
+
+    } catch (err) {
+      console.error("Roommate matching error:", err);
+
+      return res.status(500).json({
         success: false,
-        message: "Student does not have an active confirmed room allocation yet.",
+        message: "Could not retrieve roommate compatibility."
       });
     }
-
-    const currentStudent = await Student.findOne({ rollNumber }).lean();
-    if (!currentStudent) {
-      return res.status(404).json({ success: false, message: "Student record not found." });
-    }
-
-    const beds = await Bed.find({
-      roomId: application.assignedRoomId,
-      isOccupied: true,
-    }).lean();
-
-    const roommateRollNumbers = beds
-      .filter((bed) => (bed.occupiedBy?.rollNumber || "").toUpperCase() !== rollNumber)
-      .map((bed) => bed.occupiedBy?.rollNumber)
-      .filter(Boolean);
-
-    const roommates = [];
-
-    for (const rRoll of roommateRollNumbers) {
-      const roommate = await Student.findOne({ rollNumber: rRoll }).lean();
-      if (!roommate) continue;
-
-      const compatibility = calculateCompatibility(currentStudent, roommate);
-
-      roommates.push({
-        rollNumber: roommate.rollNumber,
-        name: roommate.name,
-        department: roommate.department,
-        year: roommate.year,
-        compatibility,
-      });
-    }
-
-    return res.json({
-      success: true,
-      data: {
-        hostel: application.assignedHostelName,
-        roomNumber: application.assignedRoomNumber,
-        bedNumber: application.assignedBedNumber,
-        roommates,
-      },
-    });
-  } catch (err) {
-    console.error("[API:Allocations] Roommate matching error:", err);
-    return res.status(500).json({
-      success: false,
-      message: "Could not retrieve roommate compatibility.",
-    });
   }
-});
+);
 
 module.exports = router;
