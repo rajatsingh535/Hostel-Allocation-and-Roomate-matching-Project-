@@ -31,7 +31,7 @@ async function seedData() {
       genderAllowed: "Male",
       campusLocation: "LPU Campus",
       totalCapacity: 360, // 4 students per room, 10 rooms per floor, 9 floors
-      availableCapacity: Math.floor(Math.random() * 50 + 50), // Random availability
+      availableCapacity: 360, // Updated after room/bed seeding
       amenities: ["WiFi", "Laundry", "Mess", "Security", "Common Room", "Study Hall"],
       imageUrl: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80",
       description: `Modern boys hostel with ${9} floors and comprehensive facilities for ${360} students.`
@@ -94,7 +94,7 @@ async function seedData() {
           roomType: "Quad", // 4 students per room
           acType: isAC ? "AC" : "Non-AC",
           totalBeds: 4,
-          availableBeds: Math.floor(Math.random() * 3 + 1), // 1-3 available beds
+          availableBeds: 4, // All seeded beds start available
           rentPerSemester: isAC ? 25000 : 18000,
           isPwDAccessible: floorNum === 1 // Ground floor accessible
         };
@@ -112,7 +112,7 @@ async function seedData() {
             blockId: room.blockId,
             hostelId: room.hostelId,
             bedNumber: bedNum,
-            isOccupied: Math.random() > 0.7, // 30% occupancy rate
+            isOccupied: false, // Keep bed occupancy consistent with room availability
             studentId: null
           };
           beds.push(bed);
@@ -121,6 +121,16 @@ async function seedData() {
         await Bed.insertMany(beds);
       }
     }
+  }
+
+  // Reconcile hostel capacity from the actual room records instead of random placeholders.
+  for (const hostel of createdHostels) {
+    const roomTotals = await Room.aggregate([
+      { $match: { hostelId: hostel._id } },
+      { $group: { _id: null, total: { $sum: "$totalBeds" }, available: { $sum: "$availableBeds" } } },
+    ]);
+    const totals = roomTotals[0] || { total: 0, available: 0 };
+    await Hostel.findByIdAndUpdate(hostel._id, { totalCapacity: totals.total, availableCapacity: totals.available });
   }
 
   console.log(`[Seeder] Seeded ${totalBeds} Beds across all hostels.`);
@@ -204,7 +214,7 @@ async function seedData() {
         priority: index + 1
       })),
       specialAccommodations: i === 0 ? "Ground floor room due to mobility issues" : "",
-      status: ["SUBMITTED", "UNDER_REVIEW", "ALLOCATED"][Math.floor(Math.random() * 3)],
+      status: i % 2 === 0 ? "SUBMITTED" : "UNDER_REVIEW",
       submittedAt: new Date()
     };
     sampleApplications.push(application);

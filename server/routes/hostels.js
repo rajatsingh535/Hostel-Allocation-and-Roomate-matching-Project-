@@ -3,7 +3,7 @@ const router = express.Router();
 const Hostel = require("../models/Hostel");
 const Room = require("../models/Room");
 const Bed = require("../models/Bed");
-
+const adminMiddleware = require("../middleware/adminMiddleware");
 // GET /api/hostels  — list all with room stats
 router.get("/", async (req, res) => {
   try {
@@ -48,7 +48,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // GET /api/hostels/:id/rooms
-router.get("/:id/rooms", async (req, res) => {
+router.get("/:id/rooms",adminMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const { roomType, acType } = req.query;
@@ -72,7 +72,7 @@ router.get("/:id/rooms", async (req, res) => {
 });
 
 // POST /api/hostels  — create a new hostel
-router.post("/", async (req, res) => {
+router.post("/", adminMiddleware,async (req, res) => {
   try {
     const {
       name, code, genderAllowed, campusLocation,
@@ -108,7 +108,7 @@ router.post("/", async (req, res) => {
 });
 
 // POST /api/hostels/:id/rooms  — add a room to a hostel
-router.post("/:id/rooms", async (req, res) => {
+router.post("/:id/rooms",adminMiddleware, async (req, res) => {
   try {
     const hostel = await Hostel.findById(req.params.id);
     if (!hostel) return res.status(404).json({ success: false, message: "Hostel not found." });
@@ -125,7 +125,7 @@ router.post("/:id/rooms", async (req, res) => {
       block = await Block.create({
         name: "Block A",
         hostelId: hostel._id,
-        floors: Number(floor) || 1,
+        floorsCount: Number(floor) || 1,
       });
     }
 
@@ -145,7 +145,7 @@ router.post("/:id/rooms", async (req, res) => {
     // Create bed records
     const beds = [];
     for (let i = 1; i <= Number(totalBeds); i++) {
-      beds.push({ bedNumber: i, roomId: room._id, hostelId: hostel._id, status: "Available" });
+      beds.push({ bedNumber: String(i), roomId: room._id, hostelId: hostel._id, isOccupied: false });
     }
     await Bed.insertMany(beds);
 
@@ -166,13 +166,16 @@ router.post("/:id/rooms", async (req, res) => {
 });
 
 // DELETE /api/hostels/:id  — delete hostel + all its rooms + beds
-router.delete("/:id", async (req, res) => {
+router.delete("/:id",adminMiddleware, async (req, res) => {
   try {
     const hostel = await Hostel.findById(req.params.id);
     if (!hostel) return res.status(404).json({ success: false, message: "Hostel not found." });
 
+    const occupiedBeds = await Bed.countDocuments({ hostelId: hostel._id, isOccupied: true });
+    if (occupiedBeds > 0) {
+      return res.status(409).json({ success: false, message: "Cannot delete a hostel with occupied beds. Reassign students first." });
+    }
     const rooms = await Room.find({ hostelId: hostel._id });
-    const roomIds = rooms.map((r) => r._id);
 
     await Bed.deleteMany({ hostelId: hostel._id });
     await Room.deleteMany({ hostelId: hostel._id });
