@@ -131,29 +131,23 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-gradient-to-br from-orange-50 to-white p-8 rounded-2xl border border-orange-100">
-              <div className="w-12 h-12 bg-orange-600 text-white rounded-xl flex items-center justify-center text-2xl mb-4">
-                🏢
-              </div>
+              <div className="text-4xl mb-4">🏢</div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">Modern Infrastructure</h3>
               <p className="text-gray-600">
                 State-of-the-art hostel buildings with lifts, power backup, and modern amenities for comfortable living.
               </p>
             </div>
 
-            <div className="bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl border border-blue-100">
-              <div className="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center text-2xl mb-4">
-                🛡️
-              </div>
+            <div className="bg-gradient-to-br from-orange-50 to-white p-8 rounded-2xl border border-orange-100">
+              <div className="text-4xl mb-4">🛡️</div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">24/7 Security</h3>
               <p className="text-gray-600">
                 Round-the-clock security with CCTV surveillance, biometric access, and trained security personnel.
               </p>
             </div>
 
-            <div className="bg-gradient-to-br from-green-50 to-white p-8 rounded-2xl border border-green-100">
-              <div className="w-12 h-12 bg-green-600 text-white rounded-xl flex items-center justify-center text-2xl mb-4">
-                🍽️
-              </div>
+            <div className="bg-gradient-to-br from-orange-50 to-white p-8 rounded-2xl border border-orange-100">
+              <div className="text-4xl mb-4">🍽️</div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">Quality Dining</h3>
               <p className="text-gray-600">
                 Hygienic mess facilities serving nutritious multi-cuisine meals prepared by professional chefs.
@@ -446,6 +440,127 @@ export default function Home() {
         </div>
       </footer>
 
+      {/* AI Chatbot */}
+      <ChatBot />
+
     </div>
+  );
+}
+
+// AI Chatbot Component
+function ChatBot() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState([
+    { type: 'bot', text: 'Hello! 👋 I\'m here to help you with hostel-related queries. Ask me anything!' }
+  ]);
+  const [input, setInput] = useState('');
+
+  const faqs = {
+    'fees': 'Hostel fees vary by room type: Single (₹50,000), Double (₹35,000), Triple (₹25,000), Quad (₹20,000) per semester.',
+    'booking': 'To book a hostel, login to your student account, browse available hostels, and submit an application with your preferences.',
+    'facilities': 'LPU hostels offer WiFi, gym, laundry, mess, study rooms, medical facility, and 24/7 security.',
+    'security': 'We have CCTV surveillance, biometric access, trained guards, and 24/7 monitoring for your safety.',
+    'food': 'Our mess serves hygienic multi-cuisine meals (North Indian, South Indian, Chinese) prepared by professional chefs.',
+    'room': 'Rooms include bed, study table, chair, wardrobe, and fan. AC rooms have split ACs with power backup.',
+    'apply': 'Login to student portal → Browse Hostels → Select preferred hostel → Fill application form → Submit.',
+    'allocation': 'Allocation is based on CGPA, preferences, application time, and friend group bookings.',
+    'contact': 'Call +91-1824-404404 or email hostel@lpu.co.in for assistance.'
+  };
+
+  const handleSend = () => {
+    if (!input.trim()) return;
+    
+    const userMsg = { type: 'user', text: input };
+    setMessages(prev => [...prev, userMsg]);
+    
+    // Simple keyword matching
+    const lowercaseInput = input.toLowerCase();
+    let response = '';
+    
+    for (const [key, value] of Object.entries(faqs)) {
+      if (lowercaseInput.includes(key)) {
+        response = value;
+        break;
+      }
+    }
+    
+    if (!response) {
+      if (lowercaseInput.includes('hello') || lowercaseInput.includes('hi')) {
+        response = 'Hello! How can I help you today? You can ask about fees, booking, facilities, or any hostel-related query.';
+      } else {
+        response = 'I can help you with: Fees, Booking Process, Facilities, Security, Food, Room Types, Application, Allocation Process, and Contact Information. What would you like to know?';
+      }
+    }
+    
+    setTimeout(() => {
+      setMessages(prev => [...prev, { type: 'bot', text: response }]);
+    }, 500);
+    
+    setInput('');
+  };
+
+  return (
+    <>
+      {/* Chat Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="fixed bottom-6 right-6 w-16 h-16 bg-orange-600 text-white rounded-full shadow-2xl hover:bg-orange-700 transition flex items-center justify-center text-2xl z-50"
+      >
+        {isOpen ? '✕' : '💬'}
+      </button>
+
+      {/* Chat Window */}
+      {isOpen && (
+        <div className="fixed bottom-24 right-6 w-96 h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col z-50">
+          {/* Header */}
+          <div className="bg-orange-600 text-white p-4 rounded-t-2xl">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-2xl">
+                🤖
+              </div>
+              <div>
+                <h3 className="font-bold">LPU Hostel Assistant</h3>
+                <p className="text-xs opacity-90">Online - Ready to help!</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {messages.map((msg, idx) => (
+              <div key={idx} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[80%] p-3 rounded-lg ${
+                  msg.type === 'user' 
+                    ? 'bg-orange-600 text-white rounded-br-none' 
+                    : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                }`}>
+                  <p className="text-sm">{msg.text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Input */}
+          <div className="p-4 border-t border-gray-200">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                placeholder="Ask me anything..."
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600"
+              />
+              <button
+                onClick={handleSend}
+                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-semibold"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
