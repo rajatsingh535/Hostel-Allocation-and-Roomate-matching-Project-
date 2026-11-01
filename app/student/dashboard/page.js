@@ -334,37 +334,17 @@ export default function StudentDashboard() {
                   const isLowAvailability = availBeds < 50;
 
                   return (
-                    <div key={hostel._id} className="card-glow group flex flex-col overflow-hidden transform transition-all duration-300 hover:scale-[1.02]">
-                      {/* Image */}
-                      <div className="relative h-44 overflow-hidden">
-                        <img
-                          src={getHostelImg(hostel.code)}
-                          alt={hostel.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        {/* Badges */}
-                        <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-bold bg-white text-stone-800 shadow-sm">
-                          {hostel.code}
-                        </span>
-                        <span
-                          className={`absolute top-3 right-3 text-[11px] font-bold ${
-                            hostel.genderAllowed === "Female" ? "badge-pink" : "badge-blue"
-                          }`}
-                        >
-                          {hostel.genderAllowed === "Female" ? "Girls Wing" : "Boys Wing"}
-                        </span>
-                        
-                        {/* Low availability warning */}
-                        {isLowAvailability && (
-                          <div className="absolute bottom-3 left-3 right-3 bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg text-center">
-                            ⚡ Limited Availability - Book Soon!
+                    <div key={hostel._id} className="card-glow bg-white border border-stone-200 rounded-2xl p-6 transition-all duration-300 hover:shadow-lg hover:border-orange-300 flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="px-3 py-1 rounded-lg bg-orange-50 border border-orange-200 text-xs font-bold text-[var(--primary-dark)]">
+                              {hostel.code}
+                            </span>
+                            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-stone-100 text-stone-700">
+                              {hostel.genderAllowed === "Female" ? "Girls Wing" : "Boys Wing"}
+                            </span>
                           </div>
-                        )}
-                      </div>
-
-                      {/* Content */}
-                      <div className="p-5 flex-1 flex flex-col">
-                        <h3 className="font-bold text-stone-900 text-[15px] leading-tight">{hostel.name}</h3>
+                        <h3 className="font-bold text-stone-900 text-[15px] leading-tight">{hostel.name ? hostel.name.replace(/\s*\([^)]*\)/g, "") : hostel.code}</h3>
                         <p className="text-xs text-stone-400 mt-0.5 mb-4">📍 {hostel.campusLocation || "LPU Campus"}</p>
 
                         {/* Occupancy */}
@@ -397,7 +377,7 @@ export default function StudentDashboard() {
                         {/* Book button */}
                         <button
                           onClick={() => openBooking(hostel)}
-                          className="btn-primary w-full text-sm rounded-[10px] mt-auto"
+                          className="btn-primary w-full text-sm rounded-[10px] mt-4"
                         >
                           Book {hostel.code} Now →
                         </button>

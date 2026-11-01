@@ -515,36 +515,40 @@ export default function Home() {
               return (
                 <div
                   key={h._id || h.code}
-                  className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-2xs hover:shadow-lg hover:border-orange-300 transition-all flex flex-col group"
+                  className="bg-white border border-stone-200 rounded-2xl p-6 shadow-2xs hover:shadow-lg hover:border-orange-300 transition-all flex flex-col justify-between group"
                 >
-                  {/* Vector Blueprint Block Header */}
-                  <div className="bg-gradient-to-br from-stone-900 to-stone-800 p-5 text-white relative">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-xs font-bold tracking-wider">
-                        <BuildingIcon className="w-3.5 h-3.5 text-orange-400" />
+                  <div>
+                    {/* Top Badges */}
+                    <div className="flex items-center justify-between mb-3.5">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-orange-50 border border-orange-200 text-xs font-bold text-[var(--primary-dark)]">
+                        <BuildingIcon className="w-3.5 h-3.5 text-[var(--primary)]" />
                         <span>{h.code}</span>
                       </div>
-                      <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white text-stone-900">
+                      <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-stone-100 text-stone-700">
                         {h.genderAllowed === "Female" ? "Girls Wing" : "Boys Wing"}
                       </span>
                     </div>
 
-                    <h3 className="text-lg font-black text-white leading-tight mb-1">{h.name ? h.name.replace(/\s*\([^)]*\)/g, "") : h.code}</h3>
-                    <p className="text-xs text-stone-300">{h.campusLocation || "Main University Campus"}</p>
+                    {/* Hostel Name & Location */}
+                    <h3 className="text-lg font-black text-stone-900 leading-tight mb-1">
+                      {h.name ? h.name.replace(/\s*\([^)]*\)/g, "") : h.code}
+                    </h3>
+                    <p className="text-xs text-stone-500 mb-4">{h.campusLocation || "Main University Campus"}</p>
 
-                    <div className="mt-4 flex flex-wrap gap-2 text-[10px] font-semibold text-stone-300">
-                      <span className="px-2 py-0.5 rounded bg-white/10">{h.floors || 9} Floors</span>
-                      <span className="px-2 py-0.5 rounded bg-white/10">Elevator Service</span>
+                    {/* Quick Specs */}
+                    <div className="flex flex-wrap gap-2 mb-5">
+                      <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-md bg-stone-100 text-stone-700">
+                        {h.floors || 9} Floors
+                      </span>
+                      <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-md bg-stone-100 text-stone-700">
+                        Elevator Service
+                      </span>
                       {h.acAvailable && (
-                        <span className="px-2 py-0.5 rounded bg-orange-500/30 text-orange-200 border border-orange-400/30">
+                        <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-orange-50 text-[var(--primary-dark)] border border-orange-200">
                           AC Units Available
                         </span>
                       )}
                     </div>
-                  </div>
-
-                  {/* Body Content */}
-                  <div className="p-5 flex-1 flex flex-col justify-between">
                     {/* Vacancy Progress */}
                     <div className="mb-5">
                       <div className="flex justify-between items-center text-xs font-semibold mb-1.5">
