@@ -196,9 +196,11 @@ export default function Home() {
         <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-xl bg-[var(--primary)] flex items-center justify-center text-white font-black text-lg shadow-sm group-hover:bg-[var(--primary-dark)] transition-colors">
-              L
-            </div>
+            <img 
+              src="/logos/lpu-logo.svg" 
+              alt="LPU Logo" 
+              className="h-9 w-9 group-hover:scale-105 transition-transform"
+            />
             <div>
               <div className="font-bold text-[15px] text-stone-900 flex items-center gap-2 leading-tight">
                 LPU Hostel Portal

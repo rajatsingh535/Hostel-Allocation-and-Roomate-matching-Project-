@@ -40,8 +40,12 @@ export default function AdminLogin() {
           </Link>
 
           {/* Logo icon */}
-          <div className="w-14 h-14 rounded-2xl bg-[var(--primary)] flex items-center justify-center text-white font-black text-2xl mx-auto mb-4 shadow-md">
-            🔐
+          <div className="w-16 h-16 mx-auto mb-4">
+            <img 
+              src="/logos/lpu-logo.svg" 
+              alt="LPU Logo" 
+              className="w-full h-full"
+            />
           </div>
           <h1 className="text-[28px] font-black text-stone-900 tracking-tight">Warden &amp; Admin Panel</h1>
           <p className="text-sm text-stone-500 mt-1">Authorized University Personnel Authentication</p>

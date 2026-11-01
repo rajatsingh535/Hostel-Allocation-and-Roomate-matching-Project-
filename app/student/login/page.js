@@ -40,8 +40,12 @@ export default function StudentLogin() {
           </Link>
 
           {/* Logo icon */}
-          <div className="w-14 h-14 rounded-2xl bg-[var(--primary)] flex items-center justify-center text-white font-black text-2xl mx-auto mb-4 shadow-md">
-            L
+          <div className="w-16 h-16 mx-auto mb-4">
+            <img 
+              src="/logos/lpu-logo.svg" 
+              alt="LPU Logo" 
+              className="w-full h-full"
+            />
           </div>
           <h1 className="text-[28px] font-black text-stone-900 tracking-tight">Student Portal</h1>
           <p className="text-sm text-stone-500 mt-1">Lovely Professional University · Hostel Allocation</p>
