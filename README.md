@@ -2,7 +2,9 @@
 
 <div align="center">
 
-**A Smart Hostel Management System for Lovely Professional University**
+<img src="public/images/lpu/lpu-logo-media.png" alt="Lovely Professional University Logo" width="180" />
+
+### **Official-Style Smart Residential & Roommate Matching Portal for Lovely Professional University**
 
 [![Next.js](https://img.shields.io/badge/Next.js-14.2-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-18-blue?style=for-the-badge&logo=react)](https://reactjs.org/)
@@ -10,7 +12,7 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-7-green?style=for-the-badge&logo=mongodb)](https://www.mongodb.com/)
 [![Express](https://img.shields.io/badge/Express-4-grey?style=for-the-badge&logo=express)](https://expressjs.com/)
 
-[🌐 Live Demo](#) • [📖 Documentation](#project-structure) • [🐛 Report Bug](#) • [✨ Request Feature](#)
+[🌐 Live Demo](https://hostelallocationlpuproject.vercel.app/) • [📖 Documentation](#project-structure) • [🐛 Report Bug](https://github.com/rajatsingh535/Hostel-Allocation-and-Roomate-matching-Project-/issues) • [✨ Request Feature](https://github.com/rajatsingh535/Hostel-Allocation-and-Roomate-matching-Project-/issues)
 
 </div>
 
@@ -18,33 +20,43 @@
 
 ## 📋 Table of Contents
 
-- [Overview](#overview)
-- [Team Members](#team-members)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Module Architecture](#module-architecture)
-- [Installation](#installation)
-- [Usage](#usage)
-- [API Documentation](#api-documentation)
-- [Screenshots](#screenshots)
-- [Contributing](#contributing)
-- [License](#license)
+- [Overview](#-overview)
+- [Key Highlights & Latest Updates](#-key-highlights--latest-updates)
+- [Team Members](#-team-members)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
+- [Module Architecture](#-module-architecture)
+- [Installation & Setup](#-installation--setup)
+- [Usage Guide](#-usage-guide)
+- [API Documentation](#-api-documentation)
+- [LPU Campus & Hostel Gallery Preview](#-lpu-campus--hostel-gallery-preview)
+- [Vercel Deployment](#-vercel-deployment)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ---
 
 ## 🎯 Overview
 
-The **LPU Hostel Allocation & Roommate Matching System** is an intelligent platform designed to streamline hostel room allocation for students at Lovely Professional University. It incorporates **AI-powered roommate matching**, **preference-based allocation**, **friend request systems**, and **group booking** capabilities.
+The **LPU Hostel Allocation & Roommate Matching System** is a full-stack residential portal built for **Lovely Professional University (Jalandhar – Delhi G.T. Road, Phagwara, Punjab)**. It streamlines hostel booking across **Boys Hostels (`BH-1` to `BH-9`)** and **Girls Hostels (`GH-1` to `GH-3`)**, combining **gender-based smart hostel recommendation at login**, **preference-based roommate matching**, **friend request & group booking**, and **automated 8-tier priority room allocation**.
 
-### 🌟 Why This System?
+---
 
-- ✅ **Automated Allocation**: 8-tier priority algorithm for fair room distribution
-- 🤝 **Friend Matching**: Send and accept friend requests to book together
-- 👥 **Group Booking**: Automatic group formation for roommates
-- 🎯 **Preference-Based**: Floor, quiet zone, and study-focused options
-- 📊 **Real-time Analytics**: Live hostel availability and booking stats
-- 📱 **Fully Responsive**: Works seamlessly on mobile, tablet, and desktop
+## 🌟 Key Highlights & Latest Updates
+
+- 🚻 **Gender-Based Hostel Recommendation (`BH` for Boys / `GH` for Girls)**:
+  - At student login (`/student/login`), the portal asks whether the student is **Male (Boy)** or **Female (Girl)**.
+  - **Male (Boy)** students are automatically recommended **Boys Hostels (`BH-1` to `BH-9`)** and have their dashboard pre-filtered to `BH` blocks.
+  - **Female (Girl)** students are automatically recommended **Girls Hostels (`GH-1` to `GH-3`)** and have their dashboard pre-filtered to `GH` blocks.
+  - Includes **1-Click Demo Login** for both **Boy Student (`BH-1` to `BH-9`)** and **Girl Student (`GH-1` to `GH-3`)**.
+- 📸 **100% Authentic LPU Hostel & Campus Photography (`44+ Official Photos`)**:
+  - Uses real photographs from **Lovely Professional University** (`public/images/lpu/`) across the entire application—zero generic or stock placeholders.
+  - Showcases actual LPU `BH-1` to `BH-9` and `GH-1` to `GH-3` residential towers, AC/Non-AC Standard Rooms (1/2/3/4/5 Seater), AC Studio Apartments, Dormitories, Central Hostel Mess, Shanti Devi Mittal Auditorium, Central Library, Indoor Sports Complex (Olympic Pool, Badminton, Gym), Uni Mall, Uni Hospital, and Turnstile/Main Gate Security.
+- 🔄 **Interactive Exterior / Room Interior Card View**:
+  - Every hostel block card (`BH-1` to `BH-9`, `GH-1` to `GH-3`) includes a live toggle between **Building Exterior** and **Room Interior** photographs.
+- 🖼️ **30-Photo LPU Residential & Campus Gallery**:
+  - Filterable by category (*Hostel Towers*, *Rooms & Apartments*, *Dining & Mess*, *Sports & Gym*, *Campus & Mall*, *Security & Care*) with a full-screen Lightbox modal.
 
 ---
 
@@ -53,529 +65,259 @@ The **LPU Hostel Allocation & Roommate Matching System** is an intelligent platf
 <table>
   <tr>
     <td align="center">
-      <img src="https://ui-avatars.com/api/?name=Rajat&size=100&background=FF6B35&color=fff" width="100px;" alt="Rajat"/><br />
+      <img src="https://ui-avatars.com/api/?name=Rajat+Singh&size=100&background=FF6B35&color=fff" width="100px;" alt="Rajat Singh"/><br />
       <sub><b>Rajat Singh</b></sub><br />
-      <sub>Frontend Developer</sub><br />
-      <sub>📧 rajat@example.com</sub>
+      <sub>Frontend Developer</sub>
     </td>
     <td align="center">
       <img src="https://ui-avatars.com/api/?name=Aditi&size=100&background=004E89&color=fff" width="100px;" alt="Aditi"/><br />
       <sub><b>Aditi</b></sub><br />
-      <sub>Backend Developer</sub><br />
-      <sub>📧 aditi@example.com</sub>
+      <sub>Backend Developer</sub>
     </td>
     <td align="center">
-      <img src="https://ui-avatars.com/api/?name=Yash&size=100&background=1A936F&color=fff" width="100px;" alt="Yash"/><br />
-      <sub><b>Yash</b></sub><br />
-      <sub>Database Engineer</sub><br />
-      <sub>📧 yash@example.com</sub>
+      <img src="https://ui-avatars.com/api/?name=Yash+Gupta&size=100&background=1A936F&color=fff" width="100px;" alt="Yash Gupta"/><br />
+      <sub><b>Yash Gupta</b></sub><br />
+      <sub>Database & Full-Stack Engineer</sub>
     </td>
   </tr>
 </table>
 
-**Contributors:** Rajat Singh, Aditi, Yash  
-**Institution:** Lovely Professional University  
-**Course:** Computer Science & Engineering  
+**Institution:** Lovely Professional University (LPU)  
+**Department:** School of Computer Science & Engineering  
 **Academic Year:** 2026
 
 ---
 
 ## ✨ Features
 
-### 🎓 For Students
+### 🎓 For Students (`/student/login` & `/student/dashboard`)
 
-- 🔐 **Secure Authentication** - Login with registration number
-- 🏢 **Browse Hostels** - View all available hostels with real-time availability
-- 📝 **Smart Application** - Fill detailed preferences (floor, quiet zone, study-focused)
-- 🤝 **Friend Requests** - Send/receive friend requests for roommate matching
-- 👥 **Group Management** - View formed groups and member details
-- 📊 **Application Tracking** - Monitor application status (Pending/Allocated/Rejected)
-- 🔔 **Real-time Updates** - Live notifications for friend requests and allocations
+- 🚻 **Gender Selection & Smart Wing Recommendation** — Select **Male (Boy)** or **Female (Girl)** at login to get tailored recommendations for **Boys Hostels (`BH-1` to `BH-9`)** or **Girls Hostels (`GH-1` to `GH-3`)**.
+- 🏢 **Interactive Hostel Directory** — Inspect all 12 LPU hostel blocks (`BH-1`–`BH-9`, `GH-1`–`GH-3`) with real LPU photos, fee structures, mess fees, and live bed availability.
+- 🛏️ **LPU UMS-Style Booking Modes**:
+  - **Individual Booking** — Apply solo with room category (`4-Seater`, `3-Seater`, `2-Seater`, `1-Seater`, `Dormitory`), AC/Non-AC, Mess plan, Floor preference, Quiet Zone, and Study-Focused tags.
+  - **Roommate Group Booking** — Apply together as a 2–4 student group in the same room.
+  - **Waitlist Priority Queue** — Join the CGPA-weighted priority queue for high-demand blocks.
+- 🤝 **Friend Requests & Roommate Matching** — Send, receive, accept, or reject roommate friend requests by LPU Registration Number.
+- 📊 **Real-Time Application Tracker** — Track status (`SUBMITTED`, `UNDER_REVIEW`, `ALLOCATED`, `WAITLISTED`) and view complete fee breakdowns.
 
-### 👨‍💼 For Administrators
+### 👨‍💼 For Chief Warden & Administrators (`/admin/dashboard`)
 
-- 📈 **Dashboard Analytics** - Visual statistics and charts
-- 🎯 **Smart Allocation** - 8-tier priority algorithm
-  - Priority 1: Group bookings with full availability
-  - Priority 2: Students with accepted friend requests
-  - Priority 3-5: Floor, quiet zone, study preferences
-  - Priority 6-8: Partial groups and general pool
-- 📋 **Application Management** - View, approve, reject applications
-- 🏨 **Hostel Management** - Add, edit, delete hostel configurations
-- 📊 **Reports** - Generate allocation reports and statistics
-
-### 🎨 UI/UX Features
-
-- 🌈 **Modern Design** - Gradient backgrounds, 3D transforms, animations
-- 🎥 **Video Background** - Hero section with hostel facilities video
-- 📱 **Fully Responsive** - Mobile-first design, works on all devices
-- 🖼️ **Image Gallery** - High-quality Unsplash hostel images
-- ⚡ **Fast Performance** - Optimized with Next.js 14
-- ♿ **Accessible** - WCAG compliant UI components
+- 📈 **Live Occupancy Analytics** — Visual statistics across all 12 hostel blocks (`BH-1` to `BH-9` and `GH-1` to `GH-3`), total beds, occupied beds, and pending applications.
+- ⚡ **Smart 8-Tier Allocation Engine**:
+  - **Tier 1**: Complete roommate groups with matching block availability
+  - **Tier 2**: Students with mutually accepted roommate friend requests
+  - **Tier 3–5**: Floor, Quiet Zone, and Study-Focused lifestyle compatibility
+  - **Tier 6–8**: CGPA-weighted priority & general pool allocation
+- 📋 **Application Review & Approval** — Filter applications by status, gender (`Male` / `Female`), department, and CGPA; approve or reject applications with one click.
+- 🏨 **Hostel Inventory Overview** — Real-time capacity bar charts and real LPU exterior/interior imagery for every block.
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Frontend (Rajat)
-- **Framework:** Next.js 14 (App Router)
+### Frontend
+- **Framework:** Next.js 14.2 (App Router)
 - **Library:** React 18
-- **Styling:** Tailwind CSS, Custom CSS
-- **State Management:** React Hooks (useState, useEffect)
-- **Routing:** Next.js App Router
-- **HTTP Client:** Fetch API
-- **Icons & UI:** Custom components
+- **Styling:** Tailwind CSS + Custom LPU Theme (`Orange #f97316` & `White`)
+- **State & Persistence:** React Hooks (`useState`, `useEffect`, `useMemo`, `Suspense`) + `localStorage` gender & session sync
 
-### Backend (Aditi)
-- **Runtime:** Node.js 22
+### Backend
+- **Runtime:** Node.js
 - **Framework:** Express.js 4
-- **Middleware:** CORS, Body Parser
-- **API Design:** RESTful architecture
-- **Validation:** Custom validators
-- **Error Handling:** Centralized error middleware
+- **Architecture:** RESTful API (`/api/hostels`, `/api/applications`, `/api/allocations`, `/api/friend-requests`, `/api/rooms`, `/api/stats`)
 
-### Database (Yash)
-- **Database:** MongoDB 7
+### Database
+- **Database:** MongoDB 7 (with automatic fallback to `mongodb-memory-server`)
 - **ODM:** Mongoose 8
-- **Schema Design:** Normalized data structure
-- **Collections:** Hostels, Applications, Rooms, FriendRequests, Groups
-- **Indexing:** Optimized queries with indexes
-- **Seeding:** Automatic data population
-
-### DevOps & Tools
-- **Version Control:** Git & GitHub
-- **Package Manager:** npm
-- **Process Manager:** Concurrently
-- **Development:** Hot reload (Next.js dev server)
-- **Environment:** .env configuration
+- **Seeder:** Automatic & standalone seeder (`server/seed.js`) populating `BH-1` to `BH-9` and `GH-1` to `GH-3`, 4,320 beds, sample students, and applications
 
 ---
 
 ## 📁 Project Structure
 
-```
+```text
 Hostel-Allocation-and-Roomate-matching-Project-/
 │
-├── 📂 app/                          # Next.js App Router (Frontend)
-│   ├── page.js                      # Home page with hero, features, gallery
-│   ├── globals.css                  # Global styles and animations
-│   ├── layout.js                    # Root layout with metadata
+├── 📂 app/                          # Next.js 14 App Router (Frontend)
+│   ├── page.js                      # Landing page: Hero, 12 Hostels, Room Types, 30-Photo Gallery
+│   ├── globals.css                  # Global styles & animations
+│   ├── layout.js                    # Root layout & metadata
 │   │
-│   ├── 📂 student/                  # Student portal
-│   │   ├── login/page.js            # Student login
-│   │   └── dashboard/page.js        # Student dashboard (4 tabs)
+│   ├── 📂 components/               # Reusable UI components
+│   │   ├── LpuLogo.js               # Official LPU Logo component
+│   │   └── Chatbot.js               # Interactive LPU Hostel Assistant
 │   │
-│   └── 📂 admin/                    # Admin panel
-│       ├── login/page.js            # Admin login
-│       └── dashboard/page.js        # Admin dashboard with analytics
-│
-├── 📂 server/                       # Backend API (Express)
-│   ├── index.js                     # Main server entry point
-│   ├── config/db.js                 # MongoDB connection
+│   ├── 📂 student/                  # Student Portal
+│   │   ├── login/page.js            # Gender selection (Boy->BH / Girl->GH) & Student Login
+│   │   └── dashboard/page.js        # Personalized BH/GH recommendation, Booking, Friends & Groups
 │   │
-│   ├── 📂 models/                   # Mongoose schemas
-│   │   ├── Hostel.js                # Hostel schema
-│   │   ├── Application.js           # Application schema
-│   │   └── Room.js                  # Room schema
-│   │
-│   ├── 📂 routes/                   # API routes
-│   │   ├── hostels.js               # GET /api/hostels
-│   │   ├── applications.js          # POST /api/applications
-│   │   ├── allocations.js           # POST /api/allocations/run
-│   │   └── friendRequests.js        # Friend request CRUD
-│   │
-│   └── 📂 seeds/                    # Database seeders
-│       └── hostelSeeds.js           # Initial hostel data
+│   └── 📂 admin/                    # Chief Warden / Admin Portal
+│       ├── login/page.js            # Admin authentication
+│       └── dashboard/page.js        # Occupancy analytics, Application review & Smart Allocation
 │
-├── 📂 public/                       # Static assets
-│   ├── 📂 images/                   # Hostel images
-│   ├── 📂 videos/                   # Background videos
-│   └── 📂 logos/                    # LPU SAE India logo
+├── 📂 server/                       # Express.js Backend API
+│   ├── index.js                     # API server entry point (Port 5000)
+│   ├── db.js                        # MongoDB connection with in-memory fallback
+│   ├── seed.js                      # Seeds BH-1..BH-9 & GH-1..GH-3 with real LPU images
+│   ├── 📂 models/                   # Mongoose Models (Hostel, Room, Student, Application, etc.)
+│   └── 📂 routes/                   # REST API Route Handlers
 │
-├── 📂 docs/                         # Documentation
-│   ├── API.md                       # API documentation
-│   ├── SETUP.md                     # Setup guide
-│   ├── MODULES.md                   # Module architecture
-│   ├── TESTING.md                   # Testing guide
-│   ├── DEPLOYMENT.md                # Deployment instructions
-│   ├── FRONTEND.md                  # Frontend documentation (Rajat)
-│   ├── BACKEND.md                   # Backend documentation (Aditi)
-│   └── DATABASE.md                  # Database documentation (Yash)
+├── 📂 public/                       # Static Assets
+│   └── 📂 images/lpu/               # 44+ Official LPU Hostel, Room, Mess, Sports & Campus Photos
 │
-├── 📂 tests/                        # Test files
-│   ├── api.test.js                  # API tests
-│   └── components.test.js           # Component tests
-│
-├── .env.example                     # Environment variables template
-├── .gitignore                       # Git ignore rules
-├── package.json                     # Project dependencies
-├── README.md                        # This file
-└── LICENSE                          # MIT License
-
+├── 📂 docs/                         # Technical & Deployment Documentation
+├── next.config.mjs                  # Next.js configuration
+├── package.json                     # Dependencies & scripts
+└── README.md                        # Project documentation
 ```
 
 ---
 
 ## 🏗️ Module Architecture
 
-The project is divided into **8 core modules** for scalability and maintainability:
-
-### Module 1: Authentication & Authorization
-**Owner:** Rajat (Frontend) + Aditi (Backend)
-- Student login system
-- Admin login system
-- Session management
-- Role-based access control
-
-### Module 2: Hostel Management
-**Owner:** Yash (Database) + Aditi (Backend)
-- Hostel CRUD operations
-- Room availability tracking
-- Capacity management
-- Hostel analytics
-
-### Module 3: Application System
-**Owner:** Aditi (Backend) + Rajat (Frontend)
-- Application submission
-- Preference selection
-- Application tracking
-- Status updates
-
-### Module 4: Friend Request System
-**Owner:** Rajat (Frontend) + Aditi (Backend)
-- Send friend requests
-- Accept/reject requests
-- Request status tracking
-- Notification system
-
-### Module 5: Group Booking
-**Owner:** Aditi (Backend) + Yash (Database)
-- Automatic group formation
-- Group member management
-- Group booking logic
-- Group status tracking
-
-### Module 6: Smart Allocation Algorithm
-**Owner:** Aditi (Backend) + Yash (Database)
-- 8-tier priority system
-- Preference matching
-- Group prioritization
-- Fair allocation logic
-
-### Module 7: Admin Dashboard
-**Owner:** Rajat (Frontend) + Aditi (Backend)
-- Analytics and statistics
-- Application management
-- Allocation controls
-- Reports generation
-
-### Module 8: UI/UX & Responsiveness
-**Owner:** Rajat (Frontend)
-- Responsive design
-- Animations and effects
-- Video backgrounds
-- Image galleries
-- Accessibility features
+1. **Module 1: Gender-Aware Student Authentication** — Captures student gender (`Male` / `Female`) at login and maps Boys to `BH-1`–`BH-9` and Girls to `GH-1`–`GH-3`.
+2. **Module 2: LPU Hostel & Room Inventory** — Manages 9 Boys Hostels (`BH-1` to `BH-9`) and 3 Girls Hostels (`GH-1` to `GH-3`) with real LPU photos and live bed counts.
+3. **Module 3: Multi-Mode Application System** — Supports Individual, Group (2–4 roommates), and Waitlist applications.
+4. **Module 4: Roommate Friend Request System** — Bi-directional friend request workflow using LPU Registration Numbers.
+5. **Module 5: Automatic Roommate Group Formation** — Links accepted friends into co-allocated roommate groups.
+6. **Module 6: 8-Tier Smart Allocation Engine** — Automated room assignment balancing group integrity, lifestyle preferences, and CGPA merit.
+7. **Module 7: Chief Warden Analytics Dashboard** — Real-time occupancy monitoring, approval workflow, and allocation trigger.
+8. **Module 8: Authentic LPU Visual Experience** — 30-photo filterable campus gallery, exterior/interior card toggles, and responsive mobile-first UI.
 
 ---
 
-## 🚀 Installation
+## 🚀 Installation & Setup
 
 ### Prerequisites
-
-- Node.js 18+ installed
-- MongoDB 6+ installed and running
-- Git installed
-- npm or yarn package manager
+- **Node.js** 18+ installed
+- **MongoDB** running locally on `mongodb://127.0.0.1:27017` (or automatic in-memory fallback)
+- **Git** installed
 
 ### Step 1: Clone the Repository
-
 ```bash
-git clone https://github.com/yourusername/Hostel-Allocation-and-Roomate-matching-Project-.git
+git clone https://github.com/rajatsingh535/Hostel-Allocation-and-Roomate-matching-Project-.git
 cd Hostel-Allocation-and-Roomate-matching-Project-
 ```
 
 ### Step 2: Install Dependencies
-
 ```bash
 npm install
 ```
 
-### Step 3: Configure Environment Variables
-
-Create a `.env` file in the root directory:
-
+### Step 3: Configure Environment Variables (Optional)
+Create a `.env` file in the root directory (defaults are pre-configured):
 ```env
-# Database
 MONGODB_URI=mongodb://127.0.0.1:27017/hostel_db
-
-# Server
 PORT=5000
-
-# Frontend
 NEXT_PUBLIC_API_URL=http://localhost:5000
 ```
 
-### Step 4: Seed the Database
-
+### Step 4: Seed the Database with LPU Hostels & Photos
 ```bash
-node server/seeds/hostelSeeds.js
+node ./server/seed.js
 ```
 
-### Step 5: Start the Development Servers
-
+### Step 5: Run the Project
 ```bash
 npm run dev
 ```
+> **Note for Windows paths containing `&`**: If your folder path contains `&`, run the servers directly with `node`:
+> ```powershell
+> node ./server/index.js
+> node ./node_modules/next/dist/bin/next dev -p 3000
+> ```
 
-This starts both servers:
-- **Frontend:** http://localhost:3000
-- **Backend:** http://localhost:5000
+- **Frontend Portal:** http://localhost:3000
+- **Student Login:** http://localhost:3000/student/login
+- **Student Dashboard:** http://localhost:3000/student/dashboard
+- **Admin Dashboard:** http://localhost:3000/admin/dashboard
+- **Backend API:** http://localhost:5000/api/hostels
 
 ---
 
-## 💻 Usage
+## 💻 Usage Guide
 
-### For Students
+### Student Workflow
+1. Visit **`/student/login`**.
+2. **Step 1 — Select Gender**:
+   - Choose **👦 Male (Boy)** → System immediately recommends **Boys Hostels (`BH-1` to `BH-9`)**.
+   - Choose **👧 Female (Girl)** → System immediately recommends **Girls Hostels (`GH-1` to `GH-3`)**.
+3. Enter your LPU Registration Number & UMS Password (or click **Demo Boy (`BH-1 to BH-9`)** / **Demo Girl (`GH-1 to GH-3`)** for instant autofill).
+4. On **`/student/dashboard`**, review your personalized **Recommended Hostels Banner**, switch between `BH` or `GH` blocks, inspect real LPU room interiors, and submit an **Individual**, **Roommate Group**, or **Waitlist** booking.
 
-1. **Login**
-   - Go to http://localhost:3000
-   - Click "Student Login"
-   - Use demo credentials or register
-
-2. **Browse Hostels**
-   - View available hostels in the "Hostels" tab
-   - Check room availability, amenities, pricing
-
-3. **Apply for Room**
-   - Click "Apply Now" on desired hostel
-   - Fill personal details
-   - Select preferences (floor, quiet zone, study-focused)
-   - Optionally add friend roll numbers
-
-4. **Manage Friends**
-   - Go to "Friends" tab
-   - Send friend requests by roll number
-   - Accept/reject received requests
-
-5. **View Groups**
-   - Check "Groups" tab for formed groups
-   - See all group members
-
-6. **Track Applications**
-   - Monitor status in "Applications" tab
-
-### For Administrators
-
-1. **Login**
-   - Go to http://localhost:3000/admin/login
-   - Enter admin credentials
-
-2. **View Dashboard**
-   - See real-time statistics
-   - Monitor application counts
-
-3. **Manage Applications**
-   - Review submitted applications
-   - View student preferences
-
-4. **Run Allocation**
-   - Go to "Smart Allocation" tab
-   - Click "Run Allocation Algorithm"
-   - Review allocation results
+### Administrator Workflow
+1. Visit **`/admin/dashboard`**.
+2. Review live occupancy across `BH-1`–`BH-9` and `GH-1`–`GH-3`.
+3. Click **"⚡ Run Smart Allocation"** to execute the 8-tier roommate matching and bed assignment engine.
+4. Approve or reject individual student applications in the **Applications** tab.
 
 ---
 
 ## 📡 API Documentation
 
-### Base URL
-```
-http://localhost:5000/api
-```
-
-### Endpoints
-
-#### Hostels
-```http
-GET /hostels
-```
-Returns all hostels with availability
-
-#### Applications
-```http
-POST /applications
-Body: {
-  studentName, studentRollNumber, studentEmail,
-  hostelId, roomType, acPreference,
-  floorPreference, quietZone, studyFocused,
-  friendRollNumbers[]
-}
-```
-
-#### Friend Requests
-```http
-POST /friend-requests/send
-Body: { fromStudent: {}, toStudent: {}, message }
-
-GET /friend-requests/received/:rollNumber
-GET /friend-requests/sent/:rollNumber
-
-PATCH /friend-requests/:id/accept
-PATCH /friend-requests/:id/reject
-```
-
-#### Allocations
-```http
-POST /allocations/run
-```
-Runs the smart allocation algorithm
-
-For full API documentation, see [docs/API.md](docs/API.md)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/health` | API health check & version info |
+| `GET` | `/api/hostels` | List all 12 LPU hostels (`BH-1`–`BH-9`, `GH-1`–`GH-3`) with real LPU image paths & availability |
+| `GET` | `/api/applications` | Fetch all submitted student hostel applications |
+| `POST` | `/api/applications` | Submit a new hostel application with preferences & roommate IDs |
+| `POST` | `/api/allocations/run` | Trigger the 8-tier smart hostel & roommate allocation algorithm |
+| `POST` | `/api/friend-requests/send` | Send a roommate friend request by registration number |
+| `GET` | `/api/friend-requests/received/:rollNumber` | List incoming roommate requests for a student |
+| `PATCH` | `/api/friend-requests/:id/accept` | Accept a roommate request and form a booking group |
 
 ---
 
-## 📱 Mobile Responsiveness
+## 📸 LPU Campus & Hostel Gallery Preview
 
-### Tailwind CSS Responsive Design
-
-The application is built with a **mobile-first approach** using Tailwind CSS utility classes:
-
-#### Breakpoints
-```css
-sm:  640px  → Mobile landscape
-md:  768px  → Tablet
-lg:  1024px → Desktop
-xl:  1280px → Large desktop
-2xl: 1536px → Extra large
-```
-
-#### Responsive Components
-```jsx
-// Grid - 1 column mobile, 2 tablet, 3 desktop
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
-// Text - Smaller on mobile, larger on desktop
-<h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
-
-// Padding - Less on mobile, more on desktop
-<div className="px-4 sm:px-6 lg:px-8 py-12 md:py-20">
-
-// Hidden on mobile, visible on desktop
-<div className="hidden md:block">
-
-// Show only on mobile
-<div className="block md:hidden">
-```
-
-#### Mobile Features
-- ✅ Touch-friendly buttons (min 44x44px)
-- ✅ Hamburger menu for navigation (< 768px)
-- ✅ Swipeable cards
-- ✅ Bottom navigation for quick access
-- ✅ Optimized images (Next.js Image)
-- ✅ Smooth scrolling
-- ✅ Modal overlays for forms
-
-#### Testing Mobile
-```bash
-# Chrome DevTools
-1. Press F12
-2. Click "Toggle Device Toolbar" (Ctrl+Shift+M)
-3. Select device: iPhone 12, iPad, Galaxy S21
-
-# Real Device Testing
-1. Get local IP: ipconfig (Windows) / ifconfig (Mac)
-2. Access: http://192.168.x.x:3000
-3. Test on phone/tablet
-```
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="public/images/lpu/boys-hostel.webp" width="280" alt="LPU Boys Hostel BH Blocks" /><br />
+        <sub><b>LPU Boys Hostels (BH-1 to BH-9)</b></sub>
+      </td>
+      <td align="center">
+        <img src="public/images/lpu/girls-hostel.webp" width="280" alt="LPU Girls Hostel GH Blocks" /><br />
+        <sub><b>LPU Girls Hostels (GH-1 to GH-3)</b></sub>
+      </td>
+      <td align="center">
+        <img src="public/images/lpu/apartments-room-1.webp" width="280" alt="LPU AC Apartment Room" /><br />
+        <sub><b>LPU AC Residential Rooms & Apartments</b></sub>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img src="public/images/lpu/hostel-mess.webp" width="280" alt="LPU Hostel Mess" /><br />
+        <sub><b>LPU Central Hostel Mess & Dining</b></sub>
+      </td>
+      <td align="center">
+        <img src="public/images/lpu/indoor-sports-complex.webp" width="280" alt="LPU Indoor Sports Complex" /><br />
+        <sub><b>LPU Indoor Sports Complex & Gym</b></sub>
+      </td>
+      <td align="center">
+        <img src="public/images/lpu/uni-mall.webp" width="280" alt="LPU Uni Mall" /><br />
+        <sub><b>LPU Uni Mall & Campus Plaza</b></sub>
+      </td>
+    </tr>
+  </table>
+</div>
 
 ---
 
 ## 🚀 Vercel Deployment
 
-### Quick Deploy
+The frontend is deployed on Vercel with built-in static LPU hostel fallback data so all pages, real LPU photos, and interactive flows work seamlessly even without a live backend connection:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/yourusername/Hostel-Allocation-and-Roomate-matching-Project-)
+- **Production URL:** [https://hostelallocationlpuproject.vercel.app/](https://hostelallocationlpuproject.vercel.app/)
 
-### Manual Deployment Steps
-
-1. **Push to GitHub**
+To deploy updates:
 ```bash
-git add .
-git commit -m "Ready for deployment"
+git add -A
+git commit -m "Update LPU Hostel Portal"
 git push origin main
 ```
-
-2. **Connect to Vercel**
-- Visit [Vercel Dashboard](https://vercel.com/new)
-- Import your GitHub repository
-- Configure environment variables:
-  ```
-  NEXT_PUBLIC_API_URL=https://your-backend-url.com
-  MONGODB_URI=your_mongodb_connection_string
-  ```
-
-3. **Deploy**
-- Click "Deploy"
-- Wait 2-5 minutes
-- Your site is live! 🎉
-
-4. **Verify**
-- Check logo renders: `/lpu-logo.ico`
-- Test on mobile devices
-- Verify all images load
-- Test chatbot functionality
-
-### Deployment Fixes
-For detailed deployment troubleshooting, see [docs/VERCEL_DEPLOYMENT.md](docs/VERCEL_DEPLOYMENT.md)
-
-**Common Issues:**
-- ❌ Logo not showing → File path case-sensitivity
-- ❌ Images broken → Check `public/` folder
-- ❌ Build fails → Missing dependencies
-- ✅ All fixed in this project!
-
----
-
-## 📸 Screenshots
-
-### Home Page - Desktop
-![Home Page](public/images/Screenshot%202026-11-01%20122358.png)
-
-### Student Dashboard - All Tabs
-![Student Dashboard](public/images/Screenshot%202026-11-01%20122549.png)
-
-### Admin Dashboard - Analytics
-![Admin Dashboard](public/images/Screenshot%202026-11-01%20122649.png)
-
-### Smart Allocation - Algorithm
-![Allocation System](public/images/Screenshot%202026-11-01%20124829.png)
-
-### Mobile View
-All pages are fully responsive and tested on:
-- 📱 iPhone SE (375px)
-- 📱 iPhone 12/13 (390px)
-- 📱 Android phones (360px - 414px)
-- 📱 iPad (768px)
-- 💻 Desktop (1280px+)
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### Contribution Guidelines
-- Follow the existing code style
-- Write meaningful commit messages
-- Add tests for new features
-- Update documentation as needed
 
 ---
 
@@ -585,27 +327,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 🙏 Acknowledgments
-
-- **Lovely Professional University** - For project support
-- **SAE India Collegiate Club** - For guidance
-- **Next.js Team** - For the amazing framework
-- **MongoDB Team** - For the powerful database
-- **Unsplash** - For high-quality images
-
----
-
-## 📞 Contact & Support
-
-- **Project Repository:** [GitHub](https://github.com/yourusername/Hostel-Allocation-and-Roomate-matching-Project-)
-- **Bug Reports:** [Issues](https://github.com/yourusername/Hostel-Allocation-and-Roomate-matching-Project-/issues)
-- **Email:** hostel@lpu.co.in
-
----
-
 <div align="center">
 
-**Made with ❤️ by LPU Students**
+**Made with ❤️ by LPU Students — Rajat Singh, Aditi & Yash Gupta**
 
 ⭐ Star this repository if you find it helpful!
 
