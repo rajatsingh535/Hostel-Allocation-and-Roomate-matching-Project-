@@ -10,7 +10,7 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-7-green?style=for-the-badge&logo=mongodb)](https://www.mongodb.com/)
 [![Express](https://img.shields.io/badge/Express-4-grey?style=for-the-badge&logo=express)](https://expressjs.com/)
 
-[🌐 Live Demo](#) • [📖 Documentation](#project-structure) • [🐛 Report Bug](#) • [✨ Request Feature](#)
+[Live Demo](#) • [Documentation](#project-structure) • [Report Bug](#) • [Request Feature](#)
 
 </div>
 
