@@ -336,13 +336,7 @@ export default function Home() {
                 <BuildingIcon className="w-5 h-5 text-stone-500" />
                 <span>Explore 12 Hostels</span>
               </a>
-              <Link
-                href="/admin/login"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-base transition-colors"
-              >
-                <ShieldIcon className="w-5 h-5 text-stone-500" />
-                <span>Chief Warden Office</span>
-              </Link>
+
             </div>
 
             {/* Cohesive Metric Cards (Unified Theme - Zero Color Emojis, Zero Blue/Red/Green Icons) */}
