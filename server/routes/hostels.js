@@ -4,7 +4,8 @@ const Hostel = require("../models/Hostel");
 const Room = require("../models/Room");
 const Bed = require("../models/Bed");
 const adminMiddleware = require("../middleware/adminMiddleware");
-// GET /api/hostels  — list all with room stats
+
+// GET /api/hostels  — list all with room stats & AC / Non-AC breakdown
 router.get("/", async (req, res) => {
   try {
     const { gender, search } = req.query;
@@ -25,7 +26,20 @@ router.get("/", async (req, res) => {
         const totalRooms = rooms.length;
         const totalBeds = rooms.reduce((acc, r) => acc + (r.totalBeds || 0), 0);
         const availableBeds = rooms.reduce((acc, r) => acc + (r.availableBeds || 0), 0);
-        return { ...hostel, totalRooms, totalBeds, availableBeds };
+        const occupiedBeds = totalBeds - availableBeds;
+        const acRooms = rooms.filter((r) => r.acType === "AC").length;
+        const nonAcRooms = rooms.filter((r) => r.acType !== "AC").length;
+        return {
+          ...hostel,
+          totalRooms,
+          totalBeds,
+          availableBeds,
+          occupiedBeds,
+          acBreakdown: {
+            AC: acRooms,
+            NonAC: nonAcRooms,
+          },
+        };
       })
     );
 
@@ -48,7 +62,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // GET /api/hostels/:id/rooms
-router.get("/:id/rooms",adminMiddleware, async (req, res) => {
+router.get("/:id/rooms", adminMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const { roomType, acType } = req.query;
@@ -72,7 +86,7 @@ router.get("/:id/rooms",adminMiddleware, async (req, res) => {
 });
 
 // POST /api/hostels  — create a new hostel
-router.post("/", adminMiddleware,async (req, res) => {
+router.post("/", adminMiddleware, async (req, res) => {
   try {
     const {
       name, code, genderAllowed, campusLocation,
@@ -108,7 +122,7 @@ router.post("/", adminMiddleware,async (req, res) => {
 });
 
 // POST /api/hostels/:id/rooms  — add a room to a hostel
-router.post("/:id/rooms",adminMiddleware, async (req, res) => {
+router.post("/:id/rooms", adminMiddleware, async (req, res) => {
   try {
     const hostel = await Hostel.findById(req.params.id);
     if (!hostel) return res.status(404).json({ success: false, message: "Hostel not found." });
@@ -166,7 +180,7 @@ router.post("/:id/rooms",adminMiddleware, async (req, res) => {
 });
 
 // DELETE /api/hostels/:id  — delete hostel + all its rooms + beds
-router.delete("/:id",adminMiddleware, async (req, res) => {
+router.delete("/:id", adminMiddleware, async (req, res) => {
   try {
     const hostel = await Hostel.findById(req.params.id);
     if (!hostel) return res.status(404).json({ success: false, message: "Hostel not found." });
