@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function StudentLogin() {
   const [formData, setFormData] = useState({ regNo: "", password: "" });
@@ -40,11 +41,14 @@ export default function StudentLogin() {
           </Link>
 
           {/* Logo icon */}
-          <div className="w-16 h-16 mx-auto mb-4 bg-white rounded-2xl shadow-lg flex items-center justify-center border border-gray-100">
-            <img 
+          <div className="w-16 h-16 mx-auto mb-4">
+            <Image 
               src="/lpu-logo.ico" 
               alt="LPU" 
-              className="w-12 h-12 object-contain"
+              width={64}
+              height={64}
+              className="object-contain"
+              priority
             />
           </div>
           <h1 className="text-[28px] font-black text-stone-900 tracking-tight">Student Portal</h1>

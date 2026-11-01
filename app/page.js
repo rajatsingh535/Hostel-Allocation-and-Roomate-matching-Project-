@@ -33,13 +33,14 @@ export default function Home() {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white rounded-lg shadow-sm flex items-center justify-center overflow-hidden border border-gray-100">
-                <img 
-                  src="/lpu-logo.ico" 
-                  alt="LPU" 
-                  className="w-8 h-8 object-contain"
-                />
-              </div>
+              <Image 
+                src="/lpu-logo.ico" 
+                alt="LPU" 
+                width={40}
+                height={40}
+                className="object-contain"
+                priority
+              />
               <div>
                 <h1 className="text-lg font-bold text-gray-900">LPU Hostel Portal</h1>
                 <p className="text-xs text-gray-500">Lovely Professional University</p>
@@ -130,24 +131,21 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-gradient-to-br from-orange-50 to-white p-8 rounded-2xl border border-orange-100">
-              <div className="text-4xl mb-4">🏢</div>
+            <div className="bg-white p-8 rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-lg transition">
               <h3 className="text-xl font-bold text-gray-900 mb-3">Modern Infrastructure</h3>
               <p className="text-gray-600">
                 State-of-the-art hostel buildings with lifts, power backup, and modern amenities for comfortable living.
               </p>
             </div>
 
-            <div className="bg-gradient-to-br from-orange-50 to-white p-8 rounded-2xl border border-orange-100">
-              <div className="text-4xl mb-4">🛡️</div>
+            <div className="bg-white p-8 rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-lg transition">
               <h3 className="text-xl font-bold text-gray-900 mb-3">24/7 Security</h3>
               <p className="text-gray-600">
                 Round-the-clock security with CCTV surveillance, biometric access, and trained security personnel.
               </p>
             </div>
 
-            <div className="bg-gradient-to-br from-orange-50 to-white p-8 rounded-2xl border border-orange-100">
-              <div className="text-4xl mb-4">🍽️</div>
+            <div className="bg-white p-8 rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-lg transition">
               <h3 className="text-xl font-bold text-gray-900 mb-3">Quality Dining</h3>
               <p className="text-gray-600">
                 Hygienic mess facilities serving nutritious multi-cuisine meals prepared by professional chefs.
@@ -173,29 +171,34 @@ export default function Home() {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {hostels.slice(0, 6).map((hostel) => (
-                <div key={hostel._id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition group">
-                  <div className="relative h-48 bg-gradient-to-br from-orange-200 to-orange-300">
-                    <img 
-                      src={hostel.images?.[0] || "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&q=80"} 
-                      alt={hostel.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                    />
+                <div key={hostel._id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition border border-gray-200">
+                  <div className="relative h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+                    <div className="text-6xl font-bold text-white opacity-20">{hostel.code}</div>
                     <div className="absolute top-4 right-4 px-3 py-1 bg-white rounded-full text-xs font-semibold text-gray-700">
-                      {hostel.gender}
+                      {hostel.genderAllowed}
                     </div>
                   </div>
                   <div className="p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{hostel.name}</h3>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-xl font-bold text-gray-900">{hostel.name}</h3>
+                      <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs font-bold">
+                        {hostel.code}
+                      </span>
+                    </div>
                     <p className="text-sm text-gray-600 mb-4 line-clamp-2">{hostel.description}</p>
                     
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <div className="text-2xl font-bold text-orange-600">₹{hostel.pricing?.double?.toLocaleString()}</div>
-                        <div className="text-xs text-gray-500">Per Semester</div>
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between text-sm mb-2">
+                        <span className="text-gray-600">Availability</span>
+                        <span className="font-semibold text-gray-900">
+                          {hostel.availableRooms} / {hostel.totalRooms} Rooms
+                        </span>
                       </div>
-                      <div className="text-right">
-                        <div className="text-sm font-semibold text-gray-900">{hostel.availableRooms} / {hostel.totalRooms}</div>
-                        <div className="text-xs text-gray-500">Rooms Available</div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-orange-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${(hostel.availableRooms / hostel.totalRooms) * 100}%` }}
+                        ></div>
                       </div>
                     </div>
 
@@ -226,17 +229,16 @@ export default function Home() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: "📶", title: "High-Speed WiFi", desc: "Unlimited internet access 24/7" },
-              { icon: "🏋️", title: "Gymnasium", desc: "Fully equipped fitness centers" },
-              { icon: "📚", title: "Study Rooms", desc: "Quiet spaces for focused study" },
-              { icon: "🧺", title: "Laundry Service", desc: "Professional washing & ironing" },
-              { icon: "⚕️", title: "Medical Facility", desc: "24/7 medical assistance" },
-              { icon: "🎮", title: "Recreation Room", desc: "Indoor games and entertainment" },
-              { icon: "🚿", title: "Hot Water", desc: "24-hour hot water supply" },
-              { icon: "🅿️", title: "Parking", desc: "Secure vehicle parking space" }
+              { title: "High-Speed WiFi", desc: "Unlimited internet access 24/7" },
+              { title: "Gymnasium", desc: "Fully equipped fitness centers" },
+              { title: "Study Rooms", desc: "Quiet spaces for focused study" },
+              { title: "Laundry Service", desc: "Professional washing & ironing" },
+              { title: "Medical Facility", desc: "24/7 medical assistance" },
+              { title: "Recreation Room", desc: "Indoor games and entertainment" },
+              { title: "Hot Water", desc: "24-hour hot water supply" },
+              { title: "Parking", desc: "Secure vehicle parking space" }
             ].map((facility, idx) => (
-              <div key={idx} className="bg-gradient-to-br from-gray-50 to-white p-6 rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-lg transition">
-                <div className="text-4xl mb-4">{facility.icon}</div>
+              <div key={idx} className="bg-white p-6 rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-lg transition">
                 <h3 className="text-lg font-bold text-gray-900 mb-2">{facility.title}</h3>
                 <p className="text-sm text-gray-600">{facility.desc}</p>
               </div>
@@ -255,25 +257,24 @@ export default function Home() {
 
           <div className="grid md:grid-cols-4 gap-6">
             {[
-              { type: "Single", beds: "1 Bed", price: "₹50,000", features: ["Private Room", "Study Table", "Attached Bath"] },
-              { type: "Double", beds: "2 Beds", price: "₹35,000", features: ["Shared Room", "Study Tables", "Common Bath"] },
-              { type: "Triple", beds: "3 Beds", price: "₹25,000", features: ["Shared Room", "Study Space", "Common Bath"] },
-              { type: "Quad", beds: "4 Beds", price: "₹20,000", features: ["Shared Room", "Study Area", "Common Bath"] }
+              { type: "Single", beds: "1 Bed", features: ["Private Room", "Study Table", "Attached Bath", "Wardrobe"] },
+              { type: "Double", beds: "2 Beds", features: ["Shared Room", "Study Tables", "Common Bath", "Wardrobes"] },
+              { type: "Triple", beds: "3 Beds", features: ["Shared Room", "Study Space", "Common Bath", "Storage"] },
+              { type: "Quad", beds: "4 Beds", features: ["Shared Room", "Study Area", "Common Bath", "Storage"] }
             ].map((room, idx) => (
-              <div key={idx} className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition border-2 border-transparent hover:border-orange-500">
+              <div key={idx} className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition border border-gray-200 hover:border-orange-500">
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">{room.type}</h3>
-                <div className="text-sm text-gray-500 mb-4">{room.beds}</div>
-                <div className="text-3xl font-bold text-orange-600 mb-6">{room.price}<span className="text-sm text-gray-500">/sem</span></div>
+                <div className="text-sm text-gray-500 mb-6">{room.beds}</div>
                 <ul className="space-y-2 mb-6">
                   {room.features.map((feature, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-gray-600">
-                      <span className="text-green-600">✓</span>
+                      <span className="text-orange-600 font-bold">✓</span>
                       {feature}
                     </li>
                   ))}
                 </ul>
                 <Link href="/student/login" className="block w-full py-3 bg-orange-600 text-white text-center rounded-lg font-semibold hover:bg-orange-700 transition">
-                  Book Now
+                  Apply Now
                 </Link>
               </div>
             ))}
@@ -291,19 +292,14 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { name: "Priya Sharma", course: "B.Tech CSE", rating: 5, text: "The hostel facilities are excellent! Clean rooms, good food, and friendly staff. Highly recommended!" },
-              { name: "Rahul Kumar", course: "BBA", rating: 5, text: "Safe and secure environment with all modern amenities. The wifi is super fast for online classes." },
-              { name: "Anjali Verma", course: "B.Sc IT", rating: 4, text: "Great campus life! The recreation facilities and study rooms make it feel like a second home." }
+              { name: "Priya Sharma", course: "B.Tech CSE", text: "The hostel facilities are excellent! Clean rooms, good food, and friendly staff. Highly recommended!" },
+              { name: "Rahul Kumar", course: "BBA", text: "Safe and secure environment with all modern amenities. The wifi is super fast for online classes." },
+              { name: "Anjali Verma", course: "B.Sc IT", text: "Great campus life! The recreation facilities and study rooms make it feel like a second home." }
             ].map((testimonial, idx) => (
-              <div key={idx} className="bg-gradient-to-br from-orange-50 to-white p-8 rounded-2xl border border-orange-100 shadow-lg">
-                <div className="flex items-center gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <span key={i} className="text-yellow-500 text-lg">★</span>
-                  ))}
-                </div>
+              <div key={idx} className="bg-white p-8 rounded-xl border border-gray-200 shadow-lg hover:shadow-xl transition">
                 <p className="text-gray-700 mb-6 leading-relaxed">"{testimonial.text}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-orange-600 text-white rounded-full flex items-center justify-center font-bold">
+                <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+                  <div className="w-12 h-12 bg-orange-600 text-white rounded-full flex items-center justify-center font-bold text-lg">
                     {testimonial.name[0]}
                   </div>
                   <div>
