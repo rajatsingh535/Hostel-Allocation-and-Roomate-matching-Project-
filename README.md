@@ -1,4 +1,4 @@
-# 🏨 LPU Hostel Allocation & Roommate Matching System
+# LPU Hostel Allocation & Roommate Matching System
 
 <div align="center">
 
@@ -33,22 +33,22 @@
 
 ---
 
-## 🎯 Overview
+## Overview
 
 The **LPU Hostel Allocation & Roommate Matching System** is an intelligent platform designed to streamline hostel room allocation for students at Lovely Professional University. It incorporates **AI-powered roommate matching**, **preference-based allocation**, **friend request systems**, and **group booking** capabilities.
 
-### 🌟 Why This System?
+### Why This System?
 
-- ✅ **Automated Allocation**: 8-tier priority algorithm for fair room distribution
-- 🤝 **Friend Matching**: Send and accept friend requests to book together
-- 👥 **Group Booking**: Automatic group formation for roommates
-- 🎯 **Preference-Based**: Floor, quiet zone, and study-focused options
-- 📊 **Real-time Analytics**: Live hostel availability and booking stats
-- 📱 **Fully Responsive**: Works seamlessly on mobile, tablet, and desktop
+- **Automated Allocation**: 8-tier priority algorithm for fair room distribution
+- **Friend Matching**: Send and accept friend requests to book together
+- **Group Booking**: Automatic group formation for roommates
+- **Preference-Based**: Floor, quiet zone, and study-focused options
+- **Real-time Analytics**: Live hostel availability and booking stats
+- **Fully Responsive**: Works seamlessly on mobile, tablet, and desktop
 
 ---
 
-## 👥 Team Members
+## Team Members
 
 <table>
   <tr>
@@ -80,42 +80,42 @@ The **LPU Hostel Allocation & Roommate Matching System** is an intelligent platf
 
 ---
 
-## ✨ Features
+## Features
 
-### 🎓 For Students
+### For Students
 
-- 🔐 **Secure Authentication** - Login with registration number
-- 🏢 **Browse Hostels** - View all available hostels with real-time availability
-- 📝 **Smart Application** - Fill detailed preferences (floor, quiet zone, study-focused)
-- 🤝 **Friend Requests** - Send/receive friend requests for roommate matching
-- 👥 **Group Management** - View formed groups and member details
-- 📊 **Application Tracking** - Monitor application status (Pending/Allocated/Rejected)
-- 🔔 **Real-time Updates** - Live notifications for friend requests and allocations
+- **Secure Authentication** - Login with registration number
+- **Browse Hostels** - View all available hostels with real-time availability
+- **Smart Application** - Fill detailed preferences (floor, quiet zone, study-focused)
+- **Friend Requests** - Send/receive friend requests for roommate matching
+- **Group Management** - View formed groups and member details
+- **Application Tracking** - Monitor application status (Pending/Allocated/Rejected)
+- **Real-time Updates** - Live notifications for friend requests and allocations
 
-### 👨‍💼 For Administrators
+### For Administrators
 
-- 📈 **Dashboard Analytics** - Visual statistics and charts
-- 🎯 **Smart Allocation** - 8-tier priority algorithm
+- **Dashboard Analytics** - Visual statistics and charts
+- **Smart Allocation** - 8-tier priority algorithm
   - Priority 1: Group bookings with full availability
   - Priority 2: Students with accepted friend requests
   - Priority 3-5: Floor, quiet zone, study preferences
   - Priority 6-8: Partial groups and general pool
-- 📋 **Application Management** - View, approve, reject applications
-- 🏨 **Hostel Management** - Add, edit, delete hostel configurations
-- 📊 **Reports** - Generate allocation reports and statistics
+- **Application Management** - View, approve, reject applications
+- **Hostel Management** - Add, edit, delete hostel configurations
+- **Reports** - Generate allocation reports and statistics
 
-### 🎨 UI/UX Features
+### UI/UX Features
 
-- 🌈 **Modern Design** - Gradient backgrounds, 3D transforms, animations
-- 🎥 **Video Background** - Hero section with hostel facilities video
-- 📱 **Fully Responsive** - Mobile-first design, works on all devices
-- 🖼️ **Image Gallery** - High-quality Unsplash hostel images
-- ⚡ **Fast Performance** - Optimized with Next.js 14
-- ♿ **Accessible** - WCAG compliant UI components
+-  **Modern Design** - Gradient backgrounds, 3D transforms, animations
+- **Video Background** - Hero section with hostel facilities video
+- **Fully Responsive** - Mobile-first design, works on all devices
+- **Image Gallery** - High-quality Unsplash hostel images
+- **Fast Performance** - Optimized with Next.js 14
+- **Accessible** - WCAG compliant UI components
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend (Rajat)
 - **Framework:** Next.js 14 (App Router)
@@ -216,7 +216,7 @@ Hostel-Allocation-and-Roomate-matching-Project-/
 
 ---
 
-## 🏗️ Module Architecture
+## Module Architecture
 
 The project is divided into **8 core modules** for scalability and maintainability:
 
@@ -434,7 +434,7 @@ For full API documentation, see [docs/API.md](docs/API.md)
 
 ---
 
-## 📱 Mobile Responsiveness
+## Mobile Responsiveness
 
 ### Tailwind CSS Responsive Design
 
@@ -497,46 +497,6 @@ xl:  1280px → Large desktop
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/yourusername/Hostel-Allocation-and-Roomate-matching-Project-)
 
-### Manual Deployment Steps
-
-1. **Push to GitHub**
-```bash
-git add .
-git commit -m "Ready for deployment"
-git push origin main
-```
-
-2. **Connect to Vercel**
-- Visit [Vercel Dashboard](https://vercel.com/new)
-- Import your GitHub repository
-- Configure environment variables:
-  ```
-  NEXT_PUBLIC_API_URL=https://your-backend-url.com
-  MONGODB_URI=your_mongodb_connection_string
-  ```
-
-3. **Deploy**
-- Click "Deploy"
-- Wait 2-5 minutes
-- Your site is live! 🎉
-
-4. **Verify**
-- Check logo renders: `/lpu-logo.ico`
-- Test on mobile devices
-- Verify all images load
-- Test chatbot functionality
-
-### Deployment Fixes
-For detailed deployment troubleshooting, see [docs/VERCEL_DEPLOYMENT.md](docs/VERCEL_DEPLOYMENT.md)
-
-**Common Issues:**
-- ❌ Logo not showing → File path case-sensitivity
-- ❌ Images broken → Check `public/` folder
-- ❌ Build fails → Missing dependencies
-- ✅ All fixed in this project!
-
----
-
 ## 📸 Screenshots
 
 ### Home Page - Desktop
@@ -553,11 +513,11 @@ For detailed deployment troubleshooting, see [docs/VERCEL_DEPLOYMENT.md](docs/VE
 
 ### Mobile View
 All pages are fully responsive and tested on:
-- 📱 iPhone SE (375px)
-- 📱 iPhone 12/13 (390px)
-- 📱 Android phones (360px - 414px)
-- 📱 iPad (768px)
-- 💻 Desktop (1280px+)
+- iPhone SE (375px)
+- iPhone 12/13 (390px)
+- Android phones (360px - 414px)
+- iPad (768px)
+- Desktop (1280px+)
 
 ---
 
@@ -588,10 +548,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - **Lovely Professional University** - For project support
-- **SAE India Collegiate Club** - For guidance
-- **Next.js Team** - For the amazing framework
-- **MongoDB Team** - For the powerful database
-- **Unsplash** - For high-quality images
 
 ---
 
