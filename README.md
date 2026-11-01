@@ -539,19 +539,19 @@ We welcome contributions! Please follow these steps:
 
 ---
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **Lovely Professional University** - For project support
 
 ---
 
-## 📞 Contact & Support
+## Contact & Support
 
 - **Project Repository:** [GitHub](https://github.com/yourusername/Hostel-Allocation-and-Roomate-matching-Project-)
 - **Bug Reports:** [Issues](https://github.com/yourusername/Hostel-Allocation-and-Roomate-matching-Project-/issues)
@@ -562,7 +562,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 <div align="center">
 
 **Made with ❤️ by LPU Students**
-
-⭐ Star this repository if you find it helpful!
+Star this repository if you find it helpful!
 
 </div>
