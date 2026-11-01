@@ -74,6 +74,14 @@ export default function StudentDashboard() {
       quietZone: false,
       studyFocused: false,
     },
+    habits: {
+      sleepSchedule: "flexible",
+      studyHours: "flexible",
+      cleanliness: "moderate",
+      socializing: "moderate",
+      smoking: "no",
+      musicPreference: "moderate"
+    },
   });
   const [submitting, setSubmitting] = useState(false);
   const [confirmation, setConfirmation] = useState(null);
@@ -228,6 +236,7 @@ export default function StudentDashboard() {
           },
         ],
         friendRollNumbers: bookingForm.bookWithFriends ? bookingForm.friendRollNumbers.filter(f => f) : [],
+        habits: bookingForm.habits, // Include habits in payload
       };
 
       const res = await fetch("http://localhost:5000/api/applications", {
@@ -1067,13 +1076,13 @@ export default function StudentDashboard() {
                 {/* Section 4: Room Preferences (NEW FEATURE) */}
                 <div className="pt-4 border-t border-[var(--border)]">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-4">
-                    4. 🎯 Additional Preferences
+                    4. 🎯 Room & Lifestyle Preferences
                   </h4>
                   <div className="grid grid-cols-2 gap-3 mb-3">
                     <div>
                       <label className="block text-xs font-semibold text-stone-600 mb-1.5">Preferred Floor</label>
                       <select
-                        value={bookingForm.roomPreferences.floor}
+                        value={bookingForm.roomPreferences?.floor || ""}
                         onChange={(e) => setBookingForm({ 
                           ...bookingForm, 
                           roomPreferences: { ...bookingForm.roomPreferences, floor: e.target.value }
@@ -1087,17 +1096,138 @@ export default function StudentDashboard() {
                         <option value="7-9">Floors 7-9 (Higher)</option>
                       </select>
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={bookingForm.roomPreferences.quietZone}
-                          onChange={(e) => setBookingForm({ 
-                            ...bookingForm, 
-                            roomPreferences: { ...bookingForm.roomPreferences, quietZone: e.target.checked }
-                          })}
-                          className="w-4 h-4 rounded border-stone-300 text-[var(--primary)] focus:ring-[var(--primary)]"
-                        />
+                    
+                    {/* Sleep Schedule */}
+                    <div>
+                      <label className="block text-xs font-semibold text-stone-600 mb-1.5">🌙 Sleep Schedule</label>
+                      <select
+                        value={bookingForm.habits?.sleepSchedule || "flexible"}
+                        onChange={(e) => setBookingForm({ 
+                          ...bookingForm, 
+                          habits: { ...bookingForm.habits, sleepSchedule: e.target.value }
+                        })}
+                        className="input-light"
+                      >
+                        <option value="early-bird">Early Bird (9 PM - 6 AM)</option>
+                        <option value="night-owl">Night Owl (1 AM - 9 AM)</option>
+                        <option value="flexible">Flexible</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    {/* Study Hours */}
+                    <div>
+                      <label className="block text-xs font-semibold text-stone-600 mb-1.5">📚 Study Hours</label>
+                      <select
+                        value={bookingForm.habits?.studyHours || "flexible"}
+                        onChange={(e) => setBookingForm({ 
+                          ...bookingForm, 
+                          habits: { ...bookingForm.habits, studyHours: e.target.value }
+                        })}
+                        className="input-light"
+                      >
+                        <option value="morning">Morning (6 AM - 12 PM)</option>
+                        <option value="afternoon">Afternoon (12 PM - 6 PM)</option>
+                        <option value="evening">Evening (6 PM - 10 PM)</option>
+                        <option value="night">Night (10 PM - 2 AM)</option>
+                        <option value="flexible">Flexible</option>
+                      </select>
+                    </div>
+
+                    {/* Cleanliness */}
+                    <div>
+                      <label className="block text-xs font-semibold text-stone-600 mb-1.5">🧹 Cleanliness Level</label>
+                      <select
+                        value={bookingForm.habits?.cleanliness || "moderate"}
+                        onChange={(e) => setBookingForm({ 
+                          ...bookingForm, 
+                          habits: { ...bookingForm.habits, cleanliness: e.target.value }
+                        })}
+                        className="input-light"
+                      >
+                        <option value="very-clean">Very Clean (OCD level)</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="relaxed">Relaxed</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    {/* Social Preference */}
+                    <div>
+                      <label className="block text-xs font-semibold text-stone-600 mb-1.5">🗣️ Social Preference</label>
+                      <select
+                        value={bookingForm.habits?.socializing || "moderate"}
+                        onChange={(e) => setBookingForm({ 
+                          ...bookingForm, 
+                          habits: { ...bookingForm.habits, socializing: e.target.value }
+                        })}
+                        className="input-light"
+                      >
+                        <option value="introvert">Introvert (Prefer alone time)</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="extrovert">Extrovert (Very social)</option>
+                      </select>
+                    </div>
+
+                    {/* Music Preference */}
+                    <div>
+                      <label className="block text-xs font-semibold text-stone-600 mb-1.5">🎵 Music/Noise Level</label>
+                      <select
+                        value={bookingForm.habits?.musicPreference || "moderate"}
+                        onChange={(e) => setBookingForm({ 
+                          ...bookingForm, 
+                          habits: { ...bookingForm.habits, musicPreference: e.target.value }
+                        })}
+                        className="input-light"
+                      >
+                        <option value="quiet">Prefer Quiet</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="loud">Loud/Music Often</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={bookingForm.roomPreferences?.quietZone || false}
+                        onChange={(e) => setBookingForm({ 
+                          ...bookingForm, 
+                          roomPreferences: { ...bookingForm.roomPreferences, quietZone: e.target.checked }
+                        })}
+                        className="w-4 h-4 rounded border-stone-300 text-[var(--primary)] focus:ring-[var(--primary)]"
+                      />
+                      <span className="text-xs text-stone-700">🤫 Quiet Zone Preferred</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={bookingForm.roomPreferences?.studyFocused || false}
+                        onChange={(e) => setBookingForm({ 
+                          ...bookingForm, 
+                          roomPreferences: { ...bookingForm.roomPreferences, studyFocused: e.target.checked }
+                        })}
+                        className="w-4 h-4 rounded border-stone-300 text-[var(--primary)] focus:ring-[var(--primary)]"
+                      />
+                      <span className="text-xs text-stone-700">📚 Study-Focused Room</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={bookingForm.habits?.smoking === "no"}
+                        onChange={(e) => setBookingForm({ 
+                          ...bookingForm, 
+                          habits: { ...bookingForm.habits, smoking: e.target.checked ? "no" : "yes" }
+                        })}
+                        className="w-4 h-4 rounded border-stone-300 text-[var(--primary)] focus:ring-[var(--primary)]"
+                      />
+                      <span className="text-xs text-stone-700">🚭 Non-Smoking</span>
+                    </label>
+                  </div>
+                </div>
                         <span className="text-xs text-stone-700">🤫 Quiet Zone</span>
                       </label>
                       <label className="flex items-center gap-2 cursor-pointer">
