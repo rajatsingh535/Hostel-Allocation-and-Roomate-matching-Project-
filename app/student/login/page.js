@@ -40,12 +40,8 @@ export default function StudentLogin() {
           </Link>
 
           {/* Logo icon */}
-          <div className="w-20 h-20 flex items-center justify-center mx-auto mb-4">
-            <img 
-              src="https://seeklogo.com/images/L/lpu-sae-india-collegiate-club-logo-0E5B5B5E5E-seeklogo.com.png" 
-              alt="LPU SAE India" 
-              className="w-full h-full object-contain"
-            />
+          <div className="w-14 h-14 rounded-2xl bg-[var(--primary)] flex items-center justify-center text-white font-black text-2xl mx-auto mb-4 shadow-md">
+            L
           </div>
           <h1 className="text-[28px] font-black text-stone-900 tracking-tight">Student Portal</h1>
           <p className="text-sm text-stone-500 mt-1">Lovely Professional University · Hostel Allocation</p>

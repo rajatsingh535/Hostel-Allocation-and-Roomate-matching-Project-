@@ -196,11 +196,9 @@ export default function Home() {
         <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <img 
-              src="https://seeklogo.com/images/L/lpu-sae-india-collegiate-club-logo-0E5B5B5E5E-seeklogo.com.png" 
-              alt="LPU SAE India" 
-              className="h-9 w-auto group-hover:scale-105 transition-transform"
-            />
+            <div className="w-9 h-9 rounded-xl bg-[var(--primary)] flex items-center justify-center text-white font-black text-lg shadow-sm group-hover:bg-[var(--primary-dark)] transition-colors">
+              L
+            </div>
             <div>
               <div className="font-bold text-[15px] text-stone-900 flex items-center gap-2 leading-tight">
                 LPU Hostel Portal

@@ -1,8 +1,6 @@
 # 🏨 LPU Hostel Allocation & Roommate Matching System
 
 <div align="center">
-  
-![LPU SAE India](https://seeklogo.com/images/L/lpu-sae-india-collegiate-club-logo-0E5B5B5E5E-seeklogo.com.png)
 
 **A Smart Hostel Management System for Lovely Professional University**
 
