@@ -5,20 +5,20 @@ import LpuLogo from "../../components/LpuLogo";
 
 const API = "http://localhost:5000/api";
 
-// ── Static fallback data ──
+// ── Static fallback data with Real LPU Hostel Photos ──
 const STATIC_HOSTELS = [
-  { _id: "h1",  code: "BH-1", name: "Boys Hostel 1",  genderAllowed: "Male",   campusLocation: "West Residential Zone",      totalBeds: 360, availableBeds: 84,  totalCapacity: 360, availableCapacity: 84,  totalRooms: 90  },
-  { _id: "h2",  code: "BH-2", name: "Boys Hostel 2",  genderAllowed: "Male",   campusLocation: "West Residential Zone",      totalBeds: 360, availableBeds: 42,  totalCapacity: 360, availableCapacity: 42,  totalRooms: 90  },
-  { _id: "h3",  code: "BH-3", name: "Boys Hostel 3",  genderAllowed: "Male",   campusLocation: "North Residential Quadrant", totalBeds: 400, availableBeds: 110, totalCapacity: 400, availableCapacity: 110, totalRooms: 100 },
-  { _id: "h4",  code: "BH-4", name: "Boys Hostel 4",  genderAllowed: "Male",   campusLocation: "North Residential Quadrant", totalBeds: 360, availableBeds: 55,  totalCapacity: 360, availableCapacity: 55,  totalRooms: 90  },
-  { _id: "h5",  code: "BH-5", name: "Boys Hostel 5",  genderAllowed: "Male",   campusLocation: "East Residential Block",     totalBeds: 400, availableBeds: 130, totalCapacity: 400, availableCapacity: 130, totalRooms: 100 },
-  { _id: "h6",  code: "BH-6", name: "Boys Hostel 6",  genderAllowed: "Male",   campusLocation: "East Residential Block",     totalBeds: 360, availableBeds: 68,  totalCapacity: 360, availableCapacity: 68,  totalRooms: 90  },
-  { _id: "h7",  code: "BH-7", name: "Boys Hostel 7",  genderAllowed: "Male",   campusLocation: "South Residential Area",     totalBeds: 400, availableBeds: 95,  totalCapacity: 400, availableCapacity: 95,  totalRooms: 100 },
-  { _id: "h8",  code: "BH-8", name: "Boys Hostel 8",  genderAllowed: "Male",   campusLocation: "South Residential Area",     totalBeds: 360, availableBeds: 47,  totalCapacity: 360, availableCapacity: 47,  totalRooms: 90  },
-  { _id: "h9",  code: "BH-9", name: "Boys Hostel 9",  genderAllowed: "Male",   campusLocation: "Central Residential Hub",    totalBeds: 400, availableBeds: 120, totalCapacity: 400, availableCapacity: 120, totalRooms: 100 },
-  { _id: "h10", code: "GH-1", name: "Girls Hostel 1", genderAllowed: "Female", campusLocation: "Girls Residential Zone A",   totalBeds: 360, availableBeds: 78,  totalCapacity: 360, availableCapacity: 78,  totalRooms: 90  },
-  { _id: "h11", code: "GH-2", name: "Girls Hostel 2", genderAllowed: "Female", campusLocation: "Girls Residential Zone B",   totalBeds: 400, availableBeds: 102, totalCapacity: 400, availableCapacity: 102, totalRooms: 100 },
-  { _id: "h12", code: "GH-3", name: "Girls Hostel 3", genderAllowed: "Female", campusLocation: "Girls Residential Zone B",   totalBeds: 360, availableBeds: 56,  totalCapacity: 360, availableCapacity: 56,  totalRooms: 90  },
+  { _id: "h1",  code: "BH-1", name: "Boys Hostel 1",  genderAllowed: "Male",   campusLocation: "West Residential Zone",      totalBeds: 360, availableBeds: 84,  totalCapacity: 360, availableCapacity: 84,  totalRooms: 90,  imageUrl: "/images/lpu/boys-hostel.webp" },
+  { _id: "h2",  code: "BH-2", name: "Boys Hostel 2",  genderAllowed: "Male",   campusLocation: "West Residential Zone",      totalBeds: 360, availableBeds: 42,  totalCapacity: 360, availableCapacity: 42,  totalRooms: 90,  imageUrl: "/images/lpu/hero-banner.webp" },
+  { _id: "h3",  code: "BH-3", name: "Boys Hostel 3",  genderAllowed: "Male",   campusLocation: "North Residential Quadrant", totalBeds: 400, availableBeds: 110, totalCapacity: 400, availableCapacity: 110, totalRooms: 100, imageUrl: "/images/lpu/slide-3-hostels.webp" },
+  { _id: "h4",  code: "BH-4", name: "Boys Hostel 4",  genderAllowed: "Male",   campusLocation: "North Residential Quadrant", totalBeds: 360, availableBeds: 55,  totalCapacity: 360, availableCapacity: 55,  totalRooms: 90,  imageUrl: "/images/lpu/hero-banner.webp" },
+  { _id: "h5",  code: "BH-5", name: "Boys Hostel 5",  genderAllowed: "Male",   campusLocation: "East Residential Block",     totalBeds: 400, availableBeds: 130, totalCapacity: 400, availableCapacity: 130, totalRooms: 100, imageUrl: "/images/lpu/boys-hostel.webp" },
+  { _id: "h6",  code: "BH-6", name: "Boys Hostel 6",  genderAllowed: "Male",   campusLocation: "East Residential Block",     totalBeds: 360, availableBeds: 68,  totalCapacity: 360, availableCapacity: 68,  totalRooms: 90,  imageUrl: "/images/lpu/slide-3-hostels.webp" },
+  { _id: "h7",  code: "BH-7", name: "Boys Hostel 7",  genderAllowed: "Male",   campusLocation: "South Residential Area",     totalBeds: 400, availableBeds: 95,  totalCapacity: 400, availableCapacity: 95,  totalRooms: 100, imageUrl: "/images/lpu/boys-hostel.webp" },
+  { _id: "h8",  code: "BH-8", name: "Boys Hostel 8",  genderAllowed: "Male",   campusLocation: "South Residential Area",     totalBeds: 360, availableBeds: 47,  totalCapacity: 360, availableCapacity: 47,  totalRooms: 90,  imageUrl: "/images/lpu/hero-banner.webp" },
+  { _id: "h9",  code: "BH-9", name: "Boys Hostel 9",  genderAllowed: "Male",   campusLocation: "Central Residential Hub",    totalBeds: 400, availableBeds: 120, totalCapacity: 400, availableCapacity: 120, totalRooms: 100, imageUrl: "/images/lpu/slide-3-hostels.webp" },
+  { _id: "h10", code: "GH-1", name: "Girls Hostel 1", genderAllowed: "Female", campusLocation: "Girls Residential Zone A",   totalBeds: 360, availableBeds: 78,  totalCapacity: 360, availableCapacity: 78,  totalRooms: 90,  imageUrl: "/images/lpu/girls-hostel.webp" },
+  { _id: "h11", code: "GH-2", name: "Girls Hostel 2", genderAllowed: "Female", campusLocation: "Girls Residential Zone B",   totalBeds: 400, availableBeds: 102, totalCapacity: 400, availableCapacity: 102, totalRooms: 100, imageUrl: "/images/lpu/girls-hostel.webp" },
+  { _id: "h12", code: "GH-3", name: "Girls Hostel 3", genderAllowed: "Female", campusLocation: "Girls Residential Zone B",   totalBeds: 360, availableBeds: 56,  totalCapacity: 360, availableCapacity: 56,  totalRooms: 90,  imageUrl: "/images/lpu/girls-hostel.webp" },
 ];
 
 const STATIC_APPLICATIONS = [
@@ -73,7 +73,6 @@ export default function AdminDashboard() {
   const [tab, setTab]                   = useState("hostels");
   const [hostels, setHostels]           = useState(STATIC_HOSTELS);
   const [applications, setApplications] = useState(STATIC_APPLICATIONS);
-  const [loading, setLoading]           = useState(false);
 
   const [selectedHostel, setSelectedHostel] = useState(STATIC_HOSTELS[0]);
   const [hostelRooms, setHostelRooms]       = useState(STATIC_ROOMS);
@@ -126,7 +125,7 @@ export default function AdminDashboard() {
     setTimeout(() => setToast(null), 3500);
   };
 
-  // ── Hostel CRUD (tries API first, falls back to local state) ──
+  // ── Hostel CRUD ──
   const handleAddHostel = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -157,6 +156,7 @@ export default function AdminDashboard() {
         totalBeds: body.totalCapacity,
         availableBeds: body.availableCapacity,
         totalRooms: 0,
+        imageUrl: body.genderAllowed === "Female" ? "/images/lpu/girls-hostel.webp" : "/images/lpu/boys-hostel.webp",
       };
       setHostels((prev) => [...prev, fakeHostel]);
       showToast(`Hostel ${body.code} added (offline mode).`);
@@ -167,11 +167,8 @@ export default function AdminDashboard() {
   };
 
   const confirmDeleteHostel = async (hostel) => {
-    let deleted = false;
     try {
-      const res  = await fetch(`${API}/hostels/${hostel._id}`, { method: "DELETE" });
-      const data = await res.json();
-      if (data.success) deleted = true;
+      await fetch(`${API}/hostels/${hostel._id}`, { method: "DELETE" });
     } catch (_) {}
     setHostels((prev) => prev.filter((h) => h._id !== hostel._id));
     showToast(`Hostel ${hostel.code} removed.`);
@@ -228,11 +225,8 @@ export default function AdminDashboard() {
 
   // ── Application actions ──
   const updateAppStatus = async (app, status) => {
-    let updated = false;
     try {
-      const res  = await fetch(`${API}/applications/${app._id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
-      const data = await res.json();
-      if (data.success) updated = true;
+      await fetch(`${API}/applications/${app._id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
     } catch (_) {}
     setApplications((prev) => prev.map((a) => a._id === app._id ? { ...a, status } : a));
     showToast(`${app.studentName}'s application marked as ${status}`);
@@ -247,7 +241,6 @@ export default function AdminDashboard() {
     return true;
   });
 
-  const totalBeds    = hostels.reduce((s, h) => s + (h.totalBeds || h.totalCapacity || 0), 0);
   const vacantBeds   = hostels.reduce((s, h) => s + (h.availableBeds || h.availableCapacity || 0), 0);
   const totalRoomsN  = hostels.reduce((s, h) => s + (h.totalRooms || 0), 0);
 
@@ -282,10 +275,10 @@ export default function AdminDashboard() {
         {/* Metric Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
-            { label: "Active Hostels",  value: hostels.length,         sub: "12 Blocks Configured",   accent: "text-[var(--primary)]",   bg: "bg-orange-50" },
-            { label: "Total Rooms",     value: totalRoomsN || 1080,    sub: "Across all floors",       accent: "text-blue-600",           bg: "bg-blue-50"   },
-            { label: "Vacant Beds",     value: vacantBeds.toLocaleString(), sub: "Available inventory", accent: "text-[var(--success)]",  bg: "bg-green-50"  },
-            { label: "Student Queue",   value: applications.length,    sub: "Fall 2026 submissions",   accent: "text-amber-600",          bg: "bg-amber-50"  },
+            { label: "Active Hostels",  value: hostels.length,              sub: "12 Blocks Configured",   accent: "text-[var(--primary)]",   bg: "bg-orange-50" },
+            { label: "Total Rooms",     value: totalRoomsN || 1080,         sub: "Across all floors",       accent: "text-blue-600",           bg: "bg-blue-50"   },
+            { label: "Vacant Beds",     value: vacantBeds.toLocaleString(), sub: "Available inventory",     accent: "text-[var(--success)]",   bg: "bg-green-50"  },
+            { label: "Student Queue",   value: applications.length,         sub: "Fall 2026 submissions",   accent: "text-amber-600",          bg: "bg-amber-50"  },
           ].map((m, i) => (
             <div key={i} className="stat-card group">
               <div className={`text-2xl mb-2 ${m.bg} w-12 h-12 rounded-xl flex items-center justify-center border border-stone-200 group-hover:scale-110 transition-transform`}>
@@ -300,7 +293,6 @@ export default function AdminDashboard() {
 
         {/* Analytics Row */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          {/* Allocation Progress */}
           <div className="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-stone-900 text-sm">Allocation Progress</h3>
@@ -308,9 +300,9 @@ export default function AdminDashboard() {
             </div>
             <div className="space-y-3">
               {[
-                { label: "Boys Hostels",  value: 78, color: "bg-[var(--primary)]" },
-                { label: "Girls Hostels", value: 65, color: "bg-stone-500" },
-                { label: "AC Rooms",      value: 82, color: "bg-orange-400" },
+                { label: "Boys Hostels (BH)",  value: 78, color: "bg-[var(--primary)]" },
+                { label: "Girls Hostels (GH)", value: 65, color: "bg-stone-500" },
+                { label: "AC Rooms",           value: 82, color: "bg-orange-400" },
               ].map((item, i) => (
                 <div key={i}>
                   <div className="flex justify-between text-xs mb-1">
@@ -325,7 +317,6 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Application Status */}
           <div className="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm">
             <h3 className="font-bold text-stone-900 text-sm mb-4">Application Status</h3>
             <div className="space-y-3">
@@ -343,7 +334,6 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Recent Activity */}
           <div className="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm">
             <h3 className="font-bold text-stone-900 text-sm mb-4">Recent Activity</h3>
             <div className="space-y-3 max-h-40 overflow-y-auto hide-scrollbar">
@@ -379,8 +369,8 @@ export default function AdminDashboard() {
           <div>
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-lg font-bold text-stone-900">Configured Hostel Blocks</h2>
-                <p className="text-xs text-stone-500 mt-0.5">Manage residential buildings, add new blocks, or remove hostels.</p>
+                <h2 className="text-lg font-bold text-stone-900">Configured Hostel Blocks (BH &amp; GH)</h2>
+                <p className="text-xs text-stone-500 mt-0.5">Manage official LPU residential buildings, add new blocks, or remove hostels.</p>
               </div>
               <button onClick={() => setShowAddHostel(true)} className="btn-primary text-sm px-4 py-2.5 rounded-[10px]">
                 + Add New Hostel
@@ -392,46 +382,63 @@ export default function AdminDashboard() {
                 const totalB = h.totalBeds || h.totalCapacity || 360;
                 const availB = h.availableBeds || h.availableCapacity || 100;
                 const occ    = Math.min(100, Math.round(((totalB - availB) / totalB) * 100));
+                const realImg =
+                  h.imageUrl && h.imageUrl.startsWith("/images/lpu/")
+                    ? h.imageUrl
+                    : h.genderAllowed === "Female"
+                    ? "/images/lpu/girls-hostel.webp"
+                    : "/images/lpu/boys-hostel.webp";
+
                 return (
-                  <div key={h._id} className="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+                  <div key={h._id} className="bg-white border border-[var(--border)] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
                     <div>
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xl font-black text-stone-900">{h.code}</span>
-                            <span className={`text-[11px] font-bold ${h.genderAllowed === "Female" ? "badge-pink" : "badge-blue"}`}>
-                              {h.genderAllowed}
-                            </span>
+                      <div className="relative h-40 w-full overflow-hidden bg-stone-100">
+                        <img src={realImg} alt={h.name} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                        <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
+                          <span className="px-2.5 py-1 rounded-lg bg-white/95 font-black text-xs text-stone-900 shadow-xs">
+                            {h.code}
+                          </span>
+                          <button
+                            onClick={() => setDeleteConfirmation({ type: "hostel", item: h })}
+                            className="w-7 h-7 rounded-lg bg-red-500/90 hover:bg-red-600 text-white flex items-center justify-center transition-colors text-xs"
+                            title="Remove Hostel"
+                          >✕</button>
+                        </div>
+                        <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-white">
+                          <div>
+                            <p className="text-sm font-bold leading-tight">{h.name}</p>
+                            <p className="text-[10px] text-white/80">{h.campusLocation || "LPU Campus"}</p>
                           </div>
-                          <p className="text-sm text-stone-700 font-medium mt-0.5">{h.name}</p>
-                          <p className="text-[11px] text-stone-400">{h.campusLocation || "LPU Campus"}</p>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${h.genderAllowed === "Female" ? "bg-pink-100 text-pink-700" : "bg-orange-100 text-[var(--primary-dark)]"}`}>
+                            {h.genderAllowed === "Female" ? "Girls (GH)" : "Boys (BH)"}
+                          </span>
                         </div>
-                        <button
-                          onClick={() => setDeleteConfirmation({ type: "hostel", item: h })}
-                          className="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 text-red-500 flex items-center justify-center transition-colors text-sm"
-                          title="Remove Hostel"
-                        >✕</button>
                       </div>
-                      <div className="my-4">
-                        <div className="flex justify-between text-[11px] font-medium mb-1.5">
-                          <span className="text-stone-500">Available Beds</span>
-                          <span className="text-[var(--success)] font-bold">{availB} Vacant</span>
+
+                      <div className="p-5">
+                        <div className="mb-4">
+                          <div className="flex justify-between text-[11px] font-medium mb-1.5">
+                            <span className="text-stone-500">Available Beds</span>
+                            <span className="text-[var(--success)] font-bold">{availB} Vacant</span>
+                          </div>
+                          <div className="progress-bar-track">
+                            <div className="progress-bar-fill" style={{ width: `${occ}%` }} />
+                          </div>
+                          <div className="flex justify-between text-[10px] text-stone-400 mt-1">
+                            <span>{occ}% Occupied</span>
+                            <span>{totalB} Total Beds</span>
+                          </div>
                         </div>
-                        <div className="progress-bar-track">
-                          <div className="progress-bar-fill" style={{ width: `${occ}%` }} />
-                        </div>
-                        <div className="flex justify-between text-[10px] text-stone-400 mt-1">
-                          <span>{occ}% Occupied</span>
-                          <span>{totalB} Total Beds</span>
-                        </div>
+
+                        <button
+                          onClick={() => { selectHostel(h); setTab("rooms"); }}
+                          className="btn-secondary w-full text-sm py-2.5 rounded-[10px]"
+                        >
+                          Manage Rooms ({h.totalRooms || 0}) →
+                        </button>
                       </div>
                     </div>
-                    <button
-                      onClick={() => { selectHostel(h); setTab("rooms"); }}
-                      className="btn-secondary w-full text-sm py-2.5 rounded-[10px] mt-2"
-                    >
-                      Manage Rooms ({h.totalRooms || 0}) →
-                    </button>
                   </div>
                 );
               })}
@@ -442,7 +449,6 @@ export default function AdminDashboard() {
         {/* ══ TAB 2: ROOMS ══ */}
         {tab === "rooms" && (
           <div className="grid lg:grid-cols-4 gap-6">
-            {/* Sidebar */}
             <div className="lg:col-span-1 bg-white border border-[var(--border)] rounded-2xl p-4 h-fit shadow-sm">
               <h3 className="text-[11px] font-bold uppercase tracking-wider text-stone-400 mb-3">Select Hostel</h3>
               <div className="space-y-1 max-h-[60vh] overflow-y-auto pr-1">
@@ -463,7 +469,6 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Room grid */}
             <div className="lg:col-span-3">
               {selectedHostel ? (
                 <div>
@@ -487,7 +492,7 @@ export default function AdminDashboard() {
                     <div className="text-center py-16 bg-white border border-[var(--border)] rounded-2xl">
                       <div className="text-5xl mb-3">🚪</div>
                       <h3 className="text-base font-bold text-stone-800">No Rooms Configured</h3>
-                      <p className="text-sm text-stone-500 mt-1">Click "Add Room" to create rooms for {selectedHostel.code}.</p>
+                      <p className="text-sm text-stone-500 mt-1">Click &quot;Add Room&quot; to create rooms for {selectedHostel.code}.</p>
                     </div>
                   ) : (
                     <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -619,14 +624,14 @@ export default function AdminDashboard() {
           <div>
             <div className="mb-6">
               <h2 className="text-lg font-bold text-stone-900">Smart Allocation System</h2>
-              <p className="text-xs text-stone-500 mt-0.5">Automated preference-based room allocation with friend grouping and CGPA priority.</p>
+              <p className="text-xs text-stone-500 mt-0.5">Automated preference-based room allocation with gender verification (BH for Boys, GH for Girls), friend grouping, and CGPA priority.</p>
             </div>
 
             <div className="grid md:grid-cols-3 gap-5 mb-8">
               {[
-                { title: "Preference Matching", desc: "Allocates rooms based on student preferences including floor, AC type, and quiet zones", color: "bg-stone-50 border-stone-200" },
-                { title: "Friend Grouping",     desc: "Automatically groups students who requested to room together when all parties apply",     color: "bg-orange-50 border-orange-200" },
-                { title: "CGPA Priority",        desc: "Higher CGPA students get priority for premium rooms and first-choice allocations",         color: "bg-stone-50 border-stone-200" },
+                { title: "Gender & Preference Matching", desc: "Recommends BH-1 to BH-9 to boys and GH-1 to GH-3 to girls, matching room and AC preferences", color: "bg-stone-50 border-stone-200" },
+                { title: "Friend Grouping",              desc: "Automatically groups students who requested to room together when all parties apply",             color: "bg-orange-50 border-orange-200" },
+                { title: "CGPA Priority",                desc: "Higher CGPA students get priority for premium rooms and first-choice allocations",                 color: "bg-stone-50 border-stone-200" },
               ].map((s, i) => (
                 <div key={i} className={`card-glow p-6 ${s.color} border rounded-2xl`}>
                   <div className="w-10 h-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center font-black text-[var(--primary)] text-lg mb-3">{i + 1}</div>
@@ -658,25 +663,6 @@ export default function AdminDashboard() {
                 Run Smart Allocation Algorithm →
               </button>
             </div>
-
-            <div className="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm">
-              <h3 className="font-bold text-stone-900 mb-4">Allocation Priority Rules</h3>
-              <div className="space-y-3">
-                {[
-                  "Friend group requests (all members must apply)",
-                  "CGPA above 9.0 — Premium AC rooms",
-                  "Special accommodations (PwD, medical)",
-                  "Floor and zone preferences",
-                  "AC / Non-AC preference matching",
-                  "First-come, first-served (by timestamp)",
-                ].map((rule, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 bg-[var(--bg-alt)] rounded-xl">
-                    <div className="w-8 h-8 rounded-lg bg-[var(--primary-soft)] flex items-center justify-center text-[var(--primary)] font-bold text-sm flex-shrink-0">{i + 1}</div>
-                    <span className="text-sm text-stone-700">{rule}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         )}
       </main>
@@ -699,7 +685,7 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-stone-600 mb-1.5">Hostel Code *</label>
-                  <input type="text" required placeholder="e.g. BH10" value={addHostelForm.code}
+                  <input type="text" required placeholder="e.g. BH-10" value={addHostelForm.code}
                     onChange={(e) => setAddHostelForm({ ...addHostelForm, code: e.target.value })}
                     className="input-light uppercase" />
                 </div>

@@ -8,11 +8,11 @@ export default function LpuLogo({ size = 42, showText = true, subtitle = "Hostel
     <div className="flex items-center gap-3 select-none">
       {!imgError ? (
         <img
-          src="/favicon.ico"
-          alt="LPU Logo"
+          src="/images/lpu/lpu-logo-media.png"
+          alt="Lovely Professional University Official Logo"
           width={size}
           height={size}
-          className="rounded-xl object-contain drop-shadow-sm flex-shrink-0 transition-transform duration-200 hover:scale-105"
+          className="rounded-xl object-contain drop-shadow-sm flex-shrink-0 transition-transform duration-200 hover:scale-105 bg-white p-0.5 border border-stone-200"
           onError={() => setImgError(true)}
         />
       ) : (
@@ -35,10 +35,7 @@ export default function LpuLogo({ size = 42, showText = true, subtitle = "Hostel
             </linearGradient>
           </defs>
 
-          {/* Outer rounded brand badge */}
           <rect width="240" height="240" rx="52" fill="url(#lpuGradBrand)" />
-
-          {/* Shield outline */}
           <path
             d="M120 32C150 48 185 52 185 52V124C185 168 152 198 120 208C88 198 55 168 55 124V52C55 52 90 48 120 32Z"
             fill="#FFFFFF"
@@ -47,25 +44,13 @@ export default function LpuLogo({ size = 42, showText = true, subtitle = "Hostel
             strokeWidth="4"
             strokeLinejoin="round"
           />
-
-          {/* Campus tower pediment */}
           <polygon points="120,62 82,88 158,88" fill="url(#goldGradBrand)" />
-
-          {/* Central building */}
           <rect x="86" y="88" width="68" height="66" rx="4" fill="#FFFFFF" />
-
-          {/* Windows */}
           <rect x="94" y="96" width="10" height="22" rx="5" fill="#C2410C" />
           <rect x="115" y="96" width="10" height="22" rx="5" fill="#C2410C" />
           <rect x="136" y="96" width="10" height="22" rx="5" fill="#C2410C" />
-
-          {/* Arch */}
           <path d="M110 154V134C110 128.5 114.5 124 120 124C125.5 124 130 128.5 130 134V154H110Z" fill="#C2410C" />
-
-          {/* Star */}
           <circle cx="120" cy="50" r="7" fill="url(#goldGradBrand)" />
-
-          {/* Monogram ribbon */}
           <rect x="74" y="162" width="92" height="22" rx="11" fill="url(#goldGradBrand)" />
           <text
             x="120"

@@ -22,43 +22,59 @@ async function seedData() {
   ]);
   console.log("[Seeder] Cleared previous database collections.");
 
-  // Boys Hostels (BH1-9)
+  // Boys Hostels (BH-1 to BH-9) with real LPU hostel images
+  const bhImages = [
+    "/images/lpu/boys-hostel.webp",
+    "/images/lpu/hero-banner.webp",
+    "/images/lpu/slide-3-hostels.webp",
+    "/images/lpu/boys-hostel-room.webp",
+    "/images/lpu/standard-room-1.webp",
+    "/images/lpu/standard-room-2.webp",
+    "/images/lpu/standard-room-3.webp",
+    "/images/lpu/apartments-room-1.webp",
+    "/images/lpu/apartments-room-2.webp",
+  ];
   const boysHostels = [];
   for (let i = 1; i <= 9; i++) {
     const hostel = {
       name: `Boys Hostel ${i}`,
-      code: `BH${i}`,
+      code: `BH-${i}`,
       genderAllowed: "Male",
-      campusLocation: "LPU Campus",
-      totalCapacity: 360, // 4 students per room, 10 rooms per floor, 9 floors
-      availableCapacity: 360, // Updated after room/bed seeding
-      amenities: ["WiFi", "Laundry", "Mess", "Security", "Common Room", "Study Hall"],
-      imageUrl: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80",
-      description: `Modern boys hostel with ${9} floors and comprehensive facilities for ${360} students.`
+      campusLocation: i <= 5 ? "West Residential Zone (Boys Enclave)" : "North Residential Quadrant (Boys Wing)",
+      totalCapacity: 360,
+      availableCapacity: 360,
+      amenities: ["WiFi", "Laundry", "Mess", "Security", "Common Room", "Study Hall", "Indoor Gym"],
+      imageUrl: bhImages[(i - 1) % bhImages.length],
+      description: `Official LPU Boys Hostel ${i} (BH-${i}) with 9 floors, biometric turnstile entry, indoor gym, and comprehensive mess facilities for 360 male students.`
     };
     boysHostels.push(hostel);
   }
 
-  // Girls Hostels (GH1-3)
+  // Girls Hostels (GH-1 to GH-3) with real LPU girls hostel images
+  const ghImages = [
+    "/images/lpu/girls-hostel.webp",
+    "/images/lpu/girls-hostel-room.webp",
+    "/images/lpu/slide-1-apartments.webp",
+  ];
   const girlsHostels = [];
   for (let i = 1; i <= 3; i++) {
     const hostel = {
       name: `Girls Hostel ${i}`,
-      code: `GH${i}`,
+      code: `GH-${i}`,
       genderAllowed: "Female",
-      campusLocation: "LPU Campus",
+      campusLocation: "East Residential Quadrant (Secured Girls Enclave)",
       totalCapacity: 360,
       availableCapacity: Math.floor(Math.random() * 50 + 50),
-      amenities: ["WiFi", "Laundry", "Mess", "Security", "Common Room", "Study Hall", "Beauty Salon"],
-      imageUrl: "https://images.unsplash.com/photo-1567496898669-ee935f5f647a?auto=format&fit=crop&w=800&q=80",
-      description: `Secure girls hostel with ${9} floors and enhanced amenities for ${360} students.`
+      amenities: ["WiFi", "Laundry", "Mess", "24/7 Female Warden", "Common Room", "Study Hall", "Beauty Salon"],
+      imageUrl: ghImages[(i - 1) % ghImages.length],
+      description: `Official LPU Girls Hostel ${i} (GH-${i}) with 9 floors, multi-tier biometric security, dedicated female wardens, and in-house dining for 360 female students.`
     };
     girlsHostels.push(hostel);
   }
 
   const allHostels = [...boysHostels, ...girlsHostels];
   const createdHostels = await Hostel.insertMany(allHostels);
-  console.log(`[Seeder] Seeded ${createdHostels.length} Hostels (BH1-9, GH1-3).`);
+  console.log(`[Seeder] Seeded ${createdHostels.length} Hostels (BH-1 to BH-9, GH-1 to GH-3).`);
 
   // Create floors, rooms, and beds for each hostel
   let totalBeds = 0;
@@ -84,19 +100,19 @@ async function seedData() {
       
       // 10 rooms per floor (5 AC, 5 Non-AC)
       for (let roomNum = 1; roomNum <= 10; roomNum++) {
-        const isAC = roomNum <= 5; // First 5 rooms are AC
+        const isAC = roomNum <= 5;
         const floorNum = blocks.indexOf(block) + 1;
         const room = {
           blockId: block._id,
           hostelId: hostel._id,
           roomNumber: `${floorNum}${roomNum.toString().padStart(2, '0')}`,
           floor: floorNum,
-          roomType: "Quad", // 4 students per room
+          roomType: "Quad",
           acType: isAC ? "AC" : "Non-AC",
           totalBeds: 4,
-          availableBeds: 4, // All seeded beds start available
+          availableBeds: 4,
           rentPerSemester: isAC ? 25000 : 18000,
-          isPwDAccessible: floorNum === 1 // Ground floor accessible
+          isPwDAccessible: floorNum === 1
         };
         rooms.push(room);
       }
@@ -112,7 +128,7 @@ async function seedData() {
             blockId: room.blockId,
             hostelId: room.hostelId,
             bedNumber: bedNum,
-            isOccupied: false, // Keep bed occupancy consistent with room availability
+            isOccupied: false,
             studentId: null
           };
           beds.push(bed);
@@ -123,7 +139,6 @@ async function seedData() {
     }
   }
 
-  // Reconcile hostel capacity from the actual room records instead of random placeholders.
   for (const hostel of createdHostels) {
     const roomTotals = await Room.aggregate([
       { $match: { hostelId: hostel._id } },

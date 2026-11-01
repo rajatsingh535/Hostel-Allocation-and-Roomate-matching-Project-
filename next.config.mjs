@@ -7,6 +7,14 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'www.lpu.in',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lpu.in',
+      },
+      {
+        protocol: 'https',
         hostname: 'images.unsplash.com',
       },
     ],
