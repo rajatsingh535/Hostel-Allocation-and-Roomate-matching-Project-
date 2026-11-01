@@ -1230,23 +1230,6 @@ export default function StudentDashboard() {
                     </label>
                   </div>
                 </div>
-                        <span className="text-xs text-stone-700">🤫 Quiet Zone</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={bookingForm.roomPreferences.studyFocused}
-                          onChange={(e) => setBookingForm({ 
-                            ...bookingForm, 
-                            roomPreferences: { ...bookingForm.roomPreferences, studyFocused: e.target.checked }
-                          })}
-                          className="w-4 h-4 rounded border-stone-300 text-[var(--primary)] focus:ring-[var(--primary)]"
-                        />
-                        <span className="text-xs text-stone-700">📚 Study Focused</span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
 
                 {/* Submit */}
                 <button
