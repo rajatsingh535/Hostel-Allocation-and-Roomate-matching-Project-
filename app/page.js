@@ -34,7 +34,7 @@ export default function Home() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3">
               <Image 
-                src="/lpu-logo.ico" 
+                src="/logos/lpu-logo.svg" 
                 alt="LPU" 
                 width={40}
                 height={40}
@@ -172,12 +172,6 @@ export default function Home() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {hostels.slice(0, 6).map((hostel) => (
                 <div key={hostel._id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition border border-gray-200">
-                  <div className="relative h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
-                    <div className="text-6xl font-bold text-white opacity-20">{hostel.code}</div>
-                    <div className="absolute top-4 right-4 px-3 py-1 bg-white rounded-full text-xs font-semibold text-gray-700">
-                      {hostel.genderAllowed}
-                    </div>
-                  </div>
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-xl font-bold text-gray-900">{hostel.name}</h3>
@@ -185,6 +179,7 @@ export default function Home() {
                         {hostel.code}
                       </span>
                     </div>
+                    <p className="text-sm text-gray-500 mb-1 font-medium">{hostel.genderAllowed} Hostel</p>
                     <p className="text-sm text-gray-600 mb-4 line-clamp-2">{hostel.description}</p>
                     
                     <div className="mb-4">
@@ -197,7 +192,7 @@ export default function Home() {
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
                           className="bg-orange-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${(hostel.availableRooms / hostel.totalRooms) * 100}%` }}
+                          style={{ width: `${Math.min((hostel.availableRooms / hostel.totalRooms) * 100, 100)}%` }}
                         ></div>
                       </div>
                     </div>

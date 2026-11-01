@@ -4,7 +4,7 @@ export const metadata = {
   title: 'LPU Hostel Portal - Accommodation at Lovely Professional University',
   description: 'Book your hostel accommodation at LPU. Modern facilities, 24/7 security, and world-class amenities for students.',
   icons: {
-    icon: '/lpu-logo.ico',
+    icon: '/logos/lpu-logo.svg',
   },
 }
 

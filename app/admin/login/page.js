@@ -43,7 +43,7 @@ export default function AdminLogin() {
           {/* Logo icon */}
           <div className="w-16 h-16 mx-auto mb-4">
             <Image 
-              src="/lpu-logo.ico" 
+              src="/logos/lpu-logo.svg" 
               alt="LPU" 
               width={64}
               height={64}

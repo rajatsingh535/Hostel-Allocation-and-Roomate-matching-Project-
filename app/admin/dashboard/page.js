@@ -236,7 +236,7 @@ export default function AdminDashboard() {
       <nav className="sticky top-0 z-40 bg-white border-b border-[var(--border)] shadow-sm px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Image 
-            src="/lpu-logo.ico" 
+            src="/logos/lpu-logo.svg" 
             alt="LPU" 
             width={36}
             height={36}
