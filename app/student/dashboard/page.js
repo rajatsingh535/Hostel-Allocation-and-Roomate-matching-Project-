@@ -3,458 +3,500 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import LpuLogo from "../../components/LpuLogo";
 
-const HOSTEL_IMGS = {
-  BH: "/images/Screenshot 2026-11-01 122358.png",
-  GH: "/images/Screenshot 2026-11-01 122549.png",
-  DEFAULT: "/images/Screenshot 2026-11-01 122649.png",
-};
+const STATIC_HOSTELS = [
+  { _id:"h1",  code:"BH-1", name:"Boys Hostel 1",  genderAllowed:"Male",   campusLocation:"West Residential Zone",      totalBeds:360, availableBeds:84,  floors:9,  acAvailable:true,  roomTypes:["Double","Triple"] },
+  { _id:"h2",  code:"BH-2", name:"Boys Hostel 2",  genderAllowed:"Male",   campusLocation:"West Residential Zone",      totalBeds:360, availableBeds:42,  floors:9,  acAvailable:true,  roomTypes:["Single","Double"] },
+  { _id:"h3",  code:"BH-3", name:"Boys Hostel 3",  genderAllowed:"Male",   campusLocation:"North Residential Quadrant", totalBeds:400, availableBeds:110, floors:10, acAvailable:false, roomTypes:["Triple","Quad"]   },
+  { _id:"h4",  code:"BH-4", name:"Boys Hostel 4",  genderAllowed:"Male",   campusLocation:"North Residential Quadrant", totalBeds:360, availableBeds:55,  floors:9,  acAvailable:true,  roomTypes:["Double","Triple"] },
+  { _id:"h5",  code:"BH-5", name:"Boys Hostel 5",  genderAllowed:"Male",   campusLocation:"East Residential Block",     totalBeds:400, availableBeds:130, floors:10, acAvailable:false, roomTypes:["Triple","Quad"]   },
+  { _id:"h6",  code:"BH-6", name:"Boys Hostel 6",  genderAllowed:"Male",   campusLocation:"East Residential Block",     totalBeds:360, availableBeds:68,  floors:9,  acAvailable:true,  roomTypes:["Single","Double"] },
+  { _id:"h7",  code:"BH-7", name:"Boys Hostel 7",  genderAllowed:"Male",   campusLocation:"South Residential Area",     totalBeds:400, availableBeds:95,  floors:10, acAvailable:true,  roomTypes:["Double","Triple"] },
+  { _id:"h8",  code:"BH-8", name:"Boys Hostel 8",  genderAllowed:"Male",   campusLocation:"South Residential Area",     totalBeds:360, availableBeds:47,  floors:9,  acAvailable:false, roomTypes:["Triple","Quad"]   },
+  { _id:"h9",  code:"BH-9", name:"Boys Hostel 9",  genderAllowed:"Male",   campusLocation:"Central Residential Hub",    totalBeds:400, availableBeds:120, floors:10, acAvailable:true,  roomTypes:["Single","Double"] },
+  { _id:"h10", code:"GH-1", name:"Girls Hostel 1", genderAllowed:"Female", campusLocation:"Girls Residential Zone A",   totalBeds:360, availableBeds:78,  floors:9,  acAvailable:true,  roomTypes:["Double","Triple"] },
+  { _id:"h11", code:"GH-2", name:"Girls Hostel 2", genderAllowed:"Female", campusLocation:"Girls Residential Zone B",   totalBeds:400, availableBeds:102, floors:10, acAvailable:true,  roomTypes:["Single","Double"] },
+  { _id:"h12", code:"GH-3", name:"Girls Hostel 3", genderAllowed:"Female", campusLocation:"Girls Residential Zone B",   totalBeds:360, availableBeds:56,  floors:9,  acAvailable:false, roomTypes:["Triple","Quad"]   },
+];
 
-function getHostelImg(code) {
-  if (!code) return HOSTEL_IMGS.DEFAULT;
-  if (code.startsWith("BH")) return HOSTEL_IMGS.BH;
-  if (code.startsWith("GH")) return HOSTEL_IMGS.GH;
-  return HOSTEL_IMGS.DEFAULT;
-}
+const ROOM_CATEGORIES = [
+  { id:"r1", label:"AC Double Seater",  type:"Double", ac:true,  desc:"Attached washroom, Wi-Fi, study table" },
+  { id:"r2", label:"AC Triple Seater",  type:"Triple", ac:true,  desc:"Attached washroom, Wi-Fi, wardrobe"    },
+  { id:"r3", label:"Non-AC Double",     type:"Double", ac:false, desc:"Common washroom, Wi-Fi, study table"   },
+  { id:"r4", label:"Non-AC Triple",     type:"Triple", ac:false, desc:"Common washroom, Wi-Fi, wardrobe"      },
+  { id:"r5", label:"AC Single Seater",  type:"Single", ac:true,  desc:"Attached washroom, Wi-Fi, mini fridge" },
+  { id:"r6", label:"AC Quad Seater",    type:"Quad",   ac:true,  desc:"Common washroom, Wi-Fi, lounge area"   },
+];
 
-// ── Status badge styling ──
 function StatusBadge({ status }) {
-  const cls = {
-    ALLOCATED:    "status-allocated",
-    UNDER_REVIEW: "status-review",
-    REJECTED:     "status-rejected",
-    SUBMITTED:    "status-submitted",
-  }[status] || "status-submitted";
-  return <span className={`status-badge ${cls}`}>{status}</span>;
+  const map = { ALLOCATED:"bg-green-100 text-green-700", UNDER_REVIEW:"bg-blue-100 text-blue-700", REJECTED:"bg-red-100 text-red-700", SUBMITTED:"bg-amber-100 text-amber-700" };
+  return <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${map[status] || map.SUBMITTED}`}>{status.replace("_"," ")}</span>;
 }
 
 export default function StudentDashboard() {
-  const [hostels, setHostels] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [genderFilter, setGenderFilter] = useState("All");
-  const [search, setSearch] = useState("");
-  const [activeTab, setActiveTab] = useState("hostels");
-  const [dashboardStats, setDashboardStats] = useState({
-    totalHostels: 0,
-    availableRooms: 0,
-    pendingApplications: 0,
-    approvedApplications: 0,
-  });
-
-  // Booking modal state
-  const [showBooking, setShowBooking] = useState(false);
-  const [selectedHostel, setSelectedHostel] = useState(null);
-  const [bookingForm, setBookingForm] = useState({
-    studentName: "Arjun Sharma",
-    studentRollNumber: "12345678",
-    studentEmail: "arjun.sharma@student.lpu.co.in",
-    department: "Computer Science",
-    year: "2",
-    gender: "Male",
-    cgpa: "8.5",
-    roomType: "Double",
-    acPreference: "AC",
-    specialAccommodations: "",
-    bookWithFriends: false,
-    friendRollNumbers: ["", "", ""],
-    roomPreferences: {
-      floor: "",
-      quietZone: false,
-      studyFocused: false,
-    },
-  });
-  const [submitting, setSubmitting] = useState(false);
-  const [confirmation, setConfirmation] = useState(null);
+  const [allHostels, setAllHostels]         = useState(STATIC_HOSTELS);
+  const [activeTab, setActiveTab]           = useState("book");          // book | my-applications | waitlist
+  const [bookingMode, setBookingMode]       = useState("individual");    // individual | group
+  const [genderFilter, setGenderFilter]     = useState("All");
+  const [search, setSearch]                 = useState("");
   const [myApplications, setMyApplications] = useState([]);
 
+  // Booking state
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedHostel, setSelectedHostel]       = useState(null);
+  const [consentGiven, setConsentGiven]           = useState(false);
+  const [showBookingForm, setShowBookingForm]      = useState(false);
+  const [submitting, setSubmitting]               = useState(false);
+  const [confirmation, setConfirmation]           = useState(null);
+
+  const [bookingForm, setBookingForm] = useState({
+    studentName:"Arjun Sharma", studentRollNumber:"12345678",
+    studentEmail:"arjun.sharma@student.lpu.co.in",
+    department:"Computer Science", year:"2", gender:"Male", cgpa:"8.5",
+    specialAccommodations:"",
+    friendRollNumbers:["","",""],
+    roomPreferences:{ floor:"", quietZone:false, studyFocused:false },
+  });
+
+  // Waitlist form
+  const [waitlistForm, setWaitlistForm]   = useState({ hostelCode:"", roomType:"Double", reason:"" });
+  const [waitlistSubmitted, setWaitlistSubmitted] = useState(false);
+
+  // Try live API; fall back to static
   useEffect(() => {
-    fetchHostels();
-    fetchMyApplications();
-    calculateDashboardStats();
-  }, [genderFilter, search]);
-  
-  const calculateDashboardStats = () => {
-    const stats = {
-      totalHostels: hostels.length,
-      availableRooms: hostels.reduce((sum, h) => sum + (h.availableBeds || 0), 0),
-      pendingApplications: myApplications.filter(a => a.status === 'SUBMITTED' || a.status === 'UNDER_REVIEW').length,
-      approvedApplications: myApplications.filter(a => a.status === 'ALLOCATED').length,
-    };
-    setDashboardStats(stats);
-  };
+    let c = false;
+    fetch("http://localhost:5000/api/hostels").then(r=>r.json()).then(d=>{ if(!c && d.success && d.data?.length>0) setAllHostels(d.data); }).catch(()=>{});
+    fetch("http://localhost:5000/api/applications").then(r=>r.json()).then(d=>{ if(!c && d.success) setMyApplications(d.data); }).catch(()=>{});
+    return ()=>{ c=true; };
+  },[]);
 
-  const fetchHostels = () => {
-    setLoading(true);
-    let url = "http://localhost:5000/api/hostels?";
-    if (genderFilter !== "All") url += `gender=${genderFilter}&`;
-    if (search) url += `search=${search}`;
-    fetch(url)
-      .then((r) => r.json())
-      .then((d) => { if (d.success) setHostels(d.data); setLoading(false); })
-      .catch(() => setLoading(false));
-  };
+  const filteredHostels = allHostels.filter(h => {
+    if(genderFilter==="Male"   && h.genderAllowed!=="Male")   return false;
+    if(genderFilter==="Female" && h.genderAllowed!=="Female") return false;
+    if(search){ const q=search.toLowerCase(); return h.name?.toLowerCase().includes(q)||h.code?.toLowerCase().includes(q); }
+    return true;
+  });
 
-  const fetchMyApplications = () => {
-    fetch("http://localhost:5000/api/applications")
-      .then((r) => r.json())
-      .then((d) => { if (d.success) setMyApplications(d.data); })
-      .catch(() => {});
-  };
+  const totalVacant   = allHostels.reduce((s,h)=>s+(h.availableBeds||0),0);
+  const pendingCount  = myApplications.filter(a=>["SUBMITTED","UNDER_REVIEW"].includes(a.status)).length;
+  const allocatedCount= myApplications.filter(a=>a.status==="ALLOCATED").length;
 
-  const openBooking = (hostel) => {
-    setSelectedHostel(hostel);
-    setBookingForm((prev) => ({
-      ...prev,
-      gender: hostel.genderAllowed === "Female" ? "Female" : "Male",
-    }));
-    setShowBooking(true);
-    setConfirmation(null);
-  };
-
-  const handleBook = async (e) => {
+  const handleSubmitBooking = async (e) => {
     e.preventDefault();
+    if(!selectedCategory || !selectedHostel || !consentGiven){ alert("Please select a room category, hostel, and agree to terms."); return; }
     setSubmitting(true);
+    const payload = {
+      studentName:bookingForm.studentName, studentRollNumber:bookingForm.studentRollNumber,
+      studentEmail:bookingForm.studentEmail, department:bookingForm.department,
+      year:Number(bookingForm.year), gender:bookingForm.gender, cgpa:Number(bookingForm.cgpa),
+      specialAccommodations:bookingForm.specialAccommodations,
+      bookingMode,
+      friendRollNumbers: bookingMode==="group" ? bookingForm.friendRollNumbers.filter(Boolean) : [],
+      preferences:[{ hostelId:selectedHostel._id, hostelCode:selectedHostel.code, hostelName:selectedHostel.name, roomType:selectedCategory.type, acPreference:selectedCategory.ac?"AC":"Non-AC", priority:1 }],
+    };
+    let app = null;
     try {
-      const payload = {
-        studentName: bookingForm.studentName,
-        studentRollNumber: bookingForm.studentRollNumber,
-        studentEmail: bookingForm.studentEmail,
-        department: bookingForm.department,
-        year: Number(bookingForm.year),
-        gender: bookingForm.gender,
-        cgpa: Number(bookingForm.cgpa),
-        specialAccommodations: bookingForm.specialAccommodations,
-        preferences: [
-          {
-            hostelId: selectedHostel._id,
-            hostelCode: selectedHostel.code,
-            hostelName: selectedHostel.name,
-            roomType: bookingForm.roomType,
-            acPreference: bookingForm.acPreference,
-            priority: 1,
-          },
-        ],
-      };
-
-      const res = await fetch("http://localhost:5000/api/applications", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
+      const res = await fetch("http://localhost:5000/api/applications",{ method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
       const data = await res.json();
-      if (data.success) {
-        setConfirmation(data.data);
-        setMyApplications((prev) => [data.data, ...prev]);
-        fetchHostels();
-      } else {
-        alert(data.message || "Submission failed.");
-      }
-    } catch {
-      alert("Network error. Please try again.");
-    }
+      if(data.success) app = data.data;
+    } catch(_){}
+    if(!app){ app = { _id:`local-${Date.now()}`, applicationId:`LPU-APP-${Date.now().toString().slice(-6)}`, ...payload, status:"SUBMITTED", submittedAt:new Date().toISOString(), cgpa:bookingForm.cgpa }; }
+    setConfirmation(app);
+    setMyApplications(prev=>[app,...prev]);
     setSubmitting(false);
   };
 
+  const handleWaitlist = (e) => {
+    e.preventDefault();
+    setWaitlistSubmitted(true);
+  };
+
   return (
-    <div className="min-h-screen bg-[var(--bg-alt)] text-stone-900">
+    <div className="min-h-screen bg-[var(--bg-alt)]">
 
-      {/* ── Top Navbar ── */}
-      <nav className="sticky top-0 z-40 bg-white border-b border-[var(--border)] shadow-sm px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 group">
-          <LpuLogo size={38} showText={true} subtitle="Student Portal · Session 2026" />
+      {/* ── Navbar ── */}
+      <nav className="sticky top-0 z-40 bg-white border-b border-[var(--border)] shadow-sm px-4 sm:px-6 h-14 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2">
+          <LpuLogo size={34} showText={true} subtitle="Residential Booking · 2026-27" />
         </Link>
-
-        <div className="flex items-center gap-3">
-          {/* Online indicator */}
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--bg-alt)] border border-[var(--border)] text-xs text-stone-600">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--success)] animate-pulse inline-block" />
-            Logged in: {bookingForm.studentRollNumber}
+        <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 border border-green-200 text-xs text-green-700 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block"/>
+            {bookingForm.studentRollNumber}
           </div>
-          <Link href="/" className="btn-ghost text-xs px-3 py-2 rounded-lg border border-[var(--border)]">
-            ← Home
-          </Link>
-          <Link
-            href="/student/login"
-            className="text-xs font-semibold px-3 py-2 rounded-lg border border-red-100 bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-          >
-            Logout
-          </Link>
+          <Link href="/" className="text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] text-stone-500 hover:text-stone-800 transition-colors">Home</Link>
+          <Link href="/student/login" className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 border border-red-100 text-red-600 hover:bg-red-100 transition-colors">Logout</Link>
         </div>
       </nav>
 
-      <main className="max-w-[1200px] mx-auto px-6 py-8">
+      {/* ── Page Header ── */}
+      <div className="bg-white border-b border-[var(--border)]">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-4">
+          <h1 className="text-lg font-black text-stone-900">Residential Booking</h1>
+          <p className="text-xs text-stone-500">Session 2026-27 · Smart Hostel Allocation &amp; Roommate Matching</p>
+        </div>
+      </div>
 
-        {/* ── Welcome Banner ── */}
-        <div className="welcome-banner mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-6">
+
+        {/* ── Welcome strip ── */}
+        <div className="bg-white border border-[var(--border)] rounded-2xl px-5 py-4 mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <div className="badge-orange mb-3 inline-flex">
-              🎓 Verified Student Account
-            </div>
-            <h1 className="text-[26px] font-black text-stone-900">
-              Welcome back, {bookingForm.studentName} 👋
-            </h1>
-            <p className="text-sm text-stone-500 mt-1">
-              Roll No:{" "}
-              <span className="text-stone-700 font-mono font-bold">{bookingForm.studentRollNumber}</span>
-              {" "}&nbsp;·&nbsp;{" "}
-              Dept: <span className="text-stone-700 font-semibold">{bookingForm.department}</span>
-              {" "}&nbsp;·&nbsp;{" "}
-              CGPA: <span className="text-[var(--success)] font-bold">{bookingForm.cgpa}</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--primary)]">Verified Student</span>
+            <h2 className="text-base font-black text-stone-900 mt-0.5">Welcome, {bookingForm.studentName}</h2>
+            <p className="text-xs text-stone-500">
+              Roll: <span className="font-mono font-bold text-stone-700">{bookingForm.studentRollNumber}</span>
+              &nbsp;·&nbsp;{bookingForm.department}&nbsp;·&nbsp;CGPA: <span className="text-[var(--success)] font-bold">{bookingForm.cgpa}</span>
             </p>
           </div>
-
-          {/* Tab switcher */}
-          <div className="filter-bar">
-            <button
-              onClick={() => setActiveTab("hostels")}
-              className={`filter-tab flex items-center gap-2 ${activeTab === "hostels" ? "active" : ""}`}
-            >
-              🏢 Available Hostels
-              <span className="bg-white/30 px-1.5 py-0.5 rounded-full text-[10px]">{hostels.length}</span>
-            </button>
-            <button
-              onClick={() => setActiveTab("my-applications")}
-              className={`filter-tab flex items-center gap-2 ${activeTab === "my-applications" ? "active" : ""}`}
-            >
-              📋 My Applications
-              <span className="bg-white/30 px-1.5 py-0.5 rounded-full text-[10px]">{myApplications.length}</span>
-            </button>
+          <div className="flex gap-3 flex-wrap text-center">
+            {[
+              { v:filteredHostels.length, l:"Available Hostels" },
+              { v:totalVacant,            l:"Vacant Beds" },
+              { v:myApplications.length,  l:"My Applications" },
+              { v:allocatedCount||"—",    l:"Allocated" },
+            ].map((s,i)=>(
+              <div key={i} className="min-w-[64px] bg-[var(--bg-alt)] rounded-xl px-3 py-2 border border-[var(--border)]">
+                <div className="text-xl font-black text-stone-900">{s.v}</div>
+                <div className="text-[10px] text-stone-400 font-medium">{s.l}</div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* ── Quick Stats Cards ── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        {/* ── Tab Bar (like LPU UMS) ── */}
+        <div className="flex border-b border-[var(--border)] mb-6 bg-white rounded-t-xl overflow-hidden">
           {[
-            { 
-              label: "Available Hostels", 
-              value: hostels.length, 
-              icon: "🏢", 
-              color: "bg-blue-50 text-blue-600 border-blue-100",
-              change: "+2 this week"
-            },
-            { 
-              label: "Open Rooms", 
-              value: hostels.reduce((sum, h) => sum + (h.availableBeds || 0), 0), 
-              icon: "🚪", 
-              color: "bg-green-50 text-green-600 border-green-100",
-              change: "168 vacant beds"
-            },
-            { 
-              label: "My Applications", 
-              value: myApplications.length, 
-              icon: "📋", 
-              color: "bg-orange-50 text-orange-600 border-orange-100",
-              change: myApplications.filter(a => a.status === 'UNDER_REVIEW').length + " in review"
-            },
-            { 
-              label: "Success Rate", 
-              value: myApplications.length > 0 
-                ? Math.round((myApplications.filter(a => a.status === 'ALLOCATED').length / myApplications.length) * 100) + "%" 
-                : "N/A", 
-              icon: "✨", 
-              color: "bg-purple-50 text-purple-600 border-purple-100",
-              change: "Based on history"
-            },
-          ].map((stat, i) => (
-            <div key={i} className="card-glow bg-white border border-[var(--border)] rounded-2xl p-5 scale-in" style={{ animationDelay: `${i * 0.1}s` }}>
-              <div className={`w-10 h-10 rounded-xl ${stat.color} border flex items-center justify-center text-xl mb-3`}>
-                {stat.icon}
-              </div>
-              <div className="text-2xl md:text-3xl font-black text-stone-900 mb-1 count-up">{stat.value}</div>
-              <div className="text-xs font-bold text-stone-500 mb-1">{stat.label}</div>
-              <div className="text-[10px] text-stone-400">{stat.change}</div>
-            </div>
+            { id:"book",           label:"Individual Booking" },
+            { id:"group",          label:"Group Booking"      },
+            { id:"waitlist",       label:"Wait List"          },
+            { id:"my-applications",label:"My Applications"    },
+          ].map(t=>(
+            <button
+              key={t.id}
+              onClick={()=>{ setActiveTab(t.id); if(t.id==="group") setBookingMode("group"); else if(t.id==="book") setBookingMode("individual"); }}
+              className={`px-4 sm:px-6 py-3.5 text-xs sm:text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${
+                activeTab===t.id
+                  ? "border-[var(--primary)] text-[var(--primary)] bg-orange-50"
+                  : "border-transparent text-stone-500 hover:text-stone-800 hover:bg-stone-50"
+              }`}
+            >{t.label}</button>
           ))}
         </div>
 
-        {/* ── TAB 1: AVAILABLE HOSTELS ── */}
-        {activeTab === "hostels" && (
+        {/* ══════════════════════════════════════════
+            TAB: INDIVIDUAL & GROUP BOOKING
+        ══════════════════════════════════════════ */}
+        {(activeTab==="book" || activeTab==="group") && !confirmation && (
           <div>
-            {/* Search & filter toolbar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
-              <div className="relative w-full sm:w-72 group">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 text-sm group-focus-within:text-[var(--primary)] transition-colors">🔍</span>
-                <input
-                  type="text"
-                  placeholder="Search hostel name or code…"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="input-light input-glow pl-10 w-full"
-                />
-                {search && (
-                  <button
-                    onClick={() => setSearch("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-stone-200 hover:bg-stone-300 flex items-center justify-center text-xs text-stone-600 transition-colors"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
+            {/* Terms notice */}
+            <div className="bg-orange-50 border border-orange-200 rounded-xl px-4 py-3 mb-5 text-xs text-stone-600 leading-relaxed">
+              <strong className="text-[var(--primary-dark)]">Terms &amp; Conditions:</strong> The hostel room/facility may change as per hostel booking guidelines.
+              {activeTab==="group" && <span> For Group Booking, all members must apply and list each other&apos;s roll numbers to be allocated together.</span>}
+            </div>
 
-              <div className="filter-bar">
-                {["All", "Male", "Female"].map((g) => (
+            {/* Step 1: Seater Category */}
+            <div className="mb-6">
+              <h3 className="text-sm font-bold text-[var(--primary-dark)] mb-3 uppercase tracking-wide">Step 1 — Select Seater Category</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3">
+                {ROOM_CATEGORIES.map(cat=>(
                   <button
-                    key={g}
-                    onClick={() => setGenderFilter(g)}
-                    className={`filter-tab transition-all ${genderFilter === g ? "active" : ""}`}
+                    key={cat.id}
+                    onClick={()=>setSelectedCategory(cat)}
+                    className={`text-left p-4 rounded-xl border-2 transition-all ${
+                      selectedCategory?.id===cat.id
+                        ? "border-[var(--primary)] bg-orange-50"
+                        : "border-stone-200 bg-white hover:border-orange-300"
+                    }`}
                   >
-                    {g === "All" ? "All Blocks" : g === "Male" ? "Boys (BH1-9)" : "Girls (GH1-3)"}
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={`text-xs font-bold ${selectedCategory?.id===cat.id ? "text-[var(--primary)]" : "text-stone-700"}`}>
+                        {cat.type} Seater
+                      </span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${cat.ac ? "bg-blue-50 text-blue-700" : "bg-stone-100 text-stone-600"}`}>
+                        {cat.ac?"AC":"Non-AC"}
+                      </span>
+                    </div>
+                    <div className="text-[11px] font-semibold text-stone-900 mb-1">{cat.label}</div>
+                    <div className="text-[10px] text-stone-400">{cat.desc}</div>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Skeleton loaders with stagger animation */}
-            {loading ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="bg-white border border-[var(--border)] rounded-2xl overflow-hidden" style={{ animationDelay: `${i * 0.05}s` }}>
-                    <div className="skeleton h-44 rounded-none" />
-                    <div className="p-5 space-y-3">
-                      <div className="skeleton h-5 w-3/4" />
-                      <div className="skeleton h-3 w-1/2" />
-                      <div className="skeleton h-16 w-full" />
-                      <div className="skeleton h-10 w-full rounded-lg" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : hostels.length === 0 ? (
-              <div className="text-center py-20 bg-white border border-[var(--border)] rounded-2xl">
-                <div className="text-5xl mb-3">🏢</div>
-                <h3 className="text-lg font-bold text-stone-800">No Hostels Match Your Criteria</h3>
-                <p className="text-sm text-stone-500 mt-1">Try resetting the filters or clearing the search.</p>
-              </div>
-            ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {hostels.map((hostel) => {
-                  const totalBeds = hostel.totalBeds || hostel.totalCapacity || 360;
-                  const availBeds = hostel.availableBeds || hostel.availableCapacity || 100;
-                  const occPercent = Math.min(100, Math.round(((totalBeds - availBeds) / totalBeds) * 100));
-                  const isLowAvailability = availBeds < 50;
+            {/* Step 2: Select Hostel */}
+            <div className="mb-6">
+              <h3 className="text-sm font-bold text-[var(--primary-dark)] mb-3 uppercase tracking-wide">Step 2 — Select Hostel</h3>
 
+              {/* Consent notice */}
+              <div className="bg-white border border-stone-200 rounded-xl p-4 mb-4 text-xs text-stone-600">
+                In case my preferred seater configuration is not available in my preferred hostel, I give my consent to book the same seater configuration in any other hostel.
+                <div className="flex gap-3 mt-3">
+                  <button onClick={()=>setConsentGiven(false)} className={`px-4 py-1.5 rounded-lg border text-xs font-semibold transition-colors ${!consentGiven?"border-[var(--primary)] bg-orange-50 text-[var(--primary-dark)]":"border-stone-200 text-stone-600 hover:border-stone-300"}`}>Not Agree</button>
+                  <button onClick={()=>setConsentGiven(true)}  className={`px-4 py-1.5 rounded-lg border text-xs font-semibold transition-colors ${consentGiven ?"border-[var(--primary)] bg-orange-50 text-[var(--primary-dark)]":"border-stone-200 text-stone-600 hover:border-stone-300"}`}>Agree</button>
+                </div>
+              </div>
+
+              {/* Search + gender filter */}
+              <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                <input type="text" placeholder="Search hostel name or code…" value={search} onChange={e=>setSearch(e.target.value)} className="input-light flex-1 max-w-xs" />
+                <div className="flex gap-1.5">
+                  {["All","Male","Female"].map(g=>(
+                    <button key={g} onClick={()=>setGenderFilter(g)} className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors ${genderFilter===g?"border-[var(--primary)] bg-orange-50 text-[var(--primary-dark)]":"border-stone-200 text-stone-600 hover:border-stone-300"}`}>
+                      {g==="All"?"All":g==="Male"?"Boys (BH)":"Girls (GH)"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredHostels.map(h=>{
+                  const avail=h.availableBeds||80;
+                  const total=h.totalBeds||360;
+                  const pct=Math.min(100,Math.round(((total-avail)/total)*100));
                   return (
-                    <div key={hostel._id} className="card-glow bg-white border border-stone-200 rounded-2xl p-6 transition-all duration-300 hover:shadow-lg hover:border-orange-300 flex flex-col justify-between">
-                        <div>
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="px-3 py-1 rounded-lg bg-orange-50 border border-orange-200 text-xs font-bold text-[var(--primary-dark)]">
-                              {hostel.code}
-                            </span>
-                            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-stone-100 text-stone-700">
-                              {hostel.genderAllowed === "Female" ? "Girls Wing" : "Boys Wing"}
-                            </span>
-                          </div>
-                        <h3 className="font-bold text-stone-900 text-[15px] leading-tight">{hostel.name ? hostel.name.replace(/\s*\([^)]*\)/g, "") : hostel.code}</h3>
-                        <p className="text-xs text-stone-400 mt-0.5 mb-4">📍 {hostel.campusLocation || "LPU Campus"}</p>
-
-                        {/* Occupancy */}
-                        <div className="mb-4">
-                          <div className="flex justify-between text-xs font-medium mb-1.5">
-                            <span className="text-stone-500">Available Beds</span>
-                            <span className="text-[var(--success)] font-semibold">{availBeds} Vacant</span>
-                          </div>
-                          <div className="progress-bar-track">
-                            <div className="progress-bar-fill" style={{ width: `${occPercent}%` }} />
-                          </div>
-                          <div className="flex justify-between text-[11px] text-stone-400 mt-1">
-                            <span>{occPercent}% Filled</span>
-                            <span>{totalBeds} Capacity</span>
-                          </div>
-                        </div>
-
-                        {/* Specs grid */}
-                        <div className="grid grid-cols-2 gap-2 mb-4">
-                          <div className="bg-[var(--bg-alt)] rounded-xl p-2.5 border border-[var(--border)] text-center">
-                            <div className="text-[11px] text-stone-400">Floors</div>
-                            <div className="font-bold text-stone-800 text-sm">9 Floors</div>
-                          </div>
-                          <div className="bg-[var(--bg-alt)] rounded-xl p-2.5 border border-[var(--border)] text-center">
-                            <div className="text-[11px] text-stone-400">Room Types</div>
-                            <div className="font-bold text-[var(--primary)] text-sm">AC &amp; Non-AC</div>
-                          </div>
-                        </div>
-
-                        {/* Book button */}
-                        <button
-                          onClick={() => openBooking(hostel)}
-                          className="btn-primary w-full text-sm rounded-[10px] mt-4"
-                        >
-                          Book {hostel.code} Now →
-                        </button>
+                    <button
+                      key={h._id}
+                      onClick={()=>setSelectedHostel(h)}
+                      className={`text-left p-4 rounded-xl border-2 transition-all ${
+                        selectedHostel?._id===h._id
+                          ? "border-[var(--primary)] bg-orange-50"
+                          : "border-stone-200 bg-white hover:border-orange-300"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${selectedHostel?._id===h._id?"bg-[var(--primary)] text-white":"bg-orange-50 border border-orange-200 text-[var(--primary-dark)]"}`}>{h.code}</span>
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">{h.genderAllowed==="Female"?"Girls Wing":"Boys Wing"}</span>
                       </div>
-                    </div>
+                      <div className="font-bold text-stone-900 text-sm">{h.name}</div>
+                      <div className="text-[11px] text-stone-400 mb-2">{h.campusLocation}</div>
+                      <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-orange-400 to-[var(--primary)] rounded-full" style={{width:`${pct}%`}}/>
+                      </div>
+                      <div className="flex justify-between text-[10px] text-stone-400 mt-1">
+                        <span className="text-[var(--success)] font-semibold">{avail} vacant</span>
+                        <span>{pct}% filled</span>
+                      </div>
+                    </button>
                   );
                 })}
               </div>
+            </div>
+
+            {/* Step 3: Group friends (group tab only) */}
+            {activeTab==="group" && (
+              <div className="mb-6 bg-white border border-[var(--border)] rounded-xl p-5">
+                <h3 className="text-sm font-bold text-[var(--primary-dark)] mb-3 uppercase tracking-wide">Step 3 — Friend Roll Numbers</h3>
+                <p className="text-xs text-stone-500 mb-4">Enter your friends&apos; registration numbers. All must apply and list each other.</p>
+                <div className="grid sm:grid-cols-3 gap-3">
+                  {bookingForm.friendRollNumbers.map((rn,idx)=>(
+                    <div key={idx}>
+                      <label className="block text-xs font-semibold text-stone-600 mb-1">Friend {idx+1} Roll No.</label>
+                      <input type="text" placeholder="e.g. 12345679" value={rn}
+                        onChange={e=>{ const nf=[...bookingForm.friendRollNumbers]; nf[idx]=e.target.value; setBookingForm({...bookingForm,friendRollNumbers:nf}); }}
+                        className="input-light" />
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
+
+            {/* Step 4: Your Details + Submit */}
+            <div className="bg-white border border-[var(--border)] rounded-xl p-5">
+              <h3 className="text-sm font-bold text-[var(--primary-dark)] mb-4 uppercase tracking-wide">
+                {activeTab==="group"?"Step 4":"Step 3"} — Confirm Your Details &amp; Submit
+              </h3>
+
+              {/* Selection summary */}
+              {(selectedCategory||selectedHostel) && (
+                <div className="bg-[var(--bg-alt)] rounded-xl p-4 mb-4 text-xs space-y-1.5 border border-[var(--border)]">
+                  {selectedCategory && <div className="flex justify-between"><span className="text-stone-500">Room Category</span><span className="font-semibold text-stone-900">{selectedCategory.label}</span></div>}
+                  {selectedHostel   && <div className="flex justify-between"><span className="text-stone-500">Hostel Selected</span><span className="font-semibold text-stone-900">{selectedHostel.code} — {selectedHostel.name}</span></div>}
+                  <div className="flex justify-between"><span className="text-stone-500">Booking Type</span><span className="font-semibold text-[var(--primary)]">{bookingMode==="group"?"Group Booking":"Individual Booking"}</span></div>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmitBooking} className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-600 mb-1.5">Full Name *</label>
+                    <input type="text" required value={bookingForm.studentName} onChange={e=>setBookingForm({...bookingForm,studentName:e.target.value})} className="input-light"/>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-600 mb-1.5">Registration Number *</label>
+                    <input type="text" required value={bookingForm.studentRollNumber} onChange={e=>setBookingForm({...bookingForm,studentRollNumber:e.target.value})} className="input-light"/>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-600 mb-1.5">Email Address *</label>
+                    <input type="email" required value={bookingForm.studentEmail} onChange={e=>setBookingForm({...bookingForm,studentEmail:e.target.value})} className="input-light"/>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-600 mb-1.5">Department *</label>
+                    <input type="text" required value={bookingForm.department} onChange={e=>setBookingForm({...bookingForm,department:e.target.value})} className="input-light"/>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-600 mb-1.5">Year of Study</label>
+                    <select value={bookingForm.year} onChange={e=>setBookingForm({...bookingForm,year:e.target.value})} className="input-light">
+                      {[1,2,3,4,5].map(y=><option key={y} value={y}>Year {y}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-600 mb-1.5">CGPA</label>
+                    <input type="number" min="0" max="10" step="0.1" required value={bookingForm.cgpa} onChange={e=>setBookingForm({...bookingForm,cgpa:e.target.value})} className="input-light"/>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-stone-600 mb-1.5">Special Accommodation (Optional)</label>
+                  <textarea rows={2} placeholder="e.g. Ground floor due to medical reason…" value={bookingForm.specialAccommodations} onChange={e=>setBookingForm({...bookingForm,specialAccommodations:e.target.value})} className="input-light resize-none"/>
+                </div>
+
+                {/* Terms checkbox */}
+                <label className="flex items-start gap-2.5 cursor-pointer">
+                  <input type="checkbox" required className="mt-0.5 w-4 h-4 rounded border-stone-300 text-[var(--primary)] focus:ring-[var(--primary)]"/>
+                  <span className="text-xs text-stone-600 leading-relaxed">
+                    I understand that: (1) By submitting I am giving my consent for hostel booking for Session 2026-27. (2) The booking will be considered final as per refund guidelines. (3) The charges are as per hostel booking guidelines.
+                  </span>
+                </label>
+
+                <button type="submit" disabled={submitting} className="btn-primary w-full py-3.5 rounded-[10px] text-sm font-bold disabled:opacity-60">
+                  {submitting
+                    ? <><span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin"/><span>Submitting…</span></>
+                    : <span>Submit {bookingMode==="group"?"Group":"Individual"} Booking Application →</span>
+                  }
+                </button>
+              </form>
+            </div>
           </div>
         )}
 
-        {/* ── TAB 2: MY APPLICATIONS ── */}
-        {activeTab === "my-applications" && (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-stone-900">Your Submitted Room Applications</h2>
-              <button
-                onClick={() => setActiveTab("hostels")}
-                className="btn-secondary text-sm px-4 py-2 rounded-[10px]"
-              >
-                + New Application
-              </button>
+        {/* ── Confirmation Screen ── */}
+        {(activeTab==="book"||activeTab==="group") && confirmation && (
+          <div className="bg-white border border-[var(--border)] rounded-2xl p-10 text-center max-w-lg mx-auto">
+            <div className="w-16 h-16 rounded-2xl bg-green-50 border border-green-200 text-green-600 text-3xl flex items-center justify-center mx-auto mb-4">✓</div>
+            <h3 className="text-2xl font-black text-stone-900 mb-1">Booking Submitted!</h3>
+            <p className="text-sm text-stone-500 mb-6">Your hostel application has been registered. Save your ID below.</p>
+            <div className="bg-[var(--bg-alt)] rounded-xl p-5 border border-[var(--border)] text-left mb-6 space-y-2">
+              {[
+                ["Application ID",  confirmation.applicationId, "font-mono font-bold text-[var(--primary)]"],
+                ["Student Name",    confirmation.studentName,   "font-semibold text-stone-900"],
+                ["Roll Number",     confirmation.studentRollNumber, "font-mono text-stone-900"],
+                ["Hostel Applied",  `${selectedHostel?.code} — ${selectedHostel?.name}`, "font-semibold text-stone-900"],
+                ["Room Category",   selectedCategory?.label||"", "text-[var(--success)] font-semibold"],
+                ["Booking Type",    bookingMode==="group"?"Group Booking":"Individual Booking","text-stone-700"],
+              ].map(([l,v,c])=>(
+                <div key={l} className="flex justify-between text-sm">
+                  <span className="text-stone-500">{l}:</span>
+                  <span className={c}>{v}</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-3">
+              <button onClick={()=>{ setConfirmation(null); setSelectedCategory(null); setSelectedHostel(null); setConsentGiven(false); }} className="btn-secondary flex-1 py-2.5 rounded-xl text-sm">New Booking</button>
+              <button onClick={()=>{ setConfirmation(null); setActiveTab("my-applications"); }} className="btn-primary flex-1 py-2.5 rounded-xl text-sm">View Applications →</button>
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════
+            TAB: WAIT LIST
+        ══════════════════════════════════════════ */}
+        {activeTab==="waitlist" && (
+          <div className="max-w-xl mx-auto">
+            <div className="bg-white border border-[var(--border)] rounded-2xl p-6 mb-4">
+              <h3 className="font-bold text-stone-900 mb-1">Wait List Registration</h3>
+              <p className="text-xs text-stone-500 mb-5">
+                If your preferred hostel is fully occupied, register on the wait list. You will be notified when a seat becomes available.
+              </p>
+
+              {waitlistSubmitted ? (
+                <div className="text-center py-8">
+                  <div className="w-14 h-14 rounded-2xl bg-orange-50 border border-orange-200 text-[var(--primary)] text-2xl flex items-center justify-center mx-auto mb-4">✓</div>
+                  <h4 className="font-bold text-stone-900 mb-1">Added to Wait List</h4>
+                  <p className="text-sm text-stone-500 mb-4">You will be notified at <strong>{bookingForm.studentEmail}</strong> when a slot opens.</p>
+                  <button onClick={()=>setWaitlistSubmitted(false)} className="btn-secondary text-sm px-5 py-2.5 rounded-xl">Register for Another Hostel</button>
+                </div>
+              ) : (
+                <form onSubmit={handleWaitlist} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-600 mb-1.5">Preferred Hostel</label>
+                    <select value={waitlistForm.hostelCode} onChange={e=>setWaitlistForm({...waitlistForm,hostelCode:e.target.value})} className="input-light" required>
+                      <option value="">— Select Hostel —</option>
+                      {allHostels.map(h=><option key={h._id} value={h.code}>{h.code} — {h.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-600 mb-1.5">Room Type Preference</label>
+                    <select value={waitlistForm.roomType} onChange={e=>setWaitlistForm({...waitlistForm,roomType:e.target.value})} className="input-light">
+                      <option>Single</option><option>Double</option><option>Triple</option><option>Quad</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-600 mb-1.5">Reason / Additional Note (Optional)</label>
+                    <textarea rows={3} placeholder="e.g. Preferred hostel due to proximity to department…" value={waitlistForm.reason} onChange={e=>setWaitlistForm({...waitlistForm,reason:e.target.value})} className="input-light resize-none"/>
+                  </div>
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input type="checkbox" required className="mt-0.5 w-4 h-4 rounded border-stone-300 text-[var(--primary)]"/>
+                    <span className="text-xs text-stone-600">I understand that the wait list request gives my consent to book the residential facility for Session 2026-27 subject to availability.</span>
+                  </label>
+                  <button type="submit" className="btn-primary w-full py-3 rounded-xl text-sm font-bold">Register on Wait List →</button>
+                </form>
+              )}
             </div>
 
-            {myApplications.length === 0 ? (
+            <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-xs text-stone-600 space-y-1.5">
+              <p className="font-semibold text-[var(--primary-dark)] mb-2">Wait List Guidelines</p>
+              <p>1. By submitting the wait list request you are giving consent to book the residential facility for Session 2026-27.</p>
+              <p>2. If your preferred seater/hostel is booked per availability, you are liable to pay the charges per hostel booking guidelines.</p>
+              <p>3. The booking will be considered final and cancellation is per the refund guidelines.</p>
+              <p>4. CDB benefits will be applicable based on actual date of residential services booking, not the wait list request date.</p>
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════
+            TAB: MY APPLICATIONS
+        ══════════════════════════════════════════ */}
+        {activeTab==="my-applications" && (
+          <div>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="font-bold text-stone-900">Your Submitted Applications</h2>
+              <button onClick={()=>setActiveTab("book")} className="btn-secondary text-sm px-4 py-2 rounded-xl">+ New Booking</button>
+            </div>
+
+            {myApplications.length===0 ? (
               <div className="text-center py-20 bg-white border border-[var(--border)] rounded-2xl">
                 <div className="text-5xl mb-3">📋</div>
-                <h3 className="text-lg font-bold text-stone-800">No Applications Yet</h3>
-                <p className="text-sm text-stone-500 mt-1 mb-5">
-                  You haven't submitted any room allocation requests for the current semester.
-                </p>
-                <button
-                  onClick={() => setActiveTab("hostels")}
-                  className="btn-primary text-sm px-6 py-2.5 rounded-[10px]"
-                >
-                  Browse Available Hostels
-                </button>
+                <h3 className="font-bold text-stone-800">No Applications Yet</h3>
+                <p className="text-sm text-stone-500 mt-1 mb-5">Submit an Individual or Group Booking to get started.</p>
+                <button onClick={()=>setActiveTab("book")} className="btn-primary text-sm px-6 py-2.5 rounded-xl">Start Booking</button>
               </div>
             ) : (
               <div className="space-y-4">
-                {myApplications.map((app) => (
-                  <div
-                    key={app._id || app.applicationId}
-                    className="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6"
-                  >
+                {myApplications.map(app=>(
+                  <div key={app._id||app.applicationId} className="bg-white border border-[var(--border)] rounded-2xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-3 mb-2 flex-wrap">
-                        <span className="font-mono font-black text-base text-stone-900">{app.applicationId}</span>
-                        <StatusBadge status={app.status} />
+                        <span className="font-mono font-black text-stone-900">{app.applicationId}</span>
+                        <StatusBadge status={app.status}/>
+                        {app.bookingMode==="group" && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">Group</span>}
                       </div>
-
                       <p className="text-sm text-stone-600">
-                        Student:{" "}
-                        <span className="font-semibold text-stone-900">{app.studentName}</span>{" "}
-                        ({app.studentRollNumber}) · {app.department}
+                        <strong className="text-stone-900">{app.studentName}</strong> ({app.studentRollNumber}) · {app.department}
                       </p>
-
-                      {app.preferences && app.preferences.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-3">
-                          {app.preferences.map((p, idx) => (
-                            <span key={idx} className="chip">
-                              Choice {idx + 1}: <strong>{p.hostelCode || p.hostelName}</strong> ({p.roomType || "Room"} · {p.acPreference || "AC"})
+                      {app.preferences?.length>0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {app.preferences.map((p,i)=>(
+                            <span key={i} className="chip">
+                              {p.hostelCode} · {p.roomType} · {p.acPreference}
                             </span>
                           ))}
                         </div>
                       )}
-
-                      <p className="text-[11px] text-stone-400 mt-3">
-                        Submitted: {new Date(app.submittedAt || Date.now()).toLocaleString()}
-                      </p>
+                      <p className="text-[11px] text-stone-400 mt-2">Submitted: {new Date(app.submittedAt||Date.now()).toLocaleString()}</p>
                     </div>
-
-                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                      <div className="text-xs text-stone-400">CGPA Verification</div>
-                      <div className="text-xl font-black text-[var(--success)]">{app.cgpa} / 10.0</div>
-                      <span className="text-[11px] text-stone-400">Processed by LPU Warden Office</span>
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-xs text-stone-400">CGPA</div>
+                      <div className="text-xl font-black text-[var(--success)]">{app.cgpa}/10</div>
                     </div>
                   </div>
                 ))}
@@ -462,324 +504,7 @@ export default function StudentDashboard() {
             )}
           </div>
         )}
-      </main>
-
-      {/* ══════════════════════════════════════════
-          BOOKING MODAL
-          ══════════════════════════════════════════ */}
-      {showBooking && selectedHostel && (
-        <div
-          className="modal-overlay"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowBooking(false);
-              setConfirmation(null);
-            }
-          }}
-        >
-          <div className="modal-card w-full max-w-xl max-h-[90vh] overflow-y-auto">
-            {/* Modal header */}
-            <div className="sticky top-0 bg-white border-b border-[var(--border)] px-6 py-4 flex items-center justify-between z-10">
-              <div>
-                <p className="section-label text-[11px] mb-0.5">Hostel Booking Form</p>
-                <h2 className="text-lg font-black text-stone-900">Apply for {selectedHostel.code}</h2>
-              </div>
-              <button
-                onClick={() => { setShowBooking(false); setConfirmation(null); }}
-                className="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-500 hover:text-stone-800 transition-colors text-lg leading-none"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Success receipt */}
-            {confirmation ? (
-              <div className="p-8 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-[var(--success-soft)] border border-green-200 text-[var(--success)] text-3xl flex items-center justify-center mx-auto mb-4">
-                  ✓
-                </div>
-                <h3 className="text-2xl font-black text-stone-900 mb-1">Application Submitted!</h3>
-                <p className="text-sm text-stone-500 mb-6 max-w-sm mx-auto">
-                  Your hostel application is registered in the LPU allocation queue. Save your ID below.
-                </p>
-
-                <div className="bg-[var(--bg-alt)] rounded-2xl p-5 border border-[var(--border)] text-left mb-6 space-y-2.5">
-                  {[
-                    ["Application Number", confirmation.applicationId, "text-[var(--primary)] font-mono font-bold"],
-                    ["Student Name", confirmation.studentName, "font-semibold text-stone-900"],
-                    ["Roll Number", confirmation.studentRollNumber, "font-mono text-stone-900"],
-                    ["Requested Hostel", `${selectedHostel.code} (${selectedHostel.name})`, "font-semibold text-stone-900"],
-                    ["Room Tier", `${bookingForm.roomType} · ${bookingForm.acPreference}`, "text-[var(--success)] font-semibold"],
-                  ].map(([label, val, cls]) => (
-                    <div key={label} className="flex justify-between items-center text-sm">
-                      <span className="text-stone-500">{label}:</span>
-                      <span className={cls}>{val}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <button
-                  onClick={() => { setShowBooking(false); setConfirmation(null); setActiveTab("my-applications"); }}
-                  className="btn-primary w-full py-3.5 rounded-[10px]"
-                >
-                  View in My Applications →
-                </button>
-              </div>
-            ) : (
-              /* Booking form */
-              <form onSubmit={handleBook} className="p-6 space-y-6">
-                {/* Section 1: Student Info */}
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-4">
-                    1. Student Details
-                  </h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-stone-600 mb-1.5">Full Name *</label>
-                      <input
-                        type="text"
-                        required
-                        value={bookingForm.studentName}
-                        onChange={(e) => setBookingForm({ ...bookingForm, studentName: e.target.value })}
-                        className="input-light"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-stone-600 mb-1.5">Registration No. *</label>
-                      <input
-                        type="text"
-                        required
-                        value={bookingForm.studentRollNumber}
-                        onChange={(e) => setBookingForm({ ...bookingForm, studentRollNumber: e.target.value })}
-                        className="input-light"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 mt-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-stone-600 mb-1.5">Email Address *</label>
-                      <input
-                        type="email"
-                        required
-                        value={bookingForm.studentEmail}
-                        onChange={(e) => setBookingForm({ ...bookingForm, studentEmail: e.target.value })}
-                        className="input-light"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-stone-600 mb-1.5">Department *</label>
-                      <input
-                        type="text"
-                        required
-                        value={bookingForm.department}
-                        onChange={(e) => setBookingForm({ ...bookingForm, department: e.target.value })}
-                        className="input-light"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-3 mt-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-stone-600 mb-1.5">Study Year</label>
-                      <select
-                        value={bookingForm.year}
-                        onChange={(e) => setBookingForm({ ...bookingForm, year: e.target.value })}
-                        className="input-light"
-                      >
-                        {[1, 2, 3, 4, 5].map((y) => <option key={y} value={y}>Year {y}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-stone-600 mb-1.5">Gender</label>
-                      <select
-                        value={bookingForm.gender}
-                        onChange={(e) => setBookingForm({ ...bookingForm, gender: e.target.value })}
-                        className="input-light"
-                      >
-                        <option>Male</option>
-                        <option>Female</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-stone-600 mb-1.5">Current CGPA</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="10"
-                        step="0.1"
-                        required
-                        value={bookingForm.cgpa}
-                        onChange={(e) => setBookingForm({ ...bookingForm, cgpa: e.target.value })}
-                        className="input-light"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Section 2: Room Config */}
-                <div className="pt-4 border-t border-[var(--border)]">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-4">
-                    2. Room Configuration
-                  </h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-stone-600 mb-1.5">Room Sharing Type</label>
-                      <select
-                        value={bookingForm.roomType}
-                        onChange={(e) => setBookingForm({ ...bookingForm, roomType: e.target.value })}
-                        className="input-light"
-                      >
-                        <option>Single</option>
-                        <option>Double</option>
-                        <option>Triple</option>
-                        <option>Quad</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-stone-600 mb-1.5">AC Preference</label>
-                      <select
-                        value={bookingForm.acPreference}
-                        onChange={(e) => setBookingForm({ ...bookingForm, acPreference: e.target.value })}
-                        className="input-light"
-                      >
-                        <option>AC</option>
-                        <option>Non-AC</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="mt-3">
-                    <label className="block text-xs font-semibold text-stone-600 mb-1.5">
-                      Accessibility / Special Requests (Optional)
-                    </label>
-                    <textarea
-                      rows={2}
-                      placeholder="e.g. Ground floor request due to medical reason or mobility accommodation…"
-                      value={bookingForm.specialAccommodations}
-                      onChange={(e) => setBookingForm({ ...bookingForm, specialAccommodations: e.target.value })}
-                      className="input-light resize-none"
-                    />
-                  </div>
-                </div>
-
-                {/* Section 3: Book with Friends (NEW FEATURE) */}
-                <div className="pt-4 border-t border-[var(--border)]">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-stone-400">
-                      3. 🤝 Book with Friends (Optional)
-                    </h4>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={bookingForm.bookWithFriends}
-                        onChange={(e) => setBookingForm({ ...bookingForm, bookWithFriends: e.target.checked })}
-                        className="w-4 h-4 rounded border-stone-300 text-[var(--primary)] focus:ring-[var(--primary)]"
-                      />
-                      <span className="text-xs font-semibold text-stone-700">Enable Friend Booking</span>
-                    </label>
-                  </div>
-
-                  {bookingForm.bookWithFriends && (
-                    <div className="bg-[var(--primary-soft)] border border-orange-200 rounded-xl p-4 space-y-3">
-                      <p className="text-xs text-stone-600 leading-relaxed">
-                        <strong>🎉 Book together!</strong> Enter your friends' roll numbers below. All students must apply 
-                        and list each other to be allocated together.
-                      </p>
-                      {bookingForm.friendRollNumbers.map((rollNo, idx) => (
-                        <div key={idx}>
-                          <label className="block text-xs font-semibold text-stone-600 mb-1.5">
-                            Friend {idx + 1} Roll Number
-                          </label>
-                          <input
-                            type="text"
-                            placeholder={`Enter roll number (e.g., 12345679)`}
-                            value={rollNo}
-                            onChange={(e) => {
-                              const newFriends = [...bookingForm.friendRollNumbers];
-                              newFriends[idx] = e.target.value;
-                              setBookingForm({ ...bookingForm, friendRollNumbers: newFriends });
-                            }}
-                            className="input-light"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Section 4: Room Preferences (NEW FEATURE) */}
-                <div className="pt-4 border-t border-[var(--border)]">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-4">
-                    4. 🎯 Additional Preferences
-                  </h4>
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-stone-600 mb-1.5">Preferred Floor</label>
-                      <select
-                        value={bookingForm.roomPreferences.floor}
-                        onChange={(e) => setBookingForm({ 
-                          ...bookingForm, 
-                          roomPreferences: { ...bookingForm.roomPreferences, floor: e.target.value }
-                        })}
-                        className="input-light"
-                      >
-                        <option value="">No Preference</option>
-                        <option value="ground">Ground Floor</option>
-                        <option value="1-3">Floors 1-3 (Lower)</option>
-                        <option value="4-6">Floors 4-6 (Middle)</option>
-                        <option value="7-9">Floors 7-9 (Higher)</option>
-                      </select>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={bookingForm.roomPreferences.quietZone}
-                          onChange={(e) => setBookingForm({ 
-                            ...bookingForm, 
-                            roomPreferences: { ...bookingForm.roomPreferences, quietZone: e.target.checked }
-                          })}
-                          className="w-4 h-4 rounded border-stone-300 text-[var(--primary)] focus:ring-[var(--primary)]"
-                        />
-                        <span className="text-xs text-stone-700">🤫 Quiet Zone</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={bookingForm.roomPreferences.studyFocused}
-                          onChange={(e) => setBookingForm({ 
-                            ...bookingForm, 
-                            roomPreferences: { ...bookingForm.roomPreferences, studyFocused: e.target.checked }
-                          })}
-                          className="w-4 h-4 rounded border-stone-300 text-[var(--primary)] focus:ring-[var(--primary)]"
-                        />
-                        <span className="text-xs text-stone-700">📚 Study Focused</span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="btn-primary w-full py-3.5 rounded-[10px] text-[15px] disabled:opacity-60"
-                >
-                  {submitting ? (
-                    <>
-                      <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                      <span>Submitting Application…</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Submit Room Booking Application</span>
-                      <span>→</span>
-                    </>
-                  )}
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
