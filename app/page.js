@@ -23,18 +23,18 @@ import {
 
 // ── Fallback 12 LPU Hostel Blocks ──
 const INITIAL_HOSTELS = [
-  { _id: "h1", code: "BH-1", name: "Boys Hostel 1 (Aryabhata Block)", genderAllowed: "Male", campusLocation: "West Residential Zone", totalBeds: 360, availableBeds: 84, floors: 9, acAvailable: true, roomTypes: ["Double", "Triple"] },
-  { _id: "h2", code: "BH-2", name: "Boys Hostel 2 (Chanakya Block)", genderAllowed: "Male", campusLocation: "West Residential Zone", totalBeds: 360, availableBeds: 42, floors: 9, acAvailable: true, roomTypes: ["Single", "Double"] },
-  { _id: "h3", code: "BH-3", name: "Boys Hostel 3 (Ramanujan Block)", genderAllowed: "Male", campusLocation: "North Residential Quadrant", totalBeds: 400, availableBeds: 110, floors: 10, acAvailable: false, roomTypes: ["Triple", "Quad"] },
-  { _id: "h4", code: "BH-4", name: "Boys Hostel 4 (Kalam Block)", genderAllowed: "Male", campusLocation: "West Residential Zone", totalBeds: 380, availableBeds: 65, floors: 9, acAvailable: true, roomTypes: ["Single", "Double"] },
-  { _id: "h5", code: "BH-5", name: "Boys Hostel 5 (Vivekananda Block)", genderAllowed: "Male", campusLocation: "West Residential Zone", totalBeds: 360, availableBeds: 92, floors: 9, acAvailable: true, roomTypes: ["Double", "Triple"] },
-  { _id: "h6", code: "BH-6", name: "Boys Hostel 6 (Tagore Block)", genderAllowed: "Male", campusLocation: "North Residential Quadrant", totalBeds: 360, availableBeds: 78, floors: 9, acAvailable: false, roomTypes: ["Triple", "Quad"] },
-  { _id: "h7", code: "BH-7", name: "Boys Hostel 7 (Bhabha Block)", genderAllowed: "Male", campusLocation: "West Residential Zone", totalBeds: 380, availableBeds: 50, floors: 9, acAvailable: true, roomTypes: ["Single", "Double"] },
-  { _id: "h8", code: "BH-8", name: "Boys Hostel 8 (Ashoka Block)", genderAllowed: "Male", campusLocation: "North Residential Quadrant", totalBeds: 360, availableBeds: 115, floors: 9, acAvailable: false, roomTypes: ["Double", "Triple"] },
-  { _id: "h9", code: "BH-9", name: "Boys Hostel 9 (Sarabhai Block)", genderAllowed: "Male", campusLocation: "West Residential Zone", totalBeds: 420, availableBeds: 80, floors: 10, acAvailable: true, roomTypes: ["Double", "Quad"] },
-  { _id: "h10", code: "GH-1", name: "Girls Hostel 1 (Kalpana Block)", genderAllowed: "Female", campusLocation: "East Residential Quadrant", totalBeds: 360, availableBeds: 60, floors: 9, acAvailable: true, roomTypes: ["Single", "Double"] },
-  { _id: "h11", code: "GH-2", name: "Girls Hostel 2 (Gargi Block)", genderAllowed: "Female", campusLocation: "East Residential Quadrant", totalBeds: 380, availableBeds: 74, floors: 9, acAvailable: true, roomTypes: ["Double", "Triple"] },
-  { _id: "h12", code: "GH-3", name: "Girls Hostel 3 (Maitreyi Block)", genderAllowed: "Female", campusLocation: "East Residential Quadrant", totalBeds: 400, availableBeds: 95, floors: 10, acAvailable: true, roomTypes: ["Triple", "Quad"] },
+  { _id: "h1", code: "BH-1", name: "Boys Hostel 1", genderAllowed: "Male", campusLocation: "West Residential Zone", totalBeds: 360, availableBeds: 84, floors: 9, acAvailable: true, roomTypes: ["Double", "Triple"] },
+  { _id: "h2", code: "BH-2", name: "Boys Hostel 2", genderAllowed: "Male", campusLocation: "West Residential Zone", totalBeds: 360, availableBeds: 42, floors: 9, acAvailable: true, roomTypes: ["Single", "Double"] },
+  { _id: "h3", code: "BH-3", name: "Boys Hostel 3", genderAllowed: "Male", campusLocation: "North Residential Quadrant", totalBeds: 400, availableBeds: 110, floors: 10, acAvailable: false, roomTypes: ["Triple", "Quad"] },
+  { _id: "h4", code: "BH-4", name: "Boys Hostel 4", genderAllowed: "Male", campusLocation: "West Residential Zone", totalBeds: 380, availableBeds: 65, floors: 9, acAvailable: true, roomTypes: ["Single", "Double"] },
+  { _id: "h5", code: "BH-5", name: "Boys Hostel 5", genderAllowed: "Male", campusLocation: "West Residential Zone", totalBeds: 360, availableBeds: 92, floors: 9, acAvailable: true, roomTypes: ["Double", "Triple"] },
+  { _id: "h6", code: "BH-6", name: "Boys Hostel 6", genderAllowed: "Male", campusLocation: "North Residential Quadrant", totalBeds: 360, availableBeds: 78, floors: 9, acAvailable: false, roomTypes: ["Triple", "Quad"] },
+  { _id: "h7", code: "BH-7", name: "Boys Hostel 7", genderAllowed: "Male", campusLocation: "West Residential Zone", totalBeds: 380, availableBeds: 50, floors: 9, acAvailable: true, roomTypes: ["Single", "Double"] },
+  { _id: "h8", code: "BH-8", name: "Boys Hostel 8", genderAllowed: "Male", campusLocation: "North Residential Quadrant", totalBeds: 360, availableBeds: 115, floors: 9, acAvailable: false, roomTypes: ["Double", "Triple"] },
+  { _id: "h9", code: "BH-9", name: "Boys Hostel 9", genderAllowed: "Male", campusLocation: "West Residential Zone", totalBeds: 420, availableBeds: 80, floors: 10, acAvailable: true, roomTypes: ["Double", "Quad"] },
+  { _id: "h10", code: "GH-1", name: "Girls Hostel 1", genderAllowed: "Female", campusLocation: "East Residential Quadrant", totalBeds: 360, availableBeds: 60, floors: 9, acAvailable: true, roomTypes: ["Single", "Double"] },
+  { _id: "h11", code: "GH-2", name: "Girls Hostel 2", genderAllowed: "Female", campusLocation: "East Residential Quadrant", totalBeds: 380, availableBeds: 74, floors: 9, acAvailable: true, roomTypes: ["Double", "Triple"] },
+  { _id: "h12", code: "GH-3", name: "Girls Hostel 3", genderAllowed: "Female", campusLocation: "East Residential Quadrant", totalBeds: 400, availableBeds: 95, floors: 10, acAvailable: true, roomTypes: ["Triple", "Quad"] },
 ];
 
 // ── Campus Facilities (Vector Architecture - Zero AI Images) ──
@@ -529,7 +529,7 @@ export default function Home() {
                       </span>
                     </div>
 
-                    <h3 className="text-lg font-black text-white leading-tight mb-1">{h.name}</h3>
+                    <h3 className="text-lg font-black text-white leading-tight mb-1">{h.name ? h.name.replace(/\s*\([^)]*\)/g, "") : h.code}</h3>
                     <p className="text-xs text-stone-300">{h.campusLocation || "Main University Campus"}</p>
 
                     <div className="mt-4 flex flex-wrap gap-2 text-[10px] font-semibold text-stone-300">
