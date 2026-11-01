@@ -1,11 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import LpuLogo from "../../components/LpuLogo";
 
 const HOSTEL_IMGS = {
-  BH: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=600&q=80",
-  GH: "https://images.unsplash.com/photo-1596516109370-65d1f33bd24e?auto=format&fit=crop&w=600&q=80",
-  DEFAULT: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=600&q=80",
+  BH: "/images/Screenshot 2026-11-01 122358.png",
+  GH: "/images/Screenshot 2026-11-01 122549.png",
+  DEFAULT: "/images/Screenshot 2026-11-01 122649.png",
 };
 
 function getHostelImg(code) {
@@ -32,6 +33,12 @@ export default function StudentDashboard() {
   const [genderFilter, setGenderFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("hostels");
+  const [dashboardStats, setDashboardStats] = useState({
+    totalHostels: 0,
+    availableRooms: 0,
+    pendingApplications: 0,
+    approvedApplications: 0,
+  });
 
   // Booking modal state
   const [showBooking, setShowBooking] = useState(false);
@@ -47,6 +54,13 @@ export default function StudentDashboard() {
     roomType: "Double",
     acPreference: "AC",
     specialAccommodations: "",
+    bookWithFriends: false,
+    friendRollNumbers: ["", "", ""],
+    roomPreferences: {
+      floor: "",
+      quietZone: false,
+      studyFocused: false,
+    },
   });
   const [submitting, setSubmitting] = useState(false);
   const [confirmation, setConfirmation] = useState(null);
@@ -55,7 +69,18 @@ export default function StudentDashboard() {
   useEffect(() => {
     fetchHostels();
     fetchMyApplications();
+    calculateDashboardStats();
   }, [genderFilter, search]);
+  
+  const calculateDashboardStats = () => {
+    const stats = {
+      totalHostels: hostels.length,
+      availableRooms: hostels.reduce((sum, h) => sum + (h.availableBeds || 0), 0),
+      pendingApplications: myApplications.filter(a => a.status === 'SUBMITTED' || a.status === 'UNDER_REVIEW').length,
+      approvedApplications: myApplications.filter(a => a.status === 'ALLOCATED').length,
+    };
+    setDashboardStats(stats);
+  };
 
   const fetchHostels = () => {
     setLoading(true);
@@ -135,15 +160,9 @@ export default function StudentDashboard() {
 
       {/* ── Top Navbar ── */}
       <nav className="sticky top-0 z-40 bg-white border-b border-[var(--border)] shadow-sm px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[var(--primary)] flex items-center justify-center font-black text-white text-sm">
-            L
-          </div>
-          <div>
-            <span className="font-bold text-[15px] text-stone-900">LPU Student Dashboard</span>
-            <p className="text-[11px] text-stone-400 leading-none">Hostel Allocation Portal · Session 2026</p>
-          </div>
-        </div>
+        <Link href="/" className="flex items-center gap-3 group">
+          <LpuLogo size={38} showText={true} subtitle="Student Portal · Session 2026" />
+        </Link>
 
         <div className="flex items-center gap-3">
           {/* Online indicator */}
@@ -203,20 +222,73 @@ export default function StudentDashboard() {
           </div>
         </div>
 
+        {/* ── Quick Stats Cards ── */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {[
+            { 
+              label: "Available Hostels", 
+              value: hostels.length, 
+              icon: "🏢", 
+              color: "bg-blue-50 text-blue-600 border-blue-100",
+              change: "+2 this week"
+            },
+            { 
+              label: "Open Rooms", 
+              value: hostels.reduce((sum, h) => sum + (h.availableBeds || 0), 0), 
+              icon: "🚪", 
+              color: "bg-green-50 text-green-600 border-green-100",
+              change: "168 vacant beds"
+            },
+            { 
+              label: "My Applications", 
+              value: myApplications.length, 
+              icon: "📋", 
+              color: "bg-orange-50 text-orange-600 border-orange-100",
+              change: myApplications.filter(a => a.status === 'UNDER_REVIEW').length + " in review"
+            },
+            { 
+              label: "Success Rate", 
+              value: myApplications.length > 0 
+                ? Math.round((myApplications.filter(a => a.status === 'ALLOCATED').length / myApplications.length) * 100) + "%" 
+                : "N/A", 
+              icon: "✨", 
+              color: "bg-purple-50 text-purple-600 border-purple-100",
+              change: "Based on history"
+            },
+          ].map((stat, i) => (
+            <div key={i} className="card-glow bg-white border border-[var(--border)] rounded-2xl p-5 scale-in" style={{ animationDelay: `${i * 0.1}s` }}>
+              <div className={`w-10 h-10 rounded-xl ${stat.color} border flex items-center justify-center text-xl mb-3`}>
+                {stat.icon}
+              </div>
+              <div className="text-2xl md:text-3xl font-black text-stone-900 mb-1 count-up">{stat.value}</div>
+              <div className="text-xs font-bold text-stone-500 mb-1">{stat.label}</div>
+              <div className="text-[10px] text-stone-400">{stat.change}</div>
+            </div>
+          ))}
+        </div>
+
         {/* ── TAB 1: AVAILABLE HOSTELS ── */}
         {activeTab === "hostels" && (
           <div>
             {/* Search & filter toolbar */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
-              <div className="relative w-full sm:w-72">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 text-sm">🔍</span>
+              <div className="relative w-full sm:w-72 group">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 text-sm group-focus-within:text-[var(--primary)] transition-colors">🔍</span>
                 <input
                   type="text"
                   placeholder="Search hostel name or code…"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="input-light pl-10"
+                  className="input-light input-glow pl-10 w-full"
                 />
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-stone-200 hover:bg-stone-300 flex items-center justify-center text-xs text-stone-600 transition-colors"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
 
               <div className="filter-bar">
@@ -224,7 +296,7 @@ export default function StudentDashboard() {
                   <button
                     key={g}
                     onClick={() => setGenderFilter(g)}
-                    className={`filter-tab ${genderFilter === g ? "active" : ""}`}
+                    className={`filter-tab transition-all ${genderFilter === g ? "active" : ""}`}
                   >
                     {g === "All" ? "All Blocks" : g === "Male" ? "Boys (BH1-9)" : "Girls (GH1-3)"}
                   </button>
@@ -232,11 +304,19 @@ export default function StudentDashboard() {
               </div>
             </div>
 
-            {/* Skeleton loaders */}
+            {/* Skeleton loaders with stagger animation */}
             {loading ? (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="bg-stone-100 rounded-2xl h-72 animate-pulse" />
+                  <div key={i} className="bg-white border border-[var(--border)] rounded-2xl overflow-hidden" style={{ animationDelay: `${i * 0.05}s` }}>
+                    <div className="skeleton h-44 rounded-none" />
+                    <div className="p-5 space-y-3">
+                      <div className="skeleton h-5 w-3/4" />
+                      <div className="skeleton h-3 w-1/2" />
+                      <div className="skeleton h-16 w-full" />
+                      <div className="skeleton h-10 w-full rounded-lg" />
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : hostels.length === 0 ? (
@@ -251,9 +331,10 @@ export default function StudentDashboard() {
                   const totalBeds = hostel.totalBeds || hostel.totalCapacity || 360;
                   const availBeds = hostel.availableBeds || hostel.availableCapacity || 100;
                   const occPercent = Math.min(100, Math.round(((totalBeds - availBeds) / totalBeds) * 100));
+                  const isLowAvailability = availBeds < 50;
 
                   return (
-                    <div key={hostel._id} className="card group flex flex-col overflow-hidden">
+                    <div key={hostel._id} className="card-glow group flex flex-col overflow-hidden transform transition-all duration-300 hover:scale-[1.02]">
                       {/* Image */}
                       <div className="relative h-44 overflow-hidden">
                         <img
@@ -272,6 +353,13 @@ export default function StudentDashboard() {
                         >
                           {hostel.genderAllowed === "Female" ? "Girls Wing" : "Boys Wing"}
                         </span>
+                        
+                        {/* Low availability warning */}
+                        {isLowAvailability && (
+                          <div className="absolute bottom-3 left-3 right-3 bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg text-center">
+                            ⚡ Limited Availability - Book Soon!
+                          </div>
+                        )}
                       </div>
 
                       {/* Content */}
@@ -589,6 +677,103 @@ export default function StudentDashboard() {
                       onChange={(e) => setBookingForm({ ...bookingForm, specialAccommodations: e.target.value })}
                       className="input-light resize-none"
                     />
+                  </div>
+                </div>
+
+                {/* Section 3: Book with Friends (NEW FEATURE) */}
+                <div className="pt-4 border-t border-[var(--border)]">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-stone-400">
+                      3. 🤝 Book with Friends (Optional)
+                    </h4>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={bookingForm.bookWithFriends}
+                        onChange={(e) => setBookingForm({ ...bookingForm, bookWithFriends: e.target.checked })}
+                        className="w-4 h-4 rounded border-stone-300 text-[var(--primary)] focus:ring-[var(--primary)]"
+                      />
+                      <span className="text-xs font-semibold text-stone-700">Enable Friend Booking</span>
+                    </label>
+                  </div>
+
+                  {bookingForm.bookWithFriends && (
+                    <div className="bg-[var(--primary-soft)] border border-orange-200 rounded-xl p-4 space-y-3">
+                      <p className="text-xs text-stone-600 leading-relaxed">
+                        <strong>🎉 Book together!</strong> Enter your friends' roll numbers below. All students must apply 
+                        and list each other to be allocated together.
+                      </p>
+                      {bookingForm.friendRollNumbers.map((rollNo, idx) => (
+                        <div key={idx}>
+                          <label className="block text-xs font-semibold text-stone-600 mb-1.5">
+                            Friend {idx + 1} Roll Number
+                          </label>
+                          <input
+                            type="text"
+                            placeholder={`Enter roll number (e.g., 12345679)`}
+                            value={rollNo}
+                            onChange={(e) => {
+                              const newFriends = [...bookingForm.friendRollNumbers];
+                              newFriends[idx] = e.target.value;
+                              setBookingForm({ ...bookingForm, friendRollNumbers: newFriends });
+                            }}
+                            className="input-light"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Section 4: Room Preferences (NEW FEATURE) */}
+                <div className="pt-4 border-t border-[var(--border)]">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-4">
+                    4. 🎯 Additional Preferences
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-stone-600 mb-1.5">Preferred Floor</label>
+                      <select
+                        value={bookingForm.roomPreferences.floor}
+                        onChange={(e) => setBookingForm({ 
+                          ...bookingForm, 
+                          roomPreferences: { ...bookingForm.roomPreferences, floor: e.target.value }
+                        })}
+                        className="input-light"
+                      >
+                        <option value="">No Preference</option>
+                        <option value="ground">Ground Floor</option>
+                        <option value="1-3">Floors 1-3 (Lower)</option>
+                        <option value="4-6">Floors 4-6 (Middle)</option>
+                        <option value="7-9">Floors 7-9 (Higher)</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={bookingForm.roomPreferences.quietZone}
+                          onChange={(e) => setBookingForm({ 
+                            ...bookingForm, 
+                            roomPreferences: { ...bookingForm.roomPreferences, quietZone: e.target.checked }
+                          })}
+                          className="w-4 h-4 rounded border-stone-300 text-[var(--primary)] focus:ring-[var(--primary)]"
+                        />
+                        <span className="text-xs text-stone-700">🤫 Quiet Zone</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={bookingForm.roomPreferences.studyFocused}
+                          onChange={(e) => setBookingForm({ 
+                            ...bookingForm, 
+                            roomPreferences: { ...bookingForm.roomPreferences, studyFocused: e.target.checked }
+                          })}
+                          className="w-4 h-4 rounded border-stone-300 text-[var(--primary)] focus:ring-[var(--primary)]"
+                        />
+                        <span className="text-xs text-stone-700">📚 Study Focused</span>
+                      </label>
+                    </div>
                   </div>
                 </div>
 

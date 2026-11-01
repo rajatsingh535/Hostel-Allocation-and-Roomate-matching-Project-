@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import LpuLogo from "../../components/LpuLogo";
 
 export default function StudentLogin() {
   const [formData, setFormData] = useState({ regNo: "", password: "" });
@@ -40,9 +41,7 @@ export default function StudentLogin() {
           </Link>
 
           {/* Logo icon */}
-          <div className="w-14 h-14 rounded-2xl bg-[var(--primary)] flex items-center justify-center text-white font-black text-2xl mx-auto mb-4 shadow-md">
-            L
-          </div>
+          <div className="flex justify-center mb-4"><LpuLogo size={56} showText={false} /></div>
           <h1 className="text-[28px] font-black text-stone-900 tracking-tight">Student Portal</h1>
           <p className="text-sm text-stone-500 mt-1">Lovely Professional University · Hostel Allocation</p>
         </div>
