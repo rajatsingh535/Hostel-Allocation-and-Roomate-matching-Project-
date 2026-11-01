@@ -40,11 +40,11 @@ export default function StudentLogin() {
           </Link>
 
           {/* Logo icon */}
-          <div className="w-16 h-16 mx-auto mb-4">
+          <div className="w-16 h-16 mx-auto mb-4 bg-white rounded-2xl shadow-lg flex items-center justify-center border border-gray-100">
             <img 
-              src="/logos/lpu-logo.svg" 
-              alt="LPU Logo" 
-              className="w-full h-full"
+              src="/lpu-logo.ico" 
+              alt="LPU" 
+              className="w-12 h-12 object-contain"
             />
           </div>
           <h1 className="text-[28px] font-black text-stone-900 tracking-tight">Student Portal</h1>

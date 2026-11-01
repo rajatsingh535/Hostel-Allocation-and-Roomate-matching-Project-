@@ -234,11 +234,13 @@ export default function AdminDashboard() {
       {/* ── Top Navbar ── */}
       <nav className="sticky top-0 z-40 bg-white border-b border-[var(--border)] shadow-sm px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img 
-            src="/logos/lpu-logo.svg" 
-            alt="LPU Logo" 
-            className="h-9 w-9"
-          />
+          <div className="w-9 h-9 bg-white rounded-lg shadow-sm flex items-center justify-center overflow-hidden border border-gray-100">
+            <img 
+              src="/lpu-logo.ico" 
+              alt="LPU" 
+              className="w-7 h-7 object-contain"
+            />
+          </div>
           <div>
             <span className="font-bold text-[15px] text-stone-900">LPU Administrative Command Center</span>
             <p className="text-[11px] text-stone-400 leading-none">Chief Warden Office · Residential Allotments</p>

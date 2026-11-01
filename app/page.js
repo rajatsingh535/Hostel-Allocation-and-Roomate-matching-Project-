@@ -33,7 +33,13 @@ export default function Home() {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3">
-              <img src="/lpu-logo.ico" alt="LPU" className="h-10 w-10" />
+              <div className="w-10 h-10 bg-white rounded-lg shadow-sm flex items-center justify-center overflow-hidden border border-gray-100">
+                <img 
+                  src="/lpu-logo.ico" 
+                  alt="LPU" 
+                  className="w-8 h-8 object-contain"
+                />
+              </div>
               <div>
                 <h1 className="text-lg font-bold text-gray-900">LPU Hostel Portal</h1>
                 <p className="text-xs text-gray-500">Lovely Professional University</p>
