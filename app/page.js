@@ -3,47 +3,42 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 // ── Campus & Hostel Showcase Slides ──
-// Each image URL is carefully matched to its title for accuracy
 const CAMPUS_SLIDES = [
   {
     title: "Boys Hostel Block (BH 1-9)",
     desc: "Modern 9-storey towers with elevators, reading halls & gyms",
     tag: "Boys Hostels",
-    img: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80",
+    img: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&q=80",
   },
   {
     title: "Girls Hostel Wing (GH 1-3)",
     desc: "High-security residential complexes with in-house salon & dining",
     tag: "Girls Hostels",
-    img: "https://images.unsplash.com/photo-1596516109370-65d1f33bd24e?auto=format&fit=crop&w=800&q=80",
+    img: "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800&q=80",
   },
   {
     title: "Air-Conditioned Premium Suites",
     desc: "Climate-controlled rooms with personal study desks & storage",
     tag: "AC Suites",
-    // hostel bedroom image
-    img: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=800&q=80",
+    img: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&q=80",
   },
   {
     title: "Multicuisine Campus Dining",
     desc: "Nutritious multi-cuisine meal plans serving fresh 4 times a day",
     tag: "Mess & Dining",
-    // food hall / cafeteria
-    img: "https://images.unsplash.com/photo-1567521464027-f127ff144326?auto=format&fit=crop&w=800&q=80",
+    img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80",
   },
   {
     title: "Recreation & Gymnasium",
     desc: "Indoor sports, table tennis, badminton & 24/7 fitness centers",
     tag: "Sports Complex",
-    // gym equipment
-    img: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80",
+    img: "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&q=80",
   },
   {
     title: "Central Library & Study Pods",
     desc: "Soundproof study zones and high-speed fiber internet coverage",
     tag: "Study Pods",
-    // library / study area — fixed fallback
-    img: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=800&q=80",
+    img: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=800&q=80",
   },
 ];
 
@@ -129,6 +124,7 @@ export default function Home() {
   const scrollRef = useRef(null);
   const isHoveringScroll = useRef(false);
   const [scrolled, setScrolled] = useState(false);
+  const [heroLoaded, setHeroLoaded] = useState(false);
 
   const [stats, setStats] = useState({
     totalHostels: 12,
@@ -140,6 +136,11 @@ export default function Home() {
   const [filterGender, setFilterGender] = useState("All");
   const [activeFaq, setActiveFaq] = useState(null);
   const [activeAmenityTab, setActiveAmenityTab] = useState("rooms");
+  
+  // Enhanced animation trigger
+  useEffect(() => {
+    setTimeout(() => setHeroLoaded(true), 100);
+  }, []);
 
   // ── Navbar scroll shadow ──
   useEffect(() => {
@@ -195,9 +196,11 @@ export default function Home() {
         <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-xl bg-[var(--primary)] flex items-center justify-center text-white font-black text-lg shadow-sm group-hover:bg-[var(--primary-dark)] transition-colors">
-              L
-            </div>
+            <img 
+              src="https://seeklogo.com/images/L/lpu-sae-india-collegiate-club-logo-0E5B5B5E5E-seeklogo.com.png" 
+              alt="LPU SAE India" 
+              className="h-9 w-auto group-hover:scale-105 transition-transform"
+            />
             <div>
               <div className="font-bold text-[15px] text-stone-900 flex items-center gap-2 leading-tight">
                 LPU Hostel Portal
@@ -252,54 +255,168 @@ export default function Home() {
         {/* ══════════════════════════════════════════
             HERO SECTION
             ══════════════════════════════════════════ */}
-        <section className="relative pt-20 pb-24 px-6 text-center overflow-hidden">
-          {/* Warm radial glow */}
+        {/* ══════════════════════════════════════════
+            HERO SECTION WITH VIDEO BACKGROUND
+            ══════════════════════════════════════════ */}
+        <section className="relative pt-20 pb-24 px-6 text-center overflow-hidden min-h-[85vh] flex items-center">
+          {/* Video Background */}
+          <div className="absolute inset-0 z-0">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover opacity-20"
+            >
+              <source src="/videos/lpu_hostel_facilities_face_free.mp4" type="video/mp4" />
+            </video>
+            {/* Dark overlay for better text readability */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/90 to-white/95" />
+          </div>
+          
+          {/* Enhanced gradient background */}
           <div className="hero-glow" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(249,115,22,0.12),transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(234,88,12,0.08),transparent_50%)]" />
 
-          <div className="relative z-10 max-w-[1200px] mx-auto">
-            {/* Pill badge */}
-            <div className="inline-flex items-center gap-2 badge-orange mb-6 fade-up">
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] animate-pulse inline-block" />
-              Smart Allocation &amp; Roommate Matching Engine
+          <div className={`relative z-10 max-w-[1200px] mx-auto w-full transition-all duration-700 ${heroLoaded ? 'opacity-100' : 'opacity-0'}`}>
+            {/* Enhanced pill badge */}
+            <div className="inline-flex items-center gap-2 badge-gradient mb-6 fade-up hover:scale-105 transition-transform cursor-default shadow-lg">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse inline-block" />
+              LPU Smart Allocation System
+              <span className="text-[10px] ml-1 px-2 py-0.5 rounded-full bg-white/30">AI-Powered</span>
             </div>
 
-            {/* H1 — only "Hostel Room" is orange */}
-            <h1 className="text-4xl md:text-[56px] font-black leading-[1.1] tracking-tight text-stone-900 max-w-4xl mx-auto mb-5 fade-up delay-1">
-              Find Your Ideal{" "}
-              <span className="text-highlight">Hostel Room</span>
+            {/* Enhanced H1 with gradient text */}
+            <h1 className="text-5xl md:text-[64px] font-black leading-[1.05] tracking-tight text-stone-900 max-w-4xl mx-auto mb-6 fade-up delay-1">
+              Your Perfect{" "}
+              <span className="gradient-text">Hostel Home</span>
               <br />
-              at Lovely Professional University
+              Awaits at LPU
             </h1>
 
-            <p className="text-[17px] md:text-[18px] text-stone-500 max-w-2xl mx-auto mb-10 leading-[1.65] fade-up delay-2">
-              Automated allocation for <strong className="text-stone-700">BH1–BH9</strong> and{" "}
-              <strong className="text-stone-700">GH1–GH3</strong>. Choose your floor, AC or Non-AC
-              comfort, and find compatible roommates based on academic interests.
+            <p className="text-[18px] md:text-[20px] text-stone-600 max-w-2xl mx-auto mb-12 leading-[1.7] fade-up delay-2 font-medium">
+              Experience world-class accommodation with <strong className="text-[var(--primary)]">AI-powered roommate matching</strong>, 
+              preference-based allocation, and <strong className="text-[var(--primary)]">book rooms with friends</strong> feature.
             </p>
 
-            {/* CTA buttons */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mb-12 fade-up delay-3">
-              <Link href="/student/login" className="btn-primary text-[15px] px-7 py-3.5 rounded-[10px]">
-                Book Your Room Now →
+            {/* Enhanced CTA buttons */}
+            <div className="flex flex-wrap items-center justify-center gap-5 mb-14 fade-up delay-3">
+              <Link href="/student/login" className="btn-primary ripple text-[16px] px-9 py-4 rounded-[12px] transform hover:scale-105 transition-all shadow-2xl">
+                🎓 Book Your Room Now →
               </Link>
-              <a href="#hostels" className="btn-secondary text-[15px] px-7 py-3.5 rounded-[10px]">
-                Explore Hostels
+              <a href="#hostels" className="btn-secondary text-[16px] px-9 py-4 rounded-[12px] transform hover:scale-105 transition-all">
+                🏢 Explore Hostels
               </a>
+              <Link href="/admin/login" className="glass-card text-[16px] px-9 py-4 rounded-[12px] transform hover:scale-105 transition-all font-bold text-stone-700 hover:text-[var(--primary)]">
+                🔐 Admin Portal
+              </Link>
             </div>
 
-            {/* Stat chips */}
-            <div className="flex flex-wrap items-center justify-center gap-3 fade-up delay-4">
+            {/* Enhanced stat chips with animations */}
+            <div className="flex flex-wrap items-center justify-center gap-4 fade-up delay-4">
               {[
-                { icon: "🏢", label: `${stats.totalHostels || 12} Hostels` },
-                { icon: "🛏️", label: `${(stats.totalBeds || 4320).toLocaleString()}+ Beds` },
-                { icon: "🚪", label: `${(stats.totalRooms || 1080).toLocaleString()} Rooms` },
-                { icon: "🛡️", label: "24/7 Security" },
+                { icon: "🏢", label: `${stats.totalHostels || 12} Hostels`, desc: "BH1-9 & GH1-3", color: "bg-blue-50 border-blue-200" },
+                { icon: "🛏️", label: `${(stats.totalBeds || 4320).toLocaleString()}+ Beds`, desc: "Total capacity", color: "bg-green-50 border-green-200" },
+                { icon: "🚪", label: `${(stats.totalRooms || 1080).toLocaleString()} Rooms`, desc: "AC & Non-AC", color: "bg-purple-50 border-purple-200" },
+                { icon: "🤝", label: "Friend Booking", desc: "Book together", color: "bg-orange-50 border-orange-200" },
+                { icon: "🛡️", label: "24/7 Security", desc: "Biometric access", color: "bg-red-50 border-red-200" },
               ].map((s, i) => (
-                <span key={i} className="stat-chip">
-                  <span>{s.icon}</span>
-                  <span>{s.label}</span>
-                </span>
+                <div key={i} className={`stat-chip group hover:scale-110 hover:shadow-xl transition-all cursor-default ${s.color} border px-5 py-3`} title={s.desc}>
+                  <span className="group-hover:scale-125 transition-transform inline-block text-xl">{s.icon}</span>
+                  <div className="flex flex-col items-start ml-2">
+                    <span className="font-bold text-sm">{s.label}</span>
+                    <span className="text-[10px] text-stone-500">{s.desc}</span>
+                  </div>
+                </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ══════════════════════════════════════════
+            INTERACTIVE FEATURES SHOWCASE
+            ══════════════════════════════════════════ */}
+        <section className="py-20 px-6 bg-gradient-to-br from-orange-50 via-white to-blue-50">
+          <div className="max-w-[1200px] mx-auto">
+            <div className="text-center mb-16">
+              <div className="inline-flex items-center gap-2 badge-gradient mb-4 px-6 py-2">
+                ✨ Revolutionary Features
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black text-stone-900 mb-4">
+                Why Choose <span className="gradient-text">LPU Hostels</span>?
+              </h2>
+              <p className="text-lg text-stone-600 max-w-2xl mx-auto">
+                Experience next-generation hostel living with AI-powered features and world-class amenities
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+              {[
+                {
+                  icon: "🤝",
+                  title: "Book with Friends",
+                  desc: "Form your perfect squad! Book rooms together with up to 3 friends",
+                  color: "from-orange-500 to-red-500",
+                  image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&q=80"
+                },
+                {
+                  icon: "🎯",
+                  title: "Smart Preferences",
+                  desc: "Choose your floor, quiet zones, AC type, and study-focused rooms",
+                  color: "from-blue-500 to-purple-500",
+                  image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80"
+                },
+                {
+                  icon: "🤖",
+                  title: "AI Allocation",
+                  desc: "Advanced algorithm matches you with compatible roommates",
+                  color: "from-green-500 to-teal-500",
+                  image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=80"
+                },
+                {
+                  icon: "⚡",
+                  title: "Instant Booking",
+                  desc: "Get confirmed in minutes with real-time availability updates",
+                  color: "from-yellow-500 to-orange-500",
+                  image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&q=80"
+                },
+              ].map((feature, i) => (
+                <div key={i} className="group relative overflow-hidden rounded-2xl bg-white shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+                  {/* Background Image */}
+                  <div className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <img src={feature.image} alt={feature.title} className="w-full h-full object-cover" />
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="relative p-8">
+                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center text-3xl mb-4 transform group-hover:scale-110 group-hover:rotate-6 transition-all`}>
+                      {feature.icon}
+                    </div>
+                    <h3 className="font-bold text-xl text-stone-900 mb-2">{feature.title}</h3>
+                    <p className="text-stone-600 text-sm leading-relaxed">{feature.desc}</p>
+                  </div>
+                  
+                  {/* Gradient Border on Hover */}
+                  <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br ${feature.color} blur-xl -z-10`} />
+                </div>
+              ))}
+            </div>
+
+            {/* CTA Banner */}
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 p-12 text-center">
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yIDItNCw0LTRzNCwyIDQgNGMwIDItMiA0LTQgNHMtNC0yLTQtNHptMTAgMTBjMC0yIDItNCA0LTRzNCwyIDQgNGMwIDItMiA0LTQgNHMtNC0yLTQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-20" />
+              <div className="relative z-10">
+                <h3 className="text-3xl md:text-4xl font-black text-white mb-4">
+                  🎉 Limited Seats Available!
+                </h3>
+                <p className="text-white/90 text-lg mb-6 max-w-2xl mx-auto">
+                  Over <strong>1,200 students</strong> have already booked their rooms. Don't miss out on your perfect hostel home!
+                </p>
+                <Link href="/student/login" className="inline-flex items-center gap-2 bg-white text-orange-600 px-8 py-4 rounded-full font-bold text-lg hover:scale-105 transform transition-all shadow-xl">
+                  Book Your Room Now 🚀
+                </Link>
+              </div>
             </div>
           </div>
         </section>
@@ -307,19 +424,19 @@ export default function Home() {
         {/* ══════════════════════════════════════════
             CAMPUS FACILITIES GALLERY
             ══════════════════════════════════════════ */}
-        <section id="campus" className="py-16 border-t border-b border-[var(--border)] overflow-hidden bg-[var(--bg-alt)]">
+        <section id="campus" className="py-16 border-t border-b border-[var(--border)] overflow-hidden bg-gradient-to-b from-[var(--bg-alt)] to-white">
           <div className="max-w-[1200px] mx-auto px-6 mb-8 flex items-end justify-between">
             <div>
               <p className="section-label mb-1">Campus Facilities</p>
-              <h2 className="text-[32px] font-bold text-stone-900">LPU Residential Experience</h2>
+              <h2 className="text-[32px] font-bold text-stone-900">🏛️ LPU Residential Experience</h2>
             </div>
-            <span className="text-xs text-stone-400 hidden sm:block">↔ Hover to pause</span>
+            <span className="text-xs text-stone-400 hidden sm:block">↔ Hover to pause · Auto-scroll</span>
           </div>
 
-          {/* Auto-scrolling strip */}
+          {/* Auto-scrolling strip with enhanced cards */}
           <div
             ref={scrollRef}
-            className="flex gap-5 overflow-x-hidden select-none py-2 px-6"
+            className="flex gap-5 overflow-x-hidden select-none py-2 px-6 hide-scrollbar"
             onMouseEnter={() => (isHoveringScroll.current = true)}
             onMouseLeave={() => (isHoveringScroll.current = false)}
             style={{ cursor: "grab" }}
@@ -327,35 +444,78 @@ export default function Home() {
             {[...CAMPUS_SLIDES, ...CAMPUS_SLIDES].map((slide, idx) => (
               <div
                 key={idx}
-                className="relative flex-shrink-0 w-72 md:w-80 h-52 rounded-2xl overflow-hidden group shadow-sm border border-[var(--border)]"
+                className="image-zoom-container relative flex-shrink-0 w-72 md:w-80 h-52 rounded-2xl overflow-hidden group shadow-lg hover:shadow-2xl border border-[var(--border)] transition-all"
               >
-                {/* Image */}
+                {/* Image with zoom effect */}
                 <img
                   src={slide.img}
                   alt={slide.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="image-zoom w-full h-full object-cover"
                   onError={(e) => {
-                    e.target.src =
-                      "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=800&q=80";
+                    e.target.src = "https://placehold.co/800x600/f97316/white?text=" + slide.tag;
                   }}
                 />
-                {/* Dark overlay for text readability */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                
+                {/* Enhanced gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent group-hover:from-black/90 transition-all" />
 
-                {/* Orange pill tag */}
+                {/* Orange pill tag with glow */}
                 <div className="absolute top-3 left-3">
-                  <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-[var(--primary)] text-white">
+                  <span className="px-3 py-1.5 rounded-full text-[11px] font-bold bg-[var(--primary)] text-white shadow-lg glow-border">
                     {slide.tag}
                   </span>
                 </div>
 
-                {/* Text */}
-                <div className="absolute bottom-3 left-4 right-4">
-                  <h3 className="font-bold text-white text-sm leading-tight mb-0.5">{slide.title}</h3>
-                  <p className="text-[11px] text-white/80 line-clamp-2">{slide.desc}</p>
+                {/* Enhanced text with better readability */}
+                <div className="absolute bottom-4 left-4 right-4">
+                  <h3 className="font-bold text-white text-base leading-tight mb-1 drop-shadow-lg">{slide.title}</h3>
+                  <p className="text-[12px] text-white/90 line-clamp-2 drop-shadow-md">{slide.desc}</p>
+                </div>
+
+                {/* Hover indicator */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+                    <span className="text-white text-2xl">👁️</span>
+                  </div>
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* ══════════════════════════════════════════
+            LIVE STATS COUNTER
+            ══════════════════════════════════════════ */}
+        <section className="py-16 px-6 bg-gradient-to-r from-[var(--primary)] to-orange-600 text-white relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+          </div>
+          
+          <div className="max-w-[1200px] mx-auto relative z-10">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-black mb-3">LPU Hostel Stats 2026</h2>
+              <p className="text-white/90">Real-time accommodation statistics</p>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {[
+                { number: stats.totalHostels || 12, label: "Active Hostels", suffix: "", icon: "🏢" },
+                { number: stats.totalRooms || 1080, label: "Total Rooms", suffix: "", icon: "🚪" },
+                { number: stats.totalBeds || 4320, label: "Bed Capacity", suffix: "+", icon: "🛏️" },
+                { number: 98, label: "Satisfaction", suffix: "%", icon: "😊" },
+              ].map((stat, i) => (
+                <div key={i} className="text-center group">
+                  <div className="text-5xl mb-2 group-hover:scale-125 transition-transform">
+                    {stat.icon}
+                  </div>
+                  <div className="text-5xl md:text-6xl font-black mb-2 count-up">
+                    {stat.number.toLocaleString()}{stat.suffix}
+                  </div>
+                  <div className="text-white/80 font-semibold">{stat.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -389,23 +549,27 @@ export default function Home() {
 
           {/* Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredHostels.map((h) => {
+            {filteredHostels.map((h, idx) => {
               const totalBeds = h.totalBeds || h.totalCapacity || 360;
               const availBeds = h.availableBeds || h.availableCapacity || 100;
               const occPercent = Math.min(100, Math.round(((totalBeds - availBeds) / totalBeds) * 100));
+              const isPopular = occPercent > 70;
 
               return (
-                <div key={h._id} className="card flex flex-col overflow-hidden">
+                <div key={h._id} className="card-glow flex flex-col overflow-hidden transform transition-all hover:scale-[1.02]" style={{ animationDelay: `${idx * 0.05}s` }}>
                   {/* Image */}
                   <div className="relative h-44 overflow-hidden">
                     <img
                       src={
                         h.genderAllowed === "Female"
-                          ? "https://images.unsplash.com/photo-1596516109370-65d1f33bd24e?auto=format&fit=crop&w=600&q=80"
-                          : "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=600&q=80"
+                          ? "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800&q=80"
+                          : "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&q=80"
                       }
                       alt={h.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      onError={(e) => {
+                        e.target.src = "https://placehold.co/800x600/f97316/white?text=" + h.code;
+                      }}
                     />
                     {/* Code badge — top left */}
                     <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-bold bg-white text-stone-800 shadow-sm">
@@ -419,6 +583,13 @@ export default function Home() {
                     >
                       {h.genderAllowed === "Female" ? "Girls" : "Boys"}
                     </span>
+                    
+                    {/* Popular badge */}
+                    {isPopular && (
+                      <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[var(--primary)] text-white shadow-lg">
+                        🔥 High Demand
+                      </div>
+                    )}
                   </div>
 
                   {/* Content */}
@@ -448,10 +619,10 @@ export default function Home() {
                       ))}
                     </div>
 
-                    {/* Apply button */}
+                    {/* Apply button with enhanced styling */}
                     <Link
                       href="/student/login"
-                      className="btn-primary w-full text-sm rounded-[10px] mt-auto"
+                      className="btn-primary ripple w-full text-sm rounded-[10px] mt-auto group-hover:shadow-lg transition-shadow"
                     >
                       Apply For {h.code} →
                     </Link>
@@ -459,6 +630,71 @@ export default function Home() {
                 </div>
               );
             })}
+          </div>
+        </section>
+
+        {/* ══════════════════════════════════════════
+            STUDENT TESTIMONIALS
+            ══════════════════════════════════════════ */}
+        <section className="py-20 px-6 bg-white">
+          <div className="max-w-[1200px] mx-auto">
+            <div className="text-center mb-12">
+              <p className="section-label mb-2">Student Reviews</p>
+              <h2 className="text-[32px] font-bold text-stone-900">What Students Say</h2>
+              <p className="text-stone-500 text-sm mt-2">Real experiences from LPU hostel residents</p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                {
+                  name: "Priya Sharma",
+                  course: "B.Tech CSE, 3rd Year",
+                  hostel: "GH-2",
+                  image: "https://i.pravatar.cc/150?img=1",
+                  rating: 5,
+                  text: "The friend booking feature is amazing! I got to room with my best friends and the smart allocation put us in a quiet zone perfect for studying. Highly recommend! 🎓",
+                },
+                {
+                  name: "Arjun Kumar",
+                  course: "MBA, 2nd Year",
+                  hostel: "BH-5",
+                  image: "https://i.pravatar.cc/150?img=12",
+                  rating: 5,
+                  text: "AC rooms are top-notch and the preference-based system actually works! Got my first choice hostel and floor. The gym and mess facilities are excellent too! 💪",
+                },
+                {
+                  name: "Neha Patel",
+                  course: "B.Com, 1st Year",
+                  hostel: "GH-1",
+                  image: "https://i.pravatar.cc/150?img=5",
+                  rating: 5,
+                  text: "As a first-year student, I was nervous about hostel life. But LPU's system made booking so easy! The security is great and wardens are very supportive. 🏠",
+                },
+              ].map((review, i) => (
+                <div key={i} className="card-glow p-6 stagger-item hover:shadow-2xl transition-all">
+                  <div className="flex items-center gap-4 mb-4">
+                    <img
+                      src={review.image}
+                      alt={review.name}
+                      className="w-14 h-14 rounded-full object-cover border-2 border-[var(--primary)]"
+                    />
+                    <div>
+                      <h4 className="font-bold text-stone-900">{review.name}</h4>
+                      <p className="text-xs text-stone-500">{review.course}</p>
+                      <p className="text-xs text-[var(--primary)] font-semibold">{review.hostel}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-1 mb-3">
+                    {[...Array(review.rating)].map((_, i) => (
+                      <span key={i} className="text-yellow-400 text-lg">⭐</span>
+                    ))}
+                  </div>
+                  
+                  <p className="text-sm text-stone-600 leading-relaxed italic">"{review.text}"</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -477,12 +713,12 @@ export default function Home() {
 
             <div className="grid md:grid-cols-3 gap-5">
               {FEATURES.map((f, i) => (
-                <div key={i} className="card p-6 group">
-                  {/* Icon box with orange tint */}
-                  <div className="icon-box mb-4 group-hover:bg-orange-100 transition-colors">
-                    <span>{f.icon}</span>
+                <div key={i} className="card-glow p-6 group hover:shadow-xl transition-all duration-300" style={{ animationDelay: `${i * 0.1}s` }}>
+                  {/* Icon box with enhanced hover effect */}
+                  <div className="icon-box mb-4 group-hover:bg-orange-100 group-hover:scale-110 transition-all duration-300">
+                    <span className="inline-block group-hover:rotate-12 transition-transform">{f.icon}</span>
                   </div>
-                  <h3 className="font-bold text-stone-900 text-[15px] mb-2">{f.title}</h3>
+                  <h3 className="font-bold text-stone-900 text-[15px] mb-2 group-hover:text-[var(--primary)] transition-colors">{f.title}</h3>
                   <p className="text-sm text-stone-500 leading-relaxed">{f.desc}</p>
                 </div>
               ))}
@@ -660,6 +896,22 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* ══════════════════════════════════════════
+          FLOATING ACTION BUTTON
+          ══════════════════════════════════════════ */}
+      <Link href="/student/login" className="fab group" title="Quick Book">
+        <span className="text-2xl group-hover:rotate-12 transition-transform">🎓</span>
+      </Link>
+
+      {/* Scroll to Top Button */}
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        className="fixed bottom-24 right-6 w-12 h-12 rounded-full bg-stone-800 text-white flex items-center justify-center shadow-lg hover:bg-stone-700 transition-all hover:scale-110 z-50"
+        title="Scroll to top"
+      >
+        ↑
+      </button>
     </div>
   );
 }

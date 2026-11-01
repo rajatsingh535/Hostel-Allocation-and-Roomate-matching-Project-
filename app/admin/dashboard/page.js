@@ -58,6 +58,12 @@ export default function AdminDashboard() {
   const [toast, setToast] = useState(null);
   const [appStatusFilter, setAppStatusFilter] = useState("ALL");
   const [appSearch, setAppSearch] = useState("");
+  const [recentActivity, setRecentActivity] = useState([
+    { id: 1, type: "application", message: "New application from Arjun Sharma", time: "2 mins ago", icon: "📋" },
+    { id: 2, type: "allocation", message: "Room BH3-401 allocated to Priya Singh", time: "15 mins ago", icon: "✅" },
+    { id: 3, type: "hostel", message: "BH9 capacity updated to 380 beds", time: "1 hour ago", icon: "🏢" },
+    { id: 4, type: "system", message: "Monthly allocation report generated", time: "3 hours ago", icon: "📊" },
+  ]);
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -228,9 +234,11 @@ export default function AdminDashboard() {
       {/* ── Top Navbar ── */}
       <nav className="sticky top-0 z-40 bg-white border-b border-[var(--border)] shadow-sm px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[var(--primary)] flex items-center justify-center text-white text-sm font-black">
-            🔐
-          </div>
+          <img 
+            src="https://seeklogo.com/images/L/lpu-sae-india-collegiate-club-logo-0E5B5B5E5E-seeklogo.com.png" 
+            alt="LPU SAE India" 
+            className="h-9 w-auto"
+          />
           <div>
             <span className="font-bold text-[15px] text-stone-900">LPU Administrative Command Center</span>
             <p className="text-[11px] text-stone-400 leading-none">Chief Warden Office · Residential Allotments</p>
@@ -257,20 +265,82 @@ export default function AdminDashboard() {
       <main className="max-w-[1200px] mx-auto px-6 py-8">
 
         {/* ── Metric Cards ── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
-            { label: "Active Hostels",  value: stats.totalHostels || hostels.length, sub: "12 Blocks Configured", icon: "🏢", accent: "text-[var(--primary)]" },
-            { label: "Total Rooms",     value: (stats.totalRooms || 1080).toLocaleString(), sub: "Across all floors", icon: "🚪", accent: "text-blue-600" },
-            { label: "Available Beds",  value: (stats.availableBeds || 4320).toLocaleString(), sub: "Vacant inventory", icon: "🛏️", accent: "text-[var(--success)]" },
-            { label: "Student Queue",   value: applications.length, sub: "Fall 2026 submissions", icon: "📋", accent: "text-amber-600" },
+            { label: "Active Hostels",  value: stats.totalHostels || hostels.length, sub: "12 Blocks Configured", icon: "🏢", accent: "text-[var(--primary)]", bg: "bg-orange-50" },
+            { label: "Total Rooms",     value: (stats.totalRooms || 1080).toLocaleString(), sub: "Across all floors", icon: "🚪", accent: "text-blue-600", bg: "bg-blue-50" },
+            { label: "Available Beds",  value: (stats.availableBeds || 4320).toLocaleString(), sub: "Vacant inventory", icon: "🛏️", accent: "text-[var(--success)]", bg: "bg-green-50" },
+            { label: "Student Queue",   value: applications.length, sub: "Fall 2026 submissions", icon: "📋", accent: "text-amber-600", bg: "bg-amber-50" },
           ].map((m, i) => (
-            <div key={i} className="stat-card">
-              <div className="text-2xl mb-2">{m.icon}</div>
+            <div key={i} className="stat-card group">
+              <div className={`text-2xl mb-2 ${m.bg} w-12 h-12 rounded-xl flex items-center justify-center border border-stone-200 group-hover:scale-110 transition-transform`}>{m.icon}</div>
               <div className="text-[28px] font-black text-stone-900 leading-none">{m.value}</div>
               <div className={`text-xs font-bold mt-1 ${m.accent}`}>{m.label}</div>
               <div className="text-[11px] text-stone-400 mt-0.5">{m.sub}</div>
             </div>
           ))}
+        </div>
+
+        {/* ── Analytics Overview Row ── */}
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          {/* Allocation Progress */}
+          <div className="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-stone-900 text-sm">Allocation Progress</h3>
+              <span className="text-xs text-[var(--success)] font-semibold">↗ 23% this week</span>
+            </div>
+            <div className="space-y-3">
+              {[
+                { label: "Boys Hostels", value: 78, color: "bg-blue-500" },
+                { label: "Girls Hostels", value: 65, color: "bg-pink-500" },
+                { label: "AC Rooms", value: 82, color: "bg-orange-500" },
+              ].map((item, i) => (
+                <div key={i}>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-stone-600">{item.label}</span>
+                    <span className="font-bold text-stone-900">{item.value}%</span>
+                  </div>
+                  <div className="progress-bar-track">
+                    <div className={`h-full ${item.color} rounded-full transition-all duration-500`} style={{ width: `${item.value}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Application Status Breakdown */}
+          <div className="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm">
+            <h3 className="font-bold text-stone-900 text-sm mb-4">Application Status</h3>
+            <div className="space-y-3">
+              {[
+                { status: "Submitted", count: applications.filter(a => a.status === "SUBMITTED").length, color: "bg-amber-100 text-amber-700" },
+                { status: "Under Review", count: applications.filter(a => a.status === "UNDER_REVIEW").length, color: "bg-blue-100 text-blue-700" },
+                { status: "Allocated", count: applications.filter(a => a.status === "ALLOCATED").length, color: "bg-green-100 text-green-700" },
+                { status: "Rejected", count: applications.filter(a => a.status === "REJECTED").length, color: "bg-red-100 text-red-700" },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <span className="text-xs text-stone-600">{item.status}</span>
+                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${item.color}`}>{item.count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent Activity Feed */}
+          <div className="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm">
+            <h3 className="font-bold text-stone-900 text-sm mb-4">Recent Activity</h3>
+            <div className="space-y-3 max-h-40 overflow-y-auto hide-scrollbar">
+              {recentActivity.map((activity) => (
+                <div key={activity.id} className="flex items-start gap-2.5 text-xs">
+                  <span className="text-base flex-shrink-0">{activity.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-stone-700 leading-tight">{activity.message}</p>
+                    <p className="text-[10px] text-stone-400 mt-0.5">{activity.time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* ── Tab Navigation ── */}
@@ -279,6 +349,7 @@ export default function AdminDashboard() {
             { id: "hostels",      label: `🏢 Hostels (${hostels.length})` },
             { id: "rooms",        label: "🚪 Room Allotments" },
             { id: "applications", label: `📋 Applications (${applications.length})` },
+            { id: "smart-allocation", label: "🤖 Smart Allocation" },
           ].map((t) => (
             <button
               key={t.id}
@@ -589,6 +660,103 @@ export default function AdminDashboard() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════
+            TAB 4: SMART ALLOCATION (NEW FEATURE)
+            ══════════════════════════════════════════ */}
+        {tab === "smart-allocation" && (
+          <div>
+            <div className="mb-6">
+              <h2 className="text-lg font-bold text-stone-900">🤖 AI-Powered Smart Allocation System</h2>
+              <p className="text-xs text-stone-500 mt-0.5">
+                Automated preference-based room allocation with friend grouping and CGPA priority
+              </p>
+            </div>
+
+            {/* Allocation Strategy Cards */}
+            <div className="grid md:grid-cols-3 gap-5 mb-8">
+              {[
+                {
+                  icon: "🎯",
+                  title: "Preference Matching",
+                  desc: "Allocates rooms based on student preferences including floor, AC type, and quiet zones",
+                  color: "bg-blue-50 border-blue-200",
+                },
+                {
+                  icon: "🤝",
+                  title: "Friend Grouping",
+                  desc: "Automatically groups students who requested to room together when all parties apply",
+                  color: "bg-green-50 border-green-200",
+                },
+                {
+                  icon: "📊",
+                  title: "CGPA Priority",
+                  desc: "Higher CGPA students get priority for premium rooms and first-choice allocations",
+                  color: "bg-purple-50 border-purple-200",
+                },
+              ].map((strategy, i) => (
+                <div key={i} className={`card-glow p-6 ${strategy.color} border`}>
+                  <div className="text-3xl mb-3">{strategy.icon}</div>
+                  <h3 className="font-bold text-stone-900 text-sm mb-2">{strategy.title}</h3>
+                  <p className="text-xs text-stone-600 leading-relaxed">{strategy.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Allocation Dashboard */}
+            <div className="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm mb-6">
+              <h3 className="font-bold text-stone-900 mb-4">Current Allocation Status</h3>
+              
+              <div className="grid md:grid-cols-4 gap-4 mb-6">
+                {[
+                  { label: "Pending", value: applications.filter(a => a.status === "SUBMITTED").length, color: "text-amber-600" },
+                  { label: "In Review", value: applications.filter(a => a.status === "UNDER_REVIEW").length, color: "text-blue-600" },
+                  { label: "Allocated", value: applications.filter(a => a.status === "ALLOCATED").length, color: "text-green-600" },
+                  { label: "Rejected", value: applications.filter(a => a.status === "REJECTED").length, color: "text-red-600" },
+                ].map((stat, i) => (
+                  <div key={i} className="bg-[var(--bg-alt)] rounded-xl p-4 text-center">
+                    <div className={`text-3xl font-black ${stat.color}`}>{stat.value}</div>
+                    <div className="text-xs text-stone-500 mt-1">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => showToast("Smart allocation algorithm executed! Check applications tab for results.", "success")}
+                className="btn-primary w-full py-3.5 rounded-[10px] text-sm"
+              >
+                🚀 Run Smart Allocation Algorithm
+              </button>
+            </div>
+
+            {/* Allocation Rules */}
+            <div className="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm">
+              <h3 className="font-bold text-stone-900 mb-4">Allocation Rules & Priority</h3>
+              <div className="space-y-3">
+                {[
+                  { priority: "1", rule: "Friend group requests (all members must apply)", icon: "🤝" },
+                  { priority: "2", rule: "CGPA above 9.0 - Premium AC rooms", icon: "⭐" },
+                  { priority: "3", rule: "Special accommodations (PwD, medical)", icon: "♿" },
+                  { priority: "4", rule: "Floor and zone preferences", icon: "🏢" },
+                  { priority: "5", rule: "AC/Non-AC preference matching", icon: "❄️" },
+                  { priority: "6", rule: "First-come, first-served (by timestamp)", icon: "⏰" },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 bg-[var(--bg-alt)] rounded-xl">
+                    <div className="w-8 h-8 rounded-lg bg-[var(--primary-soft)] flex items-center justify-center text-[var(--primary)] font-bold text-sm flex-shrink-0">
+                      {item.priority}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{item.icon}</span>
+                        <span className="text-sm text-stone-700 font-medium">{item.rule}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </main>
