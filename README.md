@@ -434,19 +434,130 @@ For full API documentation, see [docs/API.md](docs/API.md)
 
 ---
 
+## 📱 Mobile Responsiveness
+
+### Tailwind CSS Responsive Design
+
+The application is built with a **mobile-first approach** using Tailwind CSS utility classes:
+
+#### Breakpoints
+```css
+sm:  640px  → Mobile landscape
+md:  768px  → Tablet
+lg:  1024px → Desktop
+xl:  1280px → Large desktop
+2xl: 1536px → Extra large
+```
+
+#### Responsive Components
+```jsx
+// Grid - 1 column mobile, 2 tablet, 3 desktop
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+// Text - Smaller on mobile, larger on desktop
+<h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
+
+// Padding - Less on mobile, more on desktop
+<div className="px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+
+// Hidden on mobile, visible on desktop
+<div className="hidden md:block">
+
+// Show only on mobile
+<div className="block md:hidden">
+```
+
+#### Mobile Features
+- ✅ Touch-friendly buttons (min 44x44px)
+- ✅ Hamburger menu for navigation (< 768px)
+- ✅ Swipeable cards
+- ✅ Bottom navigation for quick access
+- ✅ Optimized images (Next.js Image)
+- ✅ Smooth scrolling
+- ✅ Modal overlays for forms
+
+#### Testing Mobile
+```bash
+# Chrome DevTools
+1. Press F12
+2. Click "Toggle Device Toolbar" (Ctrl+Shift+M)
+3. Select device: iPhone 12, iPad, Galaxy S21
+
+# Real Device Testing
+1. Get local IP: ipconfig (Windows) / ifconfig (Mac)
+2. Access: http://192.168.x.x:3000
+3. Test on phone/tablet
+```
+
+---
+
+## 🚀 Vercel Deployment
+
+### Quick Deploy
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/yourusername/Hostel-Allocation-and-Roomate-matching-Project-)
+
+### Manual Deployment Steps
+
+1. **Push to GitHub**
+```bash
+git add .
+git commit -m "Ready for deployment"
+git push origin main
+```
+
+2. **Connect to Vercel**
+- Visit [Vercel Dashboard](https://vercel.com/new)
+- Import your GitHub repository
+- Configure environment variables:
+  ```
+  NEXT_PUBLIC_API_URL=https://your-backend-url.com
+  MONGODB_URI=your_mongodb_connection_string
+  ```
+
+3. **Deploy**
+- Click "Deploy"
+- Wait 2-5 minutes
+- Your site is live! 🎉
+
+4. **Verify**
+- Check logo renders: `/lpu-logo.ico`
+- Test on mobile devices
+- Verify all images load
+- Test chatbot functionality
+
+### Deployment Fixes
+For detailed deployment troubleshooting, see [docs/VERCEL_DEPLOYMENT.md](docs/VERCEL_DEPLOYMENT.md)
+
+**Common Issues:**
+- ❌ Logo not showing → File path case-sensitivity
+- ❌ Images broken → Check `public/` folder
+- ❌ Build fails → Missing dependencies
+- ✅ All fixed in this project!
+
+---
+
 ## 📸 Screenshots
 
-### Home Page
-![Home Page](https://via.placeholder.com/800x400?text=Home+Page+Screenshot)
+### Home Page - Desktop
+![Home Page](public/images/Screenshot%202026-11-01%20122358.png)
 
-### Student Dashboard
-![Student Dashboard](https://via.placeholder.com/800x400?text=Student+Dashboard)
+### Student Dashboard - All Tabs
+![Student Dashboard](public/images/Screenshot%202026-11-01%20122549.png)
 
-### Admin Dashboard
-![Admin Dashboard](https://via.placeholder.com/800x400?text=Admin+Dashboard)
+### Admin Dashboard - Analytics
+![Admin Dashboard](public/images/Screenshot%202026-11-01%20122649.png)
 
-### Friend Request System
-![Friend Requests](https://via.placeholder.com/800x400?text=Friend+Request+System)
+### Smart Allocation - Algorithm
+![Allocation System](public/images/Screenshot%202026-11-01%20124829.png)
+
+### Mobile View
+All pages are fully responsive and tested on:
+- 📱 iPhone SE (375px)
+- 📱 iPhone 12/13 (390px)
+- 📱 Android phones (360px - 414px)
+- 📱 iPad (768px)
+- 💻 Desktop (1280px+)
 
 ---
 
