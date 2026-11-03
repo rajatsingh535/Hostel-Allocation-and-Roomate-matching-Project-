@@ -265,7 +265,7 @@ export default function StudentDashboard() {
   return (
     <div className="min-h-screen bg-[var(--bg-alt)]">
       {/* ── Navbar ── */}
-      <nav className="sticky top-0 z-40 bg-white border-b border-[var(--border)] shadow-sm px-4 sm:px-6 h-15 flex items-center justify-between">
+      <nav className="sticky top-0 z-40 bg-white border-b border-[var(--border)] shadow-sm px-4 sm:px-6 h-16 py-2.5 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <LpuLogo size={36} showText={true} subtitle="Residential Booking · 2026-27" />
         </Link>

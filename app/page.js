@@ -710,7 +710,7 @@ export default function Home() {
             : "bg-white border-b border-stone-200"
         }`}
       >
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2 group">
               <LpuLogo size={42} showText={true} subtitle="Hostel Allocation Portal" />
@@ -1594,7 +1594,7 @@ export default function Home() {
       <footer className="w-full bg-stone-900 text-stone-400 border-t border-stone-800 py-14 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
           <div className="space-y-3">
-            <LpuLogo size={38} showText={true} subtitle="Residential Portal" />
+            <LpuLogo size={42} showText={true} subtitle="Residential Portal" theme="dark" />
             <p className="text-xs text-stone-400 leading-relaxed pt-2">
               Automated hostel allocation, gender-based BH/GH recommendation, and roommate matching system for Lovely Professional University.
             </p>
