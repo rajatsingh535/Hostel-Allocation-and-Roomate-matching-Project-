@@ -1,4 +1,4 @@
-# 🏨 LPU Hostel Allocation & Roommate Matching System
+# LPU Hostel Allocation & Roommate Matching System
 
 <div align="center">
 
@@ -18,7 +18,7 @@
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#-overview)
 - [Key Highlights & Latest Updates](#-key-highlights--latest-updates)
@@ -37,7 +37,7 @@
 
 ---
 
-## 🎯 Overview
+## Overview
 
 The **LPU Hostel Allocation & Roommate Matching System** is a full-stack residential portal built for **Lovely Professional University (Jalandhar – Delhi G.T. Road, Phagwara, Punjab)**. It streamlines hostel booking across **Boys Hostels (`BH-1` to `BH-9`)** and **Girls Hostels (`GH-1` to `GH-3`)**, combining **gender-based smart hostel recommendation at login**, **preference-based roommate matching**, **friend request & group booking**, and **automated 8-tier priority room allocation**.
 
@@ -60,7 +60,7 @@ The **LPU Hostel Allocation & Roommate Matching System** is a full-stack residen
 
 ---
 
-## 👥 Team Members
+## Team Members
 
 <table>
   <tr>
@@ -88,7 +88,7 @@ The **LPU Hostel Allocation & Roommate Matching System** is a full-stack residen
 
 ---
 
-## ✨ Features
+## Features
 
 ### 🎓 For Students (`/student/login` & `/student/dashboard`)
 
@@ -114,7 +114,7 @@ The **LPU Hostel Allocation & Roommate Matching System** is a full-stack residen
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 - **Framework:** Next.js 14.2 (App Router)
@@ -174,7 +174,7 @@ Hostel-Allocation-and-Roomate-matching-Project-/
 
 ---
 
-## 🏗️ Module Architecture
+## Module Architecture
 
 1. **Module 1: Gender-Aware Student Authentication** — Captures student gender (`Male` / `Female`) at login and maps Boys to `BH-1`–`BH-9` and Girls to `GH-1`–`GH-3`.
 2. **Module 2: LPU Hostel & Room Inventory** — Manages 9 Boys Hostels (`BH-1` to `BH-9`) and 3 Girls Hostels (`GH-1` to `GH-3`) with real LPU photos and live bed counts.
@@ -321,7 +321,7 @@ git push origin main
 
 ---
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
