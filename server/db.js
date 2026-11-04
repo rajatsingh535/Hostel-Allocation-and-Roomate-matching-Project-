@@ -1,3 +1,4 @@
+require("dotenv").config();
 const mongoose = require("mongoose");
 const { MongoMemoryServer } = require("mongodb-memory-server");
 
@@ -8,15 +9,26 @@ async function connectDB() {
     return mongoose.connection;
   }
 
-  const defaultUri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/hostel_db";
+  const defaultUri =
+    process.env.MONGODB_URI ||
+    "mongodb+srv://pmm1006y_db_user:mWaoUBNVbfW5JK0Y@cluster0.19rnpsb.mongodb.net/hostel_db?retryWrites=true&w=majority";
 
   try {
-    console.log(`[Database] Attempting connection to MongoDB at ${defaultUri}...`);
-    await mongoose.connect(defaultUri, { serverSelectionTimeoutMS: 3000 });
-    console.log(`[Database] Successfully connected to MongoDB.`);
+    console.log(`[Database] Attempting connection to MongoDB Cluster...`);
+    await mongoose.connect(defaultUri, { serverSelectionTimeoutMS: 15000 });
+    console.log(`[Database] Successfully connected to MongoDB Cluster: ${mongoose.connection.host}/${mongoose.connection.name}`);
     return mongoose.connection;
   } catch (err) {
-    console.warn(`[Database] MongoDB connection failed (${err.message}). Falling back to in-memory instance...`);
+    console.warn(`[Database] MongoDB Cluster connection failed (${err.message}). Trying local MongoDB...`);
+  }
+
+  try {
+    const localUri = "mongodb://127.0.0.1:27017/hostel_db";
+    await mongoose.connect(localUri, { serverSelectionTimeoutMS: 3000 });
+    console.log(`[Database] Connected to local MongoDB at ${localUri}`);
+    return mongoose.connection;
+  } catch (err) {
+    console.warn(`[Database] Local MongoDB failed (${err.message}). Falling back to in-memory instance...`);
   }
 
   try {
