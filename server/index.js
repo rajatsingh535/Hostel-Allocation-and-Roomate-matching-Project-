@@ -20,6 +20,8 @@ app.use("/api/rooms", require("./routes/rooms"));
 app.use("/api/allocations", require("./routes/allocations"));
 app.use("/api/students", require("./routes/students"));
 app.use("/api/friend-requests", require("./routes/friendRequests"));
+app.use("/api/matchmaker", require("./routes/matchmaker"));
+app.use("/api/room-swaps", require("./routes/roomSwaps"));
 
 
 app.get("/api/health", (req, res) => {

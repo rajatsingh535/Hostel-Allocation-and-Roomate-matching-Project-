@@ -797,10 +797,18 @@ export default function Home() {
 
       <main className="w-full">
         {/* ══════════════════════════════════════════
-            HERO SECTION (With Real LPU Campus & Hostel Photos)
+            HERO SECTION (With Background Image & Shimmer Effect)
             ══════════════════════════════════════════ */}
-        <section className="relative w-full pt-12 pb-16 px-4 sm:px-6 lg:px-8 overflow-hidden bg-gradient-to-b from-orange-50/50 via-white to-stone-50/60 border-b border-stone-200">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-[radial-gradient(ellipse_at_top,rgba(249,115,22,0.12),transparent_70%)] pointer-events-none" />
+        <section className="relative w-full min-h-[600px] pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+          {/* Background Image with Overlay */}
+          <div className="absolute inset-0 z-0">
+            <img 
+              src="/images/lpu/hero-banner.webp" 
+              alt="LPU Campus Background"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/80" />
+          </div>
 
           <div
             className={`relative z-10 w-full max-w-7xl mx-auto transition-all duration-700 ${
@@ -809,94 +817,71 @@ export default function Home() {
           >
             <div className="text-center max-w-4xl mx-auto">
               {/* Status Pill Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-100/80 border border-orange-200 text-stone-800 text-xs font-semibold mb-5 shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-[var(--primary)] animate-pulse" />
-                <span>Official LPU Residential Portal · Session 2026-27</span>
-                <span className="bg-white px-2 py-0.5 rounded-full text-[10px] text-[var(--primary-dark)] font-bold">
-                  BH for Boys · GH for Girls
-                </span>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/20 border border-orange-400/30 backdrop-blur-sm text-white text-xs font-semibold mb-6 shadow-lg">
+                <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
+                <span>Lovely Professional University • Session 2026–2027</span>
               </div>
 
-              {/* Main Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-stone-900 tracking-tight leading-[1.1] mb-5">
-                LPU Hostel Allocation &amp;{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--primary)] to-[var(--primary-dark)]">
-                  Smart BH / GH Recommender
+              {/* Main Headline with Shimmer Effect */}
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.15] mb-6">
+                <span className="text-white block mb-2">Hostel Allotment, Solved by</span>
+                <span className="hero-shimmer-sweep block text-5xl sm:text-6xl lg:text-7xl">
+                  Constraints, Not Chaos.
                 </span>
               </h1>
 
-              <p className="text-base sm:text-lg text-stone-600 max-w-3xl mx-auto mb-8 leading-relaxed">
-                Explore authentic photos of <strong className="text-stone-900">Lovely Professional University</strong> residential blocks, rooms, mess, and sports complexes. At student login, select{" "}
-                <strong className="text-stone-900">Male</strong> or <strong className="text-stone-900">Female</strong> and our system automatically recommends{" "}
-                <strong className="text-[var(--primary-dark)]">BH (Boys Hostels 1–9)</strong> to boys and{" "}
-                <strong className="text-[var(--primary-dark)]">GH (Girls Hostels 1–3)</strong> to girls.
+              <p className="text-base sm:text-lg text-white/90 max-w-3xl mx-auto mb-10 leading-relaxed">
+                Bed-level transparent allocation, lifestyle-matched roommates, and verified<br className="hidden sm:block" />
+                warden governance for all campus residence halls.
               </p>
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap items-center justify-center gap-3.5 mb-12">
+              <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
                 <Link
                   href="/student/login"
-                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white font-bold text-sm sm:text-base shadow-md hover:shadow-lg transition-all"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-base shadow-lg hover:shadow-xl transition-all hover:scale-105"
                 >
-                  <span>Student Login (Select Male / Female)</span>
+                  <span>👤 Enter Student Portal</span>
                   <ChevronRightIcon className="w-5 h-5" />
                 </Link>
                 <a
                   href="#hostels"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white border border-stone-300 hover:border-stone-400 text-stone-800 font-semibold text-sm sm:text-base shadow-2xs hover:bg-stone-50 transition-all"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/30 hover:bg-white/20 text-white font-semibold text-base transition-all"
                 >
-                  <BuildingIcon className="w-5 h-5 text-[var(--primary)]" />
-                  <span>Explore 12 Hostels (BH &amp; GH)</span>
+                  <span>Browse Campus Halls →</span>
                 </a>
-                <a
-                  href="#gallery"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white border border-stone-300 hover:border-stone-400 text-stone-800 font-semibold text-sm sm:text-base shadow-2xs hover:bg-stone-50 transition-all"
+              </div>
+              
+              {/* Scroll to Explore - Centered */}
+              <div className="w-full flex justify-center mt-16">
+                <button
+                  onClick={() => {
+                    const nextSection = document.querySelector('#hostels');
+                    if (nextSection) {
+                      nextSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }}
+                  className="flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
                 >
-                  <span>View 30+ Real LPU Photos</span>
-                </a>
+                  <span className="text-xs text-white/60 uppercase tracking-wider font-semibold">Scroll to Explore</span>
+                  <div className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-2">
+                    <div className="w-1 h-3 bg-white/60 rounded-full animate-bounce"></div>
+                  </div>
+                </button>
               </div>
             </div>
+          </div>
+        </section>
 
-            {/* ── Real LPU Residential & Campus Hero Photo Showcase ── */}
+        {/* ══════════════════════════════════════════
+            STATS & FEATURES SECTION
+            ══════════════════════════════════════════ */}
+        <section className="w-full py-16 px-4 sm:px-6 lg:px-8 bg-white border-b border-stone-200">
+          <div className="w-full max-w-7xl mx-auto">
+            {/* Real LPU Residential & Campus Photo Showcase */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-10">
-              {/* Main Panoramic LPU Boys Hostel & Campus Photo */}
-              <div
-                onClick={() =>
-                  setLightboxPhoto({
-                    title: "LPU Residential Complex & Boys Hostel 4 (BH-4)",
-                    location: "Lovely Professional University, Phagwara",
-                    tag: "Official LPU Residential Enclave",
-                    image: "/images/lpu/hero-banner.webp",
-                  })
-                }
-                className="md:col-span-7 relative h-72 sm:h-96 rounded-2xl overflow-hidden border border-stone-200 shadow-sm group cursor-pointer"
-              >
-                <img
-                  src="/images/lpu/hero-banner.webp"
-                  alt="Lovely Professional University Residential Hostels Aerial View"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <div className="absolute top-4 left-4 flex flex-wrap gap-2">
-                  <span className="px-3 py-1 rounded-full bg-[var(--primary)] text-white text-xs font-bold shadow-sm">
-                    Official LPU Residential Zone
-                  </span>
-                  <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-xs text-white text-xs font-semibold">
-                    Click to Enlarge
-                  </span>
-                </div>
-                <div className="absolute bottom-4 left-4 right-4 text-white">
-                  <h3 className="text-xl sm:text-2xl font-black leading-tight">
-                    A City Within A Campus — LPU Hostel Enclave
-                  </h3>
-                  <p className="text-xs sm:text-sm text-white/85 mt-1">
-                    Real aerial view of Lovely Professional University residential towers (BH-4 &amp; Boys Hostel Zone) accommodating 25,000+ on-campus students.
-                  </p>
-                </div>
-              </div>
-
               {/* Right 2x2 Grid of Real LPU Boys Hostel, Girls Hostel, Campus & Rooms */}
-              <div className="md:col-span-5 grid grid-cols-2 gap-4">
+              <div className="md:col-span-12 grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
                   {
                     title: "Boys Hostels (BH-1 to BH-9)",

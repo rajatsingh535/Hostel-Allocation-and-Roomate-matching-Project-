@@ -446,6 +446,8 @@ export default function StudentDashboard() {
           {[
             { id: "book", label: "Individual Booking" },
             { id: "group", label: "Group Booking (With Friends)" },
+            { id: "matchmaker", label: "🤝 Matchmaker Hub" },
+            { id: "room-swap", label: "🔄 Room Swap" },
             { id: "waitlist", label: "Wait List" },
             { id: "my-applications", label: `My Applications (${myApplications.length})` },
           ].map((t) => (
@@ -1027,6 +1029,16 @@ export default function StudentDashboard() {
         )}
 
         {/* ══════════════════════════════════════════
+            TAB: MATCHMAKER HUB
+        ══════════════════════════════════════════ */}
+        {activeTab === "matchmaker" && <MatchmakerHub studentRoll={bookingForm.studentRollNumber} studentGender={studentGender} />}
+
+        {/* ══════════════════════════════════════════
+            TAB: ROOM SWAP
+        ══════════════════════════════════════════ */}
+        {activeTab === "room-swap" && <RoomSwapTab studentRoll={bookingForm.studentRollNumber} studentName={bookingForm.studentName} studentGender={studentGender} />}
+
+        {/* ══════════════════════════════════════════
             TAB: MY APPLICATIONS
         ══════════════════════════════════════════ */}
         {activeTab === "my-applications" && (
@@ -1091,6 +1103,678 @@ export default function StudentDashboard() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+//  MATCHMAKER HUB COMPONENT
+// ═══════════════════════════════════════════════════════════════
+function MatchmakerHub({ studentRoll, studentGender }) {
+  const [profile, setProfile] = useState(null);
+  const [matches, setMatches] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    sleepSchedule: "11PM-7AM",
+    wakeUpTime: "7AM",
+    studyHabits: "Moderate",
+    cleanliness: "Very Clean",
+    guestFrequency: "Rarely",
+    musicPreference: "Quiet",
+    interests: [],
+    bio: "",
+    lookingForRoommate: true,
+  });
+
+  const INTEREST_OPTIONS = [
+    "Sports", "Music", "Gaming", "Reading", "Movies", "Coding",
+    "Art", "Travel", "Photography", "Fitness", "Cooking", "Dance"
+  ];
+
+  // Load existing profile
+  useEffect(() => {
+    setLoading(true);
+    fetch(`http://localhost:5000/api/matchmaker/profiles?roll=${studentRoll}`)
+      .then(r => r.json())
+      .then(d => {
+        setLoading(false);
+        if (d.success && d.data?.length > 0) {
+          const p = d.data[0];
+          setProfile(p);
+          setFormData({
+            sleepSchedule: p.lifestyle?.sleepSchedule || "11PM-7AM",
+            wakeUpTime: p.lifestyle?.wakeUpTime || "7AM",
+            studyHabits: p.lifestyle?.studyHabits || "Moderate",
+            cleanliness: p.lifestyle?.cleanliness || "Very Clean",
+            guestFrequency: p.lifestyle?.guestFrequency || "Rarely",
+            musicPreference: p.lifestyle?.musicPreference || "Quiet",
+            interests: p.interests || [],
+            bio: p.bio || "",
+            lookingForRoommate: p.lookingForRoommate !== false,
+          });
+        }
+      })
+      .catch(() => setLoading(false));
+  }, [studentRoll]);
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    const payload = {
+      studentRoll,
+      gender: studentGender,
+      lifestyle: {
+        sleepSchedule: formData.sleepSchedule,
+        wakeUpTime: formData.wakeUpTime,
+        studyHabits: formData.studyHabits,
+        cleanliness: formData.cleanliness,
+        guestFrequency: formData.guestFrequency,
+        musicPreference: formData.musicPreference,
+      },
+      interests: formData.interests,
+      bio: formData.bio,
+      lookingForRoommate: formData.lookingForRoommate,
+    };
+
+    try {
+      const res = await fetch("http://localhost:5000/api/matchmaker/profiles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setProfile(data.data);
+        alert("✅ Profile saved successfully!");
+      }
+    } catch (err) {
+      alert("Failed to save profile");
+    }
+    setSaving(false);
+  };
+
+  const handleFindMatches = async () => {
+    if (!profile) {
+      alert("Please save your profile first!");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch(`http://localhost:5000/api/matchmaker/find-matches/${studentRoll}`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMatches(data.data || []);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    setLoading(false);
+  };
+
+  const toggleInterest = (interest) => {
+    setFormData(prev => ({
+      ...prev,
+      interests: prev.interests.includes(interest)
+        ? prev.interests.filter(i => i !== interest)
+        : [...prev.interests, interest]
+    }));
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl p-6">
+        <h2 className="text-2xl font-black mb-2">🤝 Matchmaker Hub</h2>
+        <p className="text-sm text-white/90">
+          Fill your lifestyle preferences and find compatible roommates with matching habits
+        </p>
+      </div>
+
+      {/* Profile Form */}
+      <div className="bg-white border border-[var(--border)] rounded-2xl p-6">
+        <h3 className="text-lg font-bold text-stone-900 mb-4">Your Lifestyle Preferences</h3>
+        
+        <form onSubmit={handleSaveProfile} className="space-y-6">
+          {/* Sleep Schedule */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-stone-700 mb-2 uppercase">
+                Sleep Schedule
+              </label>
+              <select
+                value={formData.sleepSchedule}
+                onChange={(e) => setFormData({ ...formData, sleepSchedule: e.target.value })}
+                className="input-light"
+              >
+                <option>9PM-5AM</option>
+                <option>10PM-6AM</option>
+                <option>11PM-7AM</option>
+                <option>12AM-8AM</option>
+                <option>1AM-9AM</option>
+                <option>Night Owl (2AM+)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-stone-700 mb-2 uppercase">
+                Wake Up Time
+              </label>
+              <select
+                value={formData.wakeUpTime}
+                onChange={(e) => setFormData({ ...formData, wakeUpTime: e.target.value })}
+                className="input-light"
+              >
+                <option>5AM</option>
+                <option>6AM</option>
+                <option>7AM</option>
+                <option>8AM</option>
+                <option>9AM</option>
+                <option>After 10AM</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Study & Cleanliness */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-stone-700 mb-2 uppercase">
+                Study Habits
+              </label>
+              <select
+                value={formData.studyHabits}
+                onChange={(e) => setFormData({ ...formData, studyHabits: e.target.value })}
+                className="input-light"
+              >
+                <option>Light</option>
+                <option>Moderate</option>
+                <option>Intensive</option>
+                <option>Night Study</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-stone-700 mb-2 uppercase">
+                Cleanliness Level
+              </label>
+              <select
+                value={formData.cleanliness}
+                onChange={(e) => setFormData({ ...formData, cleanliness: e.target.value })}
+                className="input-light"
+              >
+                <option>Very Clean</option>
+                <option>Clean</option>
+                <option>Moderate</option>
+                <option>Relaxed</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Music & Guests */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-stone-700 mb-2 uppercase">
+                Music Preference
+              </label>
+              <select
+                value={formData.musicPreference}
+                onChange={(e) => setFormData({ ...formData, musicPreference: e.target.value })}
+                className="input-light"
+              >
+                <option>Quiet</option>
+                <option>Low Volume</option>
+                <option>Moderate</option>
+                <option>Loud</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-stone-700 mb-2 uppercase">
+                Guest Frequency
+              </label>
+              <select
+                value={formData.guestFrequency}
+                onChange={(e) => setFormData({ ...formData, guestFrequency: e.target.value })}
+                className="input-light"
+              >
+                <option>Rarely</option>
+                <option>Occasionally</option>
+                <option>Frequently</option>
+                <option>Very Often</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Interests */}
+          <div>
+            <label className="block text-xs font-bold text-stone-700 mb-3 uppercase">
+              Your Interests (Select Multiple)
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {INTEREST_OPTIONS.map(interest => (
+                <button
+                  key={interest}
+                  type="button"
+                  onClick={() => toggleInterest(interest)}
+                  className={`px-3 py-2 rounded-lg text-sm font-semibold border transition-all ${
+                    formData.interests.includes(interest)
+                      ? "bg-purple-500 text-white border-purple-500"
+                      : "bg-white text-stone-700 border-stone-300 hover:border-purple-400"
+                  }`}
+                >
+                  {interest}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Bio */}
+          <div>
+            <label className="block text-xs font-bold text-stone-700 mb-2 uppercase">
+              About You (Optional)
+            </label>
+            <textarea
+              value={formData.bio}
+              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+              placeholder="Tell potential roommates about yourself..."
+              className="input-light"
+              rows={3}
+            />
+          </div>
+
+          {/* Looking for roommate */}
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              checked={formData.lookingForRoommate}
+              onChange={(e) => setFormData({ ...formData, lookingForRoommate: e.target.checked })}
+              className="rounded border-stone-300 text-purple-500 w-4 h-4"
+            />
+            <label className="text-sm text-stone-700 font-semibold">
+              I am actively looking for a roommate
+            </label>
+          </div>
+
+          {/* Save Button */}
+          <button
+            type="submit"
+            disabled={saving}
+            className="btn-primary w-full py-3 rounded-xl disabled:opacity-60"
+          >
+            {saving ? "Saving..." : "💾 Save My Profile"}
+          </button>
+        </form>
+      </div>
+
+      {/* Find Matches */}
+      {profile && (
+        <div className="bg-white border border-[var(--border)] rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-stone-900">Find Compatible Roommates</h3>
+            <button
+              onClick={handleFindMatches}
+              disabled={loading}
+              className="btn-primary px-6 py-2.5 rounded-xl text-sm disabled:opacity-60"
+            >
+              {loading ? "Searching..." : "🔍 Find Matches"}
+            </button>
+          </div>
+
+          {matches.length > 0 ? (
+            <div className="space-y-4">
+              {matches.map((match, idx) => (
+                <div key={idx} className="border border-stone-200 rounded-xl p-5 hover:border-purple-300 transition-all">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <div className="flex items-center gap-3 mb-1">
+                        <h4 className="font-bold text-stone-900">{match.studentRoll}</h4>
+                        <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-bold">
+                          {Math.round(match.compatibilityScore)}% Match
+                        </span>
+                      </div>
+                      <p className="text-xs text-stone-500">{match.gender} Student</p>
+                    </div>
+                  </div>
+
+                  {match.bio && (
+                    <p className="text-sm text-stone-600 mb-3 italic">"{match.bio}"</p>
+                  )}
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                    <div>
+                      <span className="text-stone-500">Sleep:</span>
+                      <div className="font-semibold text-stone-900">{match.lifestyle?.sleepSchedule}</div>
+                    </div>
+                    <div>
+                      <span className="text-stone-500">Study:</span>
+                      <div className="font-semibold text-stone-900">{match.lifestyle?.studyHabits}</div>
+                    </div>
+                    <div>
+                      <span className="text-stone-500">Cleanliness:</span>
+                      <div className="font-semibold text-stone-900">{match.lifestyle?.cleanliness}</div>
+                    </div>
+                    <div>
+                      <span className="text-stone-500">Music:</span>
+                      <div className="font-semibold text-stone-900">{match.lifestyle?.musicPreference}</div>
+                    </div>
+                  </div>
+
+                  {match.interests?.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {match.interests.map((interest, i) => (
+                        <span key={i} className="px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 text-xs">
+                          {interest}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-10 text-stone-500">
+              <div className="text-4xl mb-2">🔍</div>
+              <p className="text-sm">Click "Find Matches" to discover compatible roommates</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ROOM SWAP COMPONENT
+// ═══════════════════════════════════════════════════════════════
+function RoomSwapTab({ studentRoll, studentName, studentGender }) {
+  const [mySwaps, setMySwaps] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+
+  const [formData, setFormData] = useState({
+    currentHostel: "",
+    currentRoom: "",
+    currentBedNumber: "",
+    targetStudentRoll: "",
+    reason: "",
+  });
+
+  // Load existing swap requests
+  useEffect(() => {
+    loadSwaps();
+  }, [studentRoll]);
+
+  const loadSwaps = () => {
+    setLoading(true);
+    fetch(`http://localhost:5000/api/room-swaps?roll=${studentRoll}`)
+      .then(r => r.json())
+      .then(d => {
+        setLoading(false);
+        if (d.success) {
+          setMySwaps(d.data || []);
+        }
+      })
+      .catch(() => setLoading(false));
+  };
+
+  const handleSubmitSwap = async (e) => {
+    e.preventDefault();
+    
+    if (!formData.currentHostel || !formData.targetStudentRoll) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    setSubmitting(true);
+    const payload = {
+      requestedByName: studentName,
+      requestedByRoll: studentRoll,
+      requestedByGender: studentGender,
+      currentHostel: formData.currentHostel,
+      currentRoom: formData.currentRoom,
+      currentBedNumber: formData.currentBedNumber,
+      targetStudentRoll: formData.targetStudentRoll,
+      reason: formData.reason,
+    };
+
+    try {
+      const res = await fetch("http://localhost:5000/api/room-swaps", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        alert("✅ Room swap request submitted!");
+        setShowForm(false);
+        setFormData({
+          currentHostel: "",
+          currentRoom: "",
+          currentBedNumber: "",
+          targetStudentRoll: "",
+          reason: "",
+        });
+        loadSwaps();
+      } else {
+        alert(data.message || "Failed to submit request");
+      }
+    } catch (err) {
+      alert("Error submitting swap request");
+    }
+    setSubmitting(false);
+  };
+
+  const handleCancelSwap = async (swapId) => {
+    if (!confirm("Are you sure you want to cancel this swap request?")) return;
+    
+    try {
+      const res = await fetch(`http://localhost:5000/api/room-swaps/${swapId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        alert("✅ Swap request cancelled");
+        loadSwaps();
+      }
+    } catch (err) {
+      alert("Error cancelling request");
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const map = {
+      PENDING: "bg-amber-100 text-amber-700 border-amber-200",
+      APPROVED: "bg-green-100 text-green-700 border-green-200",
+      REJECTED: "bg-red-100 text-red-700 border-red-200",
+      COMPLETED: "bg-blue-100 text-blue-700 border-blue-200",
+      CANCELLED: "bg-stone-100 text-stone-600 border-stone-200",
+    };
+    return map[status] || map.PENDING;
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-2xl p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-black mb-2">🔄 Room Swap</h2>
+            <p className="text-sm text-white/90">
+              Request to swap rooms with other students in same hostel wing
+            </p>
+          </div>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="px-4 py-2 rounded-xl bg-white text-blue-600 font-bold text-sm hover:bg-blue-50 transition-all"
+          >
+            {showForm ? "Close Form" : "+ New Request"}
+          </button>
+        </div>
+      </div>
+
+      {/* Request Form */}
+      {showForm && (
+        <div className="bg-white border border-[var(--border)] rounded-2xl p-6">
+          <h3 className="text-lg font-bold text-stone-900 mb-4">Create Swap Request</h3>
+          
+          <form onSubmit={handleSubmitSwap} className="space-y-4">
+            <div className="grid md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-2 uppercase">
+                  Current Hostel *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g., BH-1"
+                  value={formData.currentHostel}
+                  onChange={(e) => setFormData({ ...formData, currentHostel: e.target.value })}
+                  className="input-light"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-2 uppercase">
+                  Room Number
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., 305"
+                  value={formData.currentRoom}
+                  onChange={(e) => setFormData({ ...formData, currentRoom: e.target.value })}
+                  className="input-light"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-2 uppercase">
+                  Bed Number
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., B2"
+                  value={formData.currentBedNumber}
+                  onChange={(e) => setFormData({ ...formData, currentBedNumber: e.target.value })}
+                  className="input-light"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-stone-700 mb-2 uppercase">
+                Target Student Roll Number *
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="Enter roll number of student you want to swap with"
+                value={formData.targetStudentRoll}
+                onChange={(e) => setFormData({ ...formData, targetStudentRoll: e.target.value })}
+                className="input-light"
+              />
+              <p className="text-xs text-stone-500 mt-1">
+                Must be same gender and both parties need to accept the swap
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-stone-700 mb-2 uppercase">
+                Reason for Swap
+              </label>
+              <textarea
+                value={formData.reason}
+                onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                placeholder="Explain why you want to swap rooms..."
+                className="input-light"
+                rows={3}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="btn-primary w-full py-3 rounded-xl disabled:opacity-60"
+            >
+              {submitting ? "Submitting..." : "📤 Submit Swap Request"}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* My Swap Requests */}
+      <div className="bg-white border border-[var(--border)] rounded-2xl p-6">
+        <h3 className="text-lg font-bold text-stone-900 mb-4">My Swap Requests</h3>
+        
+        {loading ? (
+          <div className="text-center py-10 text-stone-500">Loading...</div>
+        ) : mySwaps.length === 0 ? (
+          <div className="text-center py-10 text-stone-500">
+            <div className="text-4xl mb-2">🔄</div>
+            <p className="text-sm">No swap requests yet. Create one to get started!</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {mySwaps.map((swap) => (
+              <div key={swap._id} className="border border-stone-200 rounded-xl p-5 hover:border-blue-300 transition-all">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <div className="flex items-center gap-3 mb-1">
+                      <span className="font-mono font-bold text-stone-900">#{swap._id.slice(-6)}</span>
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusBadge(swap.status)}`}>
+                        {swap.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-stone-500">
+                      Created {new Date(swap.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  {swap.status === "PENDING" && (
+                    <button
+                      onClick={() => handleCancelSwap(swap._id)}
+                      className="text-xs px-3 py-1.5 rounded-lg bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-stone-500 text-xs">Your Location:</span>
+                    <div className="font-semibold text-stone-900">
+                      {swap.currentHostel} {swap.currentRoom && `· Room ${swap.currentRoom}`} {swap.currentBedNumber && `· Bed ${swap.currentBedNumber}`}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-stone-500 text-xs">Target Student:</span>
+                    <div className="font-semibold text-stone-900">{swap.targetStudentRoll}</div>
+                  </div>
+                </div>
+
+                {swap.reason && (
+                  <div className="mt-3 pt-3 border-t border-stone-200">
+                    <span className="text-xs text-stone-500">Reason:</span>
+                    <p className="text-sm text-stone-700 mt-1">{swap.reason}</p>
+                  </div>
+                )}
+
+                {swap.adminNotes && (
+                  <div className="mt-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                    <span className="text-xs font-bold text-amber-700">Admin Notes:</span>
+                    <p className="text-sm text-amber-900 mt-1">{swap.adminNotes}</p>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         )}
       </div>
