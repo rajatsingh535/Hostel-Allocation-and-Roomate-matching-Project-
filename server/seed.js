@@ -50,11 +50,11 @@ async function seedData() {
     boysHostels.push(hostel);
   }
 
-  // Girls Hostels (GH-1 to GH-3) with real LPU girls hostel images
+  // Girls Hostels (GH-1 to GH-3) with 3 distinct real LPU girls hostel images
   const ghImages = [
+    "/images/lpu/girls-hostel-1.jpg",
     "/images/lpu/girls-hostel.webp",
-    "/images/lpu/girls-hostel-room.webp",
-    "/images/lpu/slide-1-apartments.webp",
+    "/images/lpu/girls-hostel-3.jpg",
   ];
   const girlsHostels = [];
   for (let i = 1; i <= 3; i++) {

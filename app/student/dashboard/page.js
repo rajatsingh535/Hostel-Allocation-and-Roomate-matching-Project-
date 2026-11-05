@@ -13,9 +13,9 @@ const STATIC_HOSTELS = [
   { _id: "h7",  code: "BH-7", name: "Boys Hostel 7",  genderAllowed: "Male",   campusLocation: "South Residential Area",     totalBeds: 400, availableBeds: 95,  floors: 10, acAvailable: true,  roomTypes: ["Double", "Triple"], imageUrl: "/images/lpu/boys-hostel.webp",       roomImageUrl: "/images/lpu/standard-room-3.webp" },
   { _id: "h8",  code: "BH-8", name: "Boys Hostel 8",  genderAllowed: "Male",   campusLocation: "South Residential Area",     totalBeds: 360, availableBeds: 47,  floors: 9,  acAvailable: false, roomTypes: ["Triple", "Quad"],   imageUrl: "/images/lpu/hero-banner.webp",       roomImageUrl: "/images/lpu/standard-room-1.webp" },
   { _id: "h9",  code: "BH-9", name: "Boys Hostel 9",  genderAllowed: "Male",   campusLocation: "Central Residential Hub",    totalBeds: 400, availableBeds: 120, floors: 10, acAvailable: true,  roomTypes: ["Single", "Double"], imageUrl: "/images/lpu/slide-3-hostels.webp",   roomImageUrl: "/images/lpu/apartments-room-3.webp" },
-  { _id: "h10", code: "GH-1", name: "Girls Hostel 1", genderAllowed: "Female", campusLocation: "Girls Residential Zone A",   totalBeds: 360, availableBeds: 78,  floors: 9,  acAvailable: true,  roomTypes: ["Double", "Triple"], imageUrl: "/images/lpu/girls-hostel.webp",      roomImageUrl: "/images/lpu/girls-hostel-room.webp" },
-  { _id: "h11", code: "GH-2", name: "Girls Hostel 2", genderAllowed: "Female", campusLocation: "Girls Residential Zone B",   totalBeds: 400, availableBeds: 102, floors: 10, acAvailable: true,  roomTypes: ["Single", "Double"], imageUrl: "/images/lpu/girls-hostel.webp",      roomImageUrl: "/images/lpu/slide-1-apartments.webp" },
-  { _id: "h12", code: "GH-3", name: "Girls Hostel 3", genderAllowed: "Female", campusLocation: "Girls Residential Zone B",   totalBeds: 360, availableBeds: 56,  floors: 9,  acAvailable: false, roomTypes: ["Triple", "Quad"],   imageUrl: "/images/lpu/girls-hostel.webp",      roomImageUrl: "/images/lpu/girls-hostel-room.webp" },
+  { _id: "h10", code: "GH-1", name: "Girls Hostel 1", genderAllowed: "Female", campusLocation: "Girls Residential Zone A",   totalBeds: 360, availableBeds: 78,  floors: 9,  acAvailable: true,  roomTypes: ["Double", "Triple"], imageUrl: "/images/lpu/girls-hostel-1.jpg",    roomImageUrl: "/images/lpu/girls-hostel-room.webp" },
+  { _id: "h11", code: "GH-2", name: "Girls Hostel 2", genderAllowed: "Female", campusLocation: "Girls Residential Zone B",   totalBeds: 400, availableBeds: 102, floors: 10, acAvailable: true,  roomTypes: ["Single", "Double"], imageUrl: "/images/lpu/girls-hostel.webp",     roomImageUrl: "/images/lpu/slide-1-apartments.webp" },
+  { _id: "h12", code: "GH-3", name: "Girls Hostel 3", genderAllowed: "Female", campusLocation: "Girls Residential Zone B",   totalBeds: 360, availableBeds: 56,  floors: 9,  acAvailable: false, roomTypes: ["Triple", "Quad"],   imageUrl: "/images/lpu/girls-hostel-3.jpg",    roomImageUrl: "/images/lpu/apartments-room-1.webp" },
 ];
 
 const ROOM_CATEGORIES = [
@@ -27,9 +27,17 @@ const ROOM_CATEGORIES = [
   { id: "r6", label: "AC Quad Seater",    type: "Quad",   ac: true,  desc: "Spacious 4-bed suite, Wi-Fi, study desks",  image: "/images/lpu/boys-hostel-room.webp" },
 ];
 
+const GH_IMAGE_MAP = {
+  "GH-1": { imageUrl: "/images/lpu/girls-hostel-1.jpg", roomImageUrl: "/images/lpu/girls-hostel-room.webp" },
+  "GH-2": { imageUrl: "/images/lpu/girls-hostel.webp",  roomImageUrl: "/images/lpu/slide-1-apartments.webp" },
+  "GH-3": { imageUrl: "/images/lpu/girls-hostel-3.jpg", roomImageUrl: "/images/lpu/apartments-room-1.webp" },
+};
+
 function getFallbackImagesForHostel(h) {
   const isFemale = h.genderAllowed === "Female" || (h.code && h.code.startsWith("GH"));
   if (isFemale) {
+    const mapped = GH_IMAGE_MAP[h.code];
+    if (mapped) return mapped;
     return {
       imageUrl: h.imageUrl && h.imageUrl.startsWith("/images/lpu/") ? h.imageUrl : "/images/lpu/girls-hostel.webp",
       roomImageUrl: h.roomImageUrl || "/images/lpu/girls-hostel-room.webp",

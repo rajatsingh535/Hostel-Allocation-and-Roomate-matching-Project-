@@ -11,7 +11,7 @@ async function connectDB() {
 
   const defaultUri =
     process.env.MONGODB_URI ||
-    "mongodb+srv://pmm1006y_db_user:mWaoUBNVbfW5JK0Y@cluster0.19rnpsb.mongodb.net/hostel_db?retryWrites=true&w=majority";
+    "mongodb://127.0.0.1:27017/hostel_db";
 
   try {
     console.log(`[Database] Attempting connection to MongoDB Cluster...`);

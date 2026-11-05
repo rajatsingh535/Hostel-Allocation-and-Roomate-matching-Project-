@@ -158,7 +158,7 @@ const INITIAL_HOSTELS = [
     floors: 9,
     acAvailable: true,
     roomTypes: ["Single", "Double"],
-    imageUrl: "/images/lpu/girls-hostel.webp",
+    imageUrl: "/images/lpu/girls-hostel-1.jpg",
     roomImageUrl: "/images/lpu/girls-hostel-room.webp",
   },
   {
@@ -186,8 +186,8 @@ const INITIAL_HOSTELS = [
     floors: 10,
     acAvailable: true,
     roomTypes: ["Triple", "Quad"],
-    imageUrl: "/images/lpu/girls-hostel.webp",
-    roomImageUrl: "/images/lpu/girls-hostel-room.webp",
+    imageUrl: "/images/lpu/girls-hostel-3.jpg",
+    roomImageUrl: "/images/lpu/apartments-room-1.webp",
   },
 ];
 
@@ -253,11 +253,25 @@ const LPU_REAL_GALLERY = [
     image: "/images/lpu/boys-hostel.webp",
   },
   {
+    title: "LPU Girls Hostel 1 (GH-1 Biometric Entry & Security)",
+    category: "hostels",
+    tag: "Girls Hostel 1 (GH-1)",
+    location: "Girls Residential Zone A, LPU",
+    image: "/images/lpu/girls-hostel-1.jpg",
+  },
+  {
     title: "LPU Girls Hostel 2 (GH-2 Building)",
     category: "hostels",
-    tag: "Girls Hostel (GH)",
+    tag: "Girls Hostel 2 (GH-2)",
     location: "East Girls Residential Enclave, LPU",
     image: "/images/lpu/girls-hostel.webp",
+  },
+  {
+    title: "LPU Girls Hostel 3 (GH-3 Multi-Block Complex)",
+    category: "hostels",
+    tag: "Girls Hostel 3 (GH-3)",
+    location: "Girls Residential Zone B, LPU",
+    image: "/images/lpu/girls-hostel-3.jpg",
   },
   {
     title: "Aerial View of Boys Hostel 4 & Residential Zone",
@@ -591,19 +605,42 @@ const FEATURES = [
   },
 ];
 
+const GH_HOME_IMAGES = {
+  "GH-1": {
+    imageUrl: "/images/lpu/girls-hostel-1.jpg",
+    roomImageUrl: "/images/lpu/girls-hostel-room.webp",
+  },
+  "GH-2": {
+    imageUrl: "/images/lpu/girls-hostel.webp",
+    roomImageUrl: "/images/lpu/slide-1-apartments.webp",
+  },
+  "GH-3": {
+    imageUrl: "/images/lpu/girls-hostel-3.jpg",
+    roomImageUrl: "/images/lpu/apartments-room-1.webp",
+  },
+};
+
 function getRealHostelImages(h, idx = 0) {
   const isFemale = h.genderAllowed === "Female" || (h.code && h.code.startsWith("GH"));
   if (isFemale) {
+    if (h.code && GH_HOME_IMAGES[h.code]) {
+      return GH_HOME_IMAGES[h.code];
+    }
+    const ghBuildings = [
+      "/images/lpu/girls-hostel-1.jpg",
+      "/images/lpu/girls-hostel.webp",
+      "/images/lpu/girls-hostel-3.jpg",
+    ];
     const ghRooms = [
       "/images/lpu/girls-hostel-room.webp",
       "/images/lpu/slide-1-apartments.webp",
-      "/images/lpu/girls-hostel-room.webp",
+      "/images/lpu/apartments-room-1.webp",
     ];
     return {
       imageUrl:
         h.imageUrl && h.imageUrl.startsWith("/images/lpu/")
           ? h.imageUrl
-          : "/images/lpu/girls-hostel.webp",
+          : ghBuildings[idx % ghBuildings.length],
       roomImageUrl: h.roomImageUrl || ghRooms[idx % ghRooms.length],
     };
   }
