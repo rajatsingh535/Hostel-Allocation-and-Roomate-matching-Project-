@@ -232,6 +232,68 @@ export default function AdminDashboard() {
     showToast(`${app.studentName}'s application marked as ${status}`);
   };
 
+  // ── Smart Allocation ──
+  const handleRunSmartAllocation = async () => {
+    if (submitting) return;
+    
+    const pendingApps = applications.filter(a => 
+      a.status === "SUBMITTED" || a.status === "UNDER_REVIEW"
+    );
+    
+    if (pendingApps.length === 0) {
+      showToast("No pending applications to allocate!", "error");
+      return;
+    }
+
+    if (!confirm(`Run smart allocation for ${pendingApps.length} pending applications?\n\nThis will:\n✓ Match students with same preferences to same hostel\n✓ Allocate rooms based on CGPA priority\n✓ Consider gender-based hostel recommendations`)) {
+      return;
+    }
+
+    setSubmitting(true);
+    
+    try {
+      const res = await fetch(`${API}/allocations/run`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({})
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        showToast(`✅ Allocation complete! ${data.data.allocated.length} students allocated, ${data.data.notAllocated.length} pending`, "success");
+        
+        // Reload applications to see updated statuses
+        try {
+          const appsRes = await fetch(`${API}/applications`);
+          const appsData = await appsRes.json();
+          if (appsData.success) {
+            setApplications(appsData.data);
+          }
+        } catch (_) {}
+        
+        // Reload hostels to see updated capacity
+        try {
+          const hostelsRes = await fetch(`${API}/hostels`);
+          const hostelsData = await hostelsRes.json();
+          if (hostelsData.success) {
+            setHostels(hostelsData.data);
+          }
+        } catch (_) {}
+        
+        // Switch to applications tab to see results
+        setTab("applications");
+      } else {
+        showToast(data.message || "Allocation failed", "error");
+      }
+    } catch (error) {
+      console.error("Allocation error:", error);
+      showToast("Failed to run allocation. Check server connection.", "error");
+    }
+    
+    setSubmitting(false);
+  };
+
   const filteredApps = applications.filter((app) => {
     if (appStatusFilter !== "ALL" && app.status !== appStatusFilter) return false;
     if (appSearch) {
@@ -657,10 +719,11 @@ export default function AdminDashboard() {
                 ))}
               </div>
               <button
-                onClick={() => showToast("Smart allocation algorithm executed! Check Applications tab for results.")}
-                className="btn-primary w-full py-3.5 rounded-[10px] text-sm"
+                onClick={handleRunSmartAllocation}
+                disabled={submitting}
+                className="btn-primary w-full py-3.5 rounded-[10px] text-sm disabled:opacity-60"
               >
-                Run Smart Allocation Algorithm →
+                {submitting ? "Running Allocation..." : "Run Smart Allocation Algorithm →"}
               </button>
             </div>
           </div>
