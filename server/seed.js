@@ -1,9 +1,12 @@
 const { connectDB, closeDB } = require("./db");
+const bcrypt = require("bcryptjs");
 const Hostel = require("./models/Hostel");
 const Block = require("./models/Block");
 const Room = require("./models/Room");
 const Bed = require("./models/Bed");
 const Student = require("./models/Student");
+const Auth = require("./models/Auth");
+const Admin = require("./models/Admin");
 const Application = require("./models/Application");
 const AllocationDraft = require("./models/AllocationDraft");
 
@@ -17,6 +20,8 @@ async function seedData() {
     Room.deleteMany(),
     Bed.deleteMany(),
     Student.deleteMany(),
+    Auth.deleteMany(),
+    Admin.deleteMany(),
     Application.deleteMany(),
     AllocationDraft.deleteMany(),
   ]);
@@ -155,6 +160,26 @@ async function seedData() {
     {
       name: "Arjun Sharma",
       email: "arjun.sharma@student.lpu.co.in",
+      rollNumber: "12304567",
+      department: "Computer Science",
+      gender: "Male",
+      year: 2,
+      cgpa: 8.5,
+      category: "General"
+    },
+    {
+      name: "Priya Patel",
+      email: "priya.patel@student.lpu.co.in",
+      rollNumber: "12304568",
+      department: "Electronics",
+      gender: "Female",
+      year: 1,
+      cgpa: 9.2,
+      category: "General"
+    },
+    {
+      name: "Arjun Sharma",
+      email: "arjun.sharma@student.lpu.co.in",
       rollNumber: "12345678",
       department: "Computer Science",
       gender: "Male",
@@ -205,6 +230,26 @@ async function seedData() {
   ];
 
   const createdStudents = await Student.insertMany(sampleStudents);
+
+  // Seed Student Auth credentials (default password: password123)
+  const studentPasswordHash = await bcrypt.hash("password123", 10);
+  await Auth.insertMany(
+    createdStudents.map((s) => ({
+      rollNumber: s.rollNumber,
+      passwordHash: studentPasswordHash,
+    }))
+  );
+  console.log(`[Seeder] Seeded ${createdStudents.length} Registered Students & Auth Credentials.`);
+
+  // Seed Admin Auth credentials (default password: adminpassword)
+  const adminPasswordHash = await bcrypt.hash("adminpassword", 10);
+  await Admin.insertMany([
+    { email: "admin_lpu", passwordHash: adminPasswordHash, role: "admin" },
+    { email: "admin@lpu.co.in", passwordHash: adminPasswordHash, role: "admin" },
+    { email: "warden_bh", passwordHash: adminPasswordHash, role: "admin" },
+    { email: "warden_gh", passwordHash: adminPasswordHash, role: "admin" },
+  ]);
+  console.log(`[Seeder] Seeded 4 Registered Warden/Admin Accounts.`);
 
   // Create sample applications
   const sampleApplications = [];

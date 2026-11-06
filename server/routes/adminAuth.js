@@ -9,8 +9,7 @@ const router = express.Router();
 // ADMIN REGISTRATION
 router.post("/register", async (req, res) => {
   try {
-    const registrationSecret =
-      req.headers["x-admin-registration-secret"];
+    const registrationSecret = req.headers["x-admin-registration-secret"];
 
     if (!process.env.ADMIN_REGISTRATION_SECRET) {
       return res.status(500).json({
@@ -19,21 +18,20 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    if (
-      registrationSecret !== process.env.ADMIN_REGISTRATION_SECRET
-    ) {
+    if (registrationSecret !== process.env.ADMIN_REGISTRATION_SECRET) {
       return res.status(403).json({
         success: false,
         message: "Invalid admin registration secret",
       });
     }
 
-    const { email, password } = req.body;
+    const { email, adminId, password } = req.body;
+    const identifier = (adminId || email || "").trim().toLowerCase();
 
-    if (!email || !password) {
+    if (!identifier || !password) {
       return res.status(400).json({
         success: false,
-        message: "Email and password are required",
+        message: "Administrator ID and password are required",
       });
     }
 
@@ -44,9 +42,7 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    const existingAdmin = await Admin.findOne({
-      email: email.trim().toLowerCase(),
-    });
+    const existingAdmin = await Admin.findOne({ email: identifier });
 
     if (existingAdmin) {
       return res.status(409).json({
@@ -58,7 +54,7 @@ router.post("/register", async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 10);
 
     await Admin.create({
-      email: email.trim().toLowerCase(),
+      email: identifier,
       passwordHash,
     });
 
@@ -77,36 +73,50 @@ router.post("/register", async (req, res) => {
 // ADMIN LOGIN
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const identifier = (req.body.adminId || req.body.email || "").trim().toLowerCase();
+    const { password } = req.body;
 
-    if (!email || !password) {
+    if (!identifier || !password) {
       return res.status(400).json({
         success: false,
-        message: "Email and password are required",
+        code: "MISSING_FIELDS",
+        error: "400 Bad Request — Missing Credentials",
+        message: "Administrator ID and password are required.",
       });
     }
 
     const admin = await Admin.findOne({
-      email: email.trim().toLowerCase(),
+      email: identifier,
     });
 
-    if (!admin || !(await bcrypt.compare(password, admin.passwordHash))) {
+    if (!admin) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password",
+        code: "UNREGISTERED_ADMIN",
+        error: "401 Unauthorized — Unregistered Administrator",
+        message: `Unauthorized Access: Administrator ID '${identifier}' is not registered in the LPU Warden & Admin Directory.`,
       });
     }
 
-    if (!process.env.JWT_SECRET) {
-      throw new Error("JWT_SECRET is not configured");
+    const isMatch = await bcrypt.compare(password, admin.passwordHash);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        code: "INVALID_ADMIN_PASSWORD",
+        error: "401 Unauthorized — Wrong Admin Password",
+        message: `Unauthorized Access: Invalid password entered for Administrator '${identifier}'. Access to Warden Panel denied.`,
+      });
     }
+
+    const jwtSecret = process.env.JWT_SECRET || "lpu_hostel_jwt_secret_2026";
 
     const token = jwt.sign(
       {
         adminId: admin._id,
+        email: admin.email,
         role: admin.role,
       },
-      process.env.JWT_SECRET,
+      jwtSecret,
       { expiresIn: "1d" }
     );
 
@@ -114,10 +124,16 @@ router.post("/login", async (req, res) => {
       success: true,
       message: "Admin login successful",
       token,
+      admin: {
+        adminId: admin.email,
+        role: admin.role,
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
+      code: "SERVER_ERROR",
+      error: "500 Internal Server Error",
       message: "Admin login failed",
     });
   }

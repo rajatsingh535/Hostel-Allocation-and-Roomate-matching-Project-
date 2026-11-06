@@ -16,9 +16,9 @@ const STATIC_HOSTELS = [
   { _id: "h7",  code: "BH-7", name: "Boys Hostel 7",  genderAllowed: "Male",   campusLocation: "South Residential Area",     totalBeds: 400, availableBeds: 95,  totalCapacity: 400, availableCapacity: 95,  totalRooms: 100, imageUrl: "/images/lpu/boys-hostel.webp" },
   { _id: "h8",  code: "BH-8", name: "Boys Hostel 8",  genderAllowed: "Male",   campusLocation: "South Residential Area",     totalBeds: 360, availableBeds: 47,  totalCapacity: 360, availableCapacity: 47,  totalRooms: 90,  imageUrl: "/images/lpu/hero-banner.webp" },
   { _id: "h9",  code: "BH-9", name: "Boys Hostel 9",  genderAllowed: "Male",   campusLocation: "Central Residential Hub",    totalBeds: 400, availableBeds: 120, totalCapacity: 400, availableCapacity: 120, totalRooms: 100, imageUrl: "/images/lpu/slide-3-hostels.webp" },
-  { _id: "h10", code: "GH-1", name: "Girls Hostel 1", genderAllowed: "Female", campusLocation: "Girls Residential Zone A",   totalBeds: 360, availableBeds: 78,  totalCapacity: 360, availableCapacity: 78,  totalRooms: 90,  imageUrl: "/images/lpu/girls-hostel.webp" },
+  { _id: "h10", code: "GH-1", name: "Girls Hostel 1", genderAllowed: "Female", campusLocation: "Girls Residential Zone A",   totalBeds: 360, availableBeds: 78,  totalCapacity: 360, availableCapacity: 78,  totalRooms: 90,  imageUrl: "/images/lpu/girls-hostel-1.jpg" },
   { _id: "h11", code: "GH-2", name: "Girls Hostel 2", genderAllowed: "Female", campusLocation: "Girls Residential Zone B",   totalBeds: 400, availableBeds: 102, totalCapacity: 400, availableCapacity: 102, totalRooms: 100, imageUrl: "/images/lpu/girls-hostel.webp" },
-  { _id: "h12", code: "GH-3", name: "Girls Hostel 3", genderAllowed: "Female", campusLocation: "Girls Residential Zone B",   totalBeds: 360, availableBeds: 56,  totalCapacity: 360, availableCapacity: 56,  totalRooms: 90,  imageUrl: "/images/lpu/girls-hostel.webp" },
+  { _id: "h12", code: "GH-3", name: "Girls Hostel 3", genderAllowed: "Female", campusLocation: "Girls Residential Zone B",   totalBeds: 360, availableBeds: 56,  totalCapacity: 360, availableCapacity: 56,  totalRooms: 90,  imageUrl: "/images/lpu/girls-hostel-3.jpg" },
 ];
 
 const STATIC_APPLICATIONS = [
