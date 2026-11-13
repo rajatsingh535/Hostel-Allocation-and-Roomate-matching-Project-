@@ -1361,6 +1361,43 @@ html {
   }
 }
 
+/* ═══════════════════════════════════════════════
+   HERO SHIMMER SWEEP EFFECT FOR "CONSTRAINTS, NOT CHAOS"
+   ═══════════════════════════════════════════════ */
+
+.hero-shimmer-sweep {
+  /* Multiple colors gradient (Orange → White → Orange) */
+  background: linear-gradient(90deg, 
+    #F5821F 0%,      /* Orange start */
+    #EA580C 25%,     /* Dark Orange */
+    #FFF7ED 48%,     /* Light cream */
+    #FFFFFF 52%,     /* Pure White (shimmer peak) */
+    #FED7AA 56%,     /* Light orange */
+    #F5821F 75%,     /* Orange again */
+    #E35205 100%     /* Dark orange end */
+  );
+  
+  /* Gradient ko 250% wide banaya for animation */
+  background-size: 250% 100%;
+  
+  /* Text ko transparent banake background dikhana */
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  
+  /* Animation - gradient ko left to right move karti hai */
+  animation: textShimmerSweep 2.5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+@keyframes textShimmerSweep {
+  0% { 
+    background-position: 250% center; /* Right side se start */
+  }
+  100% { 
+    background-position: -50% center; /* Left side tak move */
+  }
+}
+
 /* Loading skeleton */
 .skeleton {
   background: linear-gradient(

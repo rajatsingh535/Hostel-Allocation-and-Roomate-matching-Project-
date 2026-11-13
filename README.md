@@ -12,7 +12,7 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-7-green?style=for-the-badge&logo=mongodb)](https://www.mongodb.com/)
 [![Express](https://img.shields.io/badge/Express-4-grey?style=for-the-badge&logo=express)](https://expressjs.com/)
 
-[🌐 Live Demo](https://hostelallocationlpuproject.vercel.app/) • [📖 Documentation](#project-structure) • [🐛 Report Bug](https://github.com/rajatsingh535/Hostel-Allocation-and-Roomate-matching-Project-/issues) • [✨ Request Feature](https://github.com/rajatsingh535/Hostel-Allocation-and-Roomate-matching-Project-/issues)
+[ Live Demo](https://hostelallocationlpuproject.vercel.app/) • [ Documentation](#project-structure) • [ Report Bug](https://github.com/rajatsingh535/Hostel-Allocation-and-Roomate-matching-Project-/issues) • [ Request Feature](https://github.com/rajatsingh535/Hostel-Allocation-and-Roomate-matching-Project-/issues)
 
 </div>
 
@@ -43,19 +43,19 @@ The **LPU Hostel Allocation & Roommate Matching System** is a full-stack residen
 
 ---
 
-## 🌟 Key Highlights & Latest Updates
+##  Key Highlights & Latest Updates
 
-- 🚻 **Gender-Based Hostel Recommendation (`BH` for Boys / `GH` for Girls)**:
+- **Gender-Based Hostel Recommendation (`BH` for Boys / `GH` for Girls)**:
   - At student login (`/student/login`), the portal asks whether the student is **Male (Boy)** or **Female (Girl)**.
   - **Male (Boy)** students are automatically recommended **Boys Hostels (`BH-1` to `BH-9`)** and have their dashboard pre-filtered to `BH` blocks.
   - **Female (Girl)** students are automatically recommended **Girls Hostels (`GH-1` to `GH-3`)** and have their dashboard pre-filtered to `GH` blocks.
   - Includes **1-Click Demo Login** for both **Boy Student (`BH-1` to `BH-9`)** and **Girl Student (`GH-1` to `GH-3`)**.
-- 📸 **100% Authentic LPU Hostel & Campus Photography (`44+ Official Photos`)**:
+-  **100% Authentic LPU Hostel & Campus Photography (`44+ Official Photos`)**:
   - Uses real photographs from **Lovely Professional University** (`public/images/lpu/`) across the entire application—zero generic or stock placeholders.
   - Showcases actual LPU `BH-1` to `BH-9` and `GH-1` to `GH-3` residential towers, AC/Non-AC Standard Rooms (1/2/3/4/5 Seater), AC Studio Apartments, Dormitories, Central Hostel Mess, Shanti Devi Mittal Auditorium, Central Library, Indoor Sports Complex (Olympic Pool, Badminton, Gym), Uni Mall, Uni Hospital, and Turnstile/Main Gate Security.
-- 🔄 **Interactive Exterior / Room Interior Card View**:
+-  **Interactive Exterior / Room Interior Card View**:
   - Every hostel block card (`BH-1` to `BH-9`, `GH-1` to `GH-3`) includes a live toggle between **Building Exterior** and **Room Interior** photographs.
-- 🖼️ **30-Photo LPU Residential & Campus Gallery**:
+-  **30-Photo LPU Residential & Campus Gallery**:
   - Filterable by category (*Hostel Towers*, *Rooms & Apartments*, *Dining & Mess*, *Sports & Gym*, *Campus & Mall*, *Security & Care*) with a full-screen Lightbox modal.
 
 ---
@@ -90,27 +90,27 @@ The **LPU Hostel Allocation & Roommate Matching System** is a full-stack residen
 
 ## Features
 
-### 🎓 For Students (`/student/login` & `/student/dashboard`)
+###  For Students (`/student/login` & `/student/dashboard`)
 
-- 🚻 **Gender Selection & Smart Wing Recommendation** — Select **Male (Boy)** or **Female (Girl)** at login to get tailored recommendations for **Boys Hostels (`BH-1` to `BH-9`)** or **Girls Hostels (`GH-1` to `GH-3`)**.
-- 🏢 **Interactive Hostel Directory** — Inspect all 12 LPU hostel blocks (`BH-1`–`BH-9`, `GH-1`–`GH-3`) with real LPU photos, fee structures, mess fees, and live bed availability.
-- 🛏️ **LPU UMS-Style Booking Modes**:
+-  **Gender Selection & Smart Wing Recommendation** — Select **Male (Boy)** or **Female (Girl)** at login to get tailored recommendations for **Boys Hostels (`BH-1` to `BH-9`)** or **Girls Hostels (`GH-1` to `GH-3`)**.
+-  **Interactive Hostel Directory** — Inspect all 12 LPU hostel blocks (`BH-1`–`BH-9`, `GH-1`–`GH-3`) with real LPU photos, fee structures, mess fees, and live bed availability.
+-  **LPU UMS-Style Booking Modes**:
   - **Individual Booking** — Apply solo with room category (`4-Seater`, `3-Seater`, `2-Seater`, `1-Seater`, `Dormitory`), AC/Non-AC, Mess plan, Floor preference, Quiet Zone, and Study-Focused tags.
   - **Roommate Group Booking** — Apply together as a 2–4 student group in the same room.
   - **Waitlist Priority Queue** — Join the CGPA-weighted priority queue for high-demand blocks.
-- 🤝 **Friend Requests & Roommate Matching** — Send, receive, accept, or reject roommate friend requests by LPU Registration Number.
-- 📊 **Real-Time Application Tracker** — Track status (`SUBMITTED`, `UNDER_REVIEW`, `ALLOCATED`, `WAITLISTED`) and view complete fee breakdowns.
+-  **Friend Requests & Roommate Matching** — Send, receive, accept, or reject roommate friend requests by LPU Registration Number.
+-  **Real-Time Application Tracker** — Track status (`SUBMITTED`, `UNDER_REVIEW`, `ALLOCATED`, `WAITLISTED`) and view complete fee breakdowns.
 
-### 👨‍💼 For Chief Warden & Administrators (`/admin/dashboard`)
+###  For Chief Warden & Administrators (`/admin/dashboard`)
 
-- 📈 **Live Occupancy Analytics** — Visual statistics across all 12 hostel blocks (`BH-1` to `BH-9` and `GH-1` to `GH-3`), total beds, occupied beds, and pending applications.
-- ⚡ **Smart 8-Tier Allocation Engine**:
+-  **Live Occupancy Analytics** — Visual statistics across all 12 hostel blocks (`BH-1` to `BH-9` and `GH-1` to `GH-3`), total beds, occupied beds, and pending applications.
+-  **Smart 8-Tier Allocation Engine**:
   - **Tier 1**: Complete roommate groups with matching block availability
   - **Tier 2**: Students with mutually accepted roommate friend requests
   - **Tier 3–5**: Floor, Quiet Zone, and Study-Focused lifestyle compatibility
   - **Tier 6–8**: CGPA-weighted priority & general pool allocation
-- 📋 **Application Review & Approval** — Filter applications by status, gender (`Male` / `Female`), department, and CGPA; approve or reject applications with one click.
-- 🏨 **Hostel Inventory Overview** — Real-time capacity bar charts and real LPU exterior/interior imagery for every block.
+-  **Application Review & Approval** — Filter applications by status, gender (`Male` / `Female`), department, and CGPA; approve or reject applications with one click.
+-  **Hostel Inventory Overview** — Real-time capacity bar charts and real LPU exterior/interior imagery for every block.
 
 ---
 
@@ -134,39 +134,39 @@ The **LPU Hostel Allocation & Roommate Matching System** is a full-stack residen
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```text
 Hostel-Allocation-and-Roomate-matching-Project-/
 │
-├── 📂 app/                          # Next.js 14 App Router (Frontend)
+├──  app/                          # Next.js 14 App Router (Frontend)
 │   ├── page.js                      # Landing page: Hero, 12 Hostels, Room Types, 30-Photo Gallery
 │   ├── globals.css                  # Global styles & animations
 │   ├── layout.js                    # Root layout & metadata
 │   │
-│   ├── 📂 components/               # Reusable UI components
+│   ├──  components/               # Reusable UI components
 │   │   ├── LpuLogo.js               # Official LPU Logo component
 │   │   └── Chatbot.js               # Interactive LPU Hostel Assistant
 │   │
-│   ├── 📂 student/                  # Student Portal
+│   ├──  student/                  # Student Portal
 │   │   ├── login/page.js            # Gender selection (Boy->BH / Girl->GH) & Student Login
 │   │   └── dashboard/page.js        # Personalized BH/GH recommendation, Booking, Friends & Groups
 │   │
-│   └── 📂 admin/                    # Chief Warden / Admin Portal
+│   └──  admin/                    # Chief Warden / Admin Portal
 │       ├── login/page.js            # Admin authentication
 │       └── dashboard/page.js        # Occupancy analytics, Application review & Smart Allocation
 │
-├── 📂 server/                       # Express.js Backend API
+├── server/                       # Express.js Backend API
 │   ├── index.js                     # API server entry point (Port 5000)
 │   ├── db.js                        # MongoDB connection with in-memory fallback
 │   ├── seed.js                      # Seeds BH-1..BH-9 & GH-1..GH-3 with real LPU images
-│   ├── 📂 models/                   # Mongoose Models (Hostel, Room, Student, Application, etc.)
-│   └── 📂 routes/                   # REST API Route Handlers
+│   ├──  models/                   # Mongoose Models (Hostel, Room, Student, Application, etc.)
+│   └──  routes/                   # REST API Route Handlers
 │
-├── 📂 public/                       # Static Assets
-│   └── 📂 images/lpu/               # 44+ Official LPU Hostel, Room, Mess, Sports & Campus Photos
+├──  public/                       # Static Assets
+│   └──  images/lpu/               # 44+ Official LPU Hostel, Room, Mess, Sports & Campus Photos
 │
-├── 📂 docs/                         # Technical & Deployment Documentation
+├──  docs/                         # Technical & Deployment Documentation
 ├── next.config.mjs                  # Next.js configuration
 ├── package.json                     # Dependencies & scripts
 └── README.md                        # Project documentation
@@ -187,7 +187,7 @@ Hostel-Allocation-and-Roomate-matching-Project-/
 
 ---
 
-## 🚀 Installation & Setup
+##  Installation & Setup
 
 ### Prerequisites
 - **Node.js** 18+ installed
@@ -236,20 +236,20 @@ npm run dev
 
 ---
 
-## 💻 Usage Guide
+##  Usage Guide
 
 ### Student Workflow
 1. Visit **`/student/login`**.
 2. **Step 1 — Select Gender**:
-   - Choose **👦 Male (Boy)** → System immediately recommends **Boys Hostels (`BH-1` to `BH-9`)**.
-   - Choose **👧 Female (Girl)** → System immediately recommends **Girls Hostels (`GH-1` to `GH-3`)**.
+   - Choose ** Male (Boy)** → System immediately recommends **Boys Hostels (`BH-1` to `BH-9`)**.
+   - Choose ** Female (Girl)** → System immediately recommends **Girls Hostels (`GH-1` to `GH-3`)**.
 3. Enter your LPU Registration Number & UMS Password (or click **Demo Boy (`BH-1 to BH-9`)** / **Demo Girl (`GH-1 to GH-3`)** for instant autofill).
 4. On **`/student/dashboard`**, review your personalized **Recommended Hostels Banner**, switch between `BH` or `GH` blocks, inspect real LPU room interiors, and submit an **Individual**, **Roommate Group**, or **Waitlist** booking.
 
 ### Administrator Workflow
 1. Visit **`/admin/dashboard`**.
 2. Review live occupancy across `BH-1`–`BH-9` and `GH-1`–`GH-3`.
-3. Click **"⚡ Run Smart Allocation"** to execute the 8-tier roommate matching and bed assignment engine.
+3. Click **" Run Smart Allocation"** to execute the 8-tier roommate matching and bed assignment engine.
 4. Approve or reject individual student applications in the **Applications** tab.
 
 ---
@@ -269,7 +269,7 @@ npm run dev
 
 ---
 
-## 📸 LPU Campus & Hostel Gallery Preview
+##  LPU Campus & Hostel Gallery Preview
 
 <div align="center">
   <table>
@@ -306,7 +306,7 @@ npm run dev
 
 ---
 
-## 🚀 Vercel Deployment
+##  Vercel Deployment
 
 The frontend is deployed on Vercel with built-in static LPU hostel fallback data so all pages, real LPU photos, and interactive flows work seamlessly even without a live backend connection:
 
@@ -329,8 +329,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
-**Made with ❤️ by LPU Students — Rajat Singh, Aditi & Yash Gupta**
+**Made with  by LPU Students — Rajat Singh, Aditi & Yash Gupta**
 
-⭐ Star this repository if you find it helpful!
+ Star this repository if you find it helpful!
 
 </div>
