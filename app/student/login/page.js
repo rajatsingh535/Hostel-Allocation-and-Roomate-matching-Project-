@@ -5,7 +5,7 @@ import LpuLogo from "../../components/LpuLogo";
 
 const API_BASE = "http://localhost:5000/api";
 
-// Registered LPU UMS Student Directory (synced with MongoDB Atlas seeder & local fallback)
+// Registered LPU UMS Student Directory (synced with MongoDB seeder & local fallback)
 const DEFAULT_REGISTERED_STUDENTS = [
   {
     regNo: "12304567",
@@ -87,7 +87,7 @@ const GENDER_RECOMMENDATIONS = {
     blocks: ["BH-1", "BH-2", "BH-3", "BH-4", "BH-5", "BH-6", "BH-7", "BH-8", "BH-9"],
     buildingImg: "/images/lpu/boys-hostel.webp",
     roomImg: "/images/lpu/boys-hostel-room.webp",
-    desc: "System automatically recommends LPU Boys Hostels (BH-1 to BH-9) featuring 9 multi-storey towers, biometric turnstile access, indoor gymnasiums, and dedicated dining mess.",
+    desc: "LPU Boys Hostels (BH-1 to BH-9) feature 9 multi-storey residential towers, biometric turnstile access, indoor gymnasiums, high-speed Wi-Fi, and dedicated dining mess.",
   },
   Female: {
     badge: "Girls Residential Enclave · Recommended for Female Students",
@@ -96,7 +96,7 @@ const GENDER_RECOMMENDATIONS = {
     blocks: ["GH-1", "GH-2", "GH-3"],
     buildingImg: "/images/lpu/girls-hostel-1.jpg",
     roomImg: "/images/lpu/girls-hostel-room.webp",
-    desc: "System automatically recommends LPU Girls Hostels (GH-1 to GH-3) featuring a gated residential enclave, 24/7 female wardens, multi-tier biometric security, and in-house dining.",
+    desc: "LPU Girls Hostels (GH-1 to GH-3) feature a secure gated residential enclave, 24/7 female wardens, multi-tier biometric security, study lounges, and in-house dining.",
   },
 };
 
@@ -105,7 +105,7 @@ export default function StudentLogin() {
   const [formData, setFormData] = useState({
     regNo: "",
     password: "",
-    gender: "",
+    gender: "Male",
     studentName: "",
     department: "Computer Science",
   });
@@ -231,12 +231,12 @@ export default function StudentLogin() {
       return;
     }
 
-    if (!cleanName) {
+    if (!cleanName || cleanName.length < 3) {
       setAuthError({
         status: "400 VALIDATION ERROR",
         code: "NAME_REQUIRED",
-        title: "Student Name Required",
-        message: "Please enter your full name to register your UMS ID.",
+        title: "Valid Student Name Required",
+        message: "Please enter your full name (at least 3 characters) to register your UMS ID.",
       });
       return;
     }
@@ -251,12 +251,12 @@ export default function StudentLogin() {
       return;
     }
 
-    if (cleanPassword.length < 8) {
+    if (cleanPassword.length < 6) {
       setAuthError({
         status: "400 BAD REQUEST",
         code: "WEAK_PASSWORD",
         title: "Password Too Short",
-        message: "Password must be at least 8 characters long for security compliance.",
+        message: "Password must be at least 6 characters long for security compliance.",
       });
       return;
     }
@@ -266,15 +266,15 @@ export default function StudentLogin() {
       setAuthError({
         status: "409 CONFLICT",
         code: "ALREADY_REGISTERED",
-        title: "UMS ID Already Registered",
-        message: `Registration Number '${cleanRoll}' (${existing.name}) is already registered. Please switch to Sign In.`,
+        title: "409 Conflict — UMS ID Already Registered",
+        message: `Registration Number '${cleanRoll}' (${existing.name}) is already registered. Duplicate accounts are blocked.`,
       });
       return;
     }
 
     setLoading(true);
     try {
-      await fetch(`${API_BASE}/auth/register`, {
+      const res = await fetch(`${API_BASE}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -285,6 +285,17 @@ export default function StudentLogin() {
           department: formData.department || "Computer Science",
         }),
       });
+      if (res.status === 409) {
+        const d = await res.json().catch(() => ({}));
+        setLoading(false);
+        setAuthError({
+          status: "409 CONFLICT",
+          code: "ALREADY_REGISTERED",
+          title: "409 Conflict — UMS ID Already Registered",
+          message: d.message || `Registration Number '${cleanRoll}' is already registered in MongoDB.`,
+        });
+        return;
+      }
     } catch (_) {}
 
     try {
@@ -335,7 +346,6 @@ export default function StudentLogin() {
       return;
     }
 
-    // Validate 8-digit UMS ID format
     if (!/^\d{8}$/.test(cleanRoll)) {
       setAuthError({
         status: "400 BAD REQUEST",
@@ -348,7 +358,6 @@ export default function StudentLogin() {
 
     setLoading(true);
 
-    // 1. Try verifying against live Backend API (/api/auth/login)
     let apiHandled = false;
     let verifiedStudent = null;
 
@@ -375,7 +384,6 @@ export default function StudentLogin() {
           localStorage.setItem("lpu_student_token", data.token);
         }
       } else if (res.status === 401 || res.status === 403 || res.status === 400) {
-        // Also check if user registered locally in browser before rejecting
         const localCustom = getRegisteredList().find((s) => s.regNo === cleanRoll);
         if (!localCustom) {
           setLoading(false);
@@ -390,11 +398,8 @@ export default function StudentLogin() {
           return;
         }
       }
-    } catch (_) {
-      // Backend unreachable -> fall back to client-side registered student verification
-    }
+    } catch (_) {}
 
-    // 2. Client-side verification against Registered UMS Directory
     if (!apiHandled) {
       const registeredList = getRegisteredList();
       const matchedStudent = registeredList.find((s) => s.regNo === cleanRoll);
@@ -424,10 +429,10 @@ export default function StudentLogin() {
       if (matchedStudent.gender !== formData.gender) {
         setLoading(false);
         setAuthError({
-          status: "403 UNAUTHORIZED",
+          status: "403 FORBIDDEN",
           code: "GENDER_MISMATCH",
-          title: "403 Unauthorized — Gender Policy Mismatch",
-          message: `Unauthorized Selection: UMS ID '${cleanRoll}' (${matchedStudent.name}) is registered as a ${matchedStudent.gender} student. Please select '${matchedStudent.gender}' in Step 1 to access eligible hostels.`,
+          title: "403 Forbidden — Gender Policy Mismatch",
+          message: `Unauthorized Selection: UMS ID '${cleanRoll}' (${matchedStudent.name}) is registered as a ${matchedStudent.gender} student. Please select '${matchedStudent.gender}' in Step 1.`,
         });
         return;
       }
@@ -454,507 +459,473 @@ export default function StudentLogin() {
       window.location.href = `/student/dashboard?gender=${encodeURIComponent(
         verifiedStudent.gender
       )}&roll=${encodeURIComponent(verifiedStudent.rollNumber)}`;
-    }, 500);
+    }, 350);
   };
 
-  const activeRec = formData.gender ? GENDER_RECOMMENDATIONS[formData.gender] : null;
+  const activeRec = GENDER_RECOMMENDATIONS[formData.gender || "Male"];
 
   return (
-    <div className="min-h-screen bg-[var(--bg-alt)] flex items-center justify-center p-4 sm:p-6">
-      <div className="w-full max-w-4xl grid lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Login / Register Form + Gender Selection */}
-        <div className="lg:col-span-7 bg-white border border-[var(--border)] rounded-2xl p-6 sm:p-8 shadow-sm">
-          {/* Top header */}
-          <div className="flex items-center justify-between mb-6">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-[var(--primary)] transition-colors"
-            >
-              ← Back to Home
-            </Link>
-            <img
-              src="/images/lpu/naac-logo.webp"
-              alt="LPU NAAC A++"
-              className="h-6 object-contain"
-            />
-          </div>
+    <div className="min-h-screen bg-stone-100 flex flex-col justify-center py-6 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-[1120px] mx-auto bg-white rounded-3xl shadow-xl border border-stone-200/80 overflow-hidden grid lg:grid-cols-12">
+        
+        {/* ── LEFT COLUMN: Interactive Form (Compact, Above-the-Fold, Professional) ── */}
+        <div className="lg:col-span-7 p-6 sm:p-8 lg:p-10 flex flex-col justify-between">
+          <div>
+            {/* Top Bar: Back Link + NAAC A++ + Mode Switcher */}
+            <div className="flex items-center justify-between gap-2 mb-5">
+              <Link
+                href="/"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-500 hover:text-[var(--primary)] transition-colors"
+              >
+                ← Back to Home
+              </Link>
+              <div className="flex items-center gap-3">
+                <img
+                  src="/images/lpu/naac-logo.webp"
+                  alt="LPU NAAC A++"
+                  className="h-5 object-contain hidden sm:block"
+                />
+                <div className="inline-flex rounded-xl bg-stone-100 p-1 border border-stone-200">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("login");
+                      setAuthError(null);
+                      setSuccessMsg("");
+                    }}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                      mode === "login"
+                        ? "bg-white text-stone-900 shadow-xs"
+                        : "text-stone-500 hover:text-stone-800"
+                    }`}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("register");
+                      setAuthError(null);
+                      setSuccessMsg("");
+                    }}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                      mode === "register"
+                        ? "bg-white text-[var(--primary-dark)] shadow-xs"
+                        : "text-stone-500 hover:text-stone-800"
+                    }`}
+                  >
+                    Register UMS ID
+                  </button>
+                </div>
+              </div>
+            </div>
 
-          <div className="flex items-center justify-between gap-3.5 mb-5 flex-wrap">
-            <div className="flex items-center gap-3.5">
-              <LpuLogo size={48} showText={false} />
+            {/* Branding Title */}
+            <div className="flex items-center gap-3.5 mb-5">
+              <LpuLogo size={44} showText={false} />
               <div>
-                <h1 className="text-2xl font-black text-stone-900 tracking-tight">
+                <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight leading-tight">
                   Student Hostel Portal
                 </h1>
-                <p className="text-xs text-stone-500 mt-0.5">
+                <p className="text-xs text-stone-500">
                   Lovely Professional University · Verified UMS Authentication
                 </p>
               </div>
             </div>
 
-            {/* Sign In / Register Switcher */}
-            <div className="inline-flex rounded-xl bg-stone-100 p-1 border border-stone-200">
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("login");
-                  setAuthError(null);
-                  setSuccessMsg("");
-                }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  mode === "login"
-                    ? "bg-white text-stone-900 shadow-sm"
-                    : "text-stone-500 hover:text-stone-800"
-                }`}
-              >
-                Sign In
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("register");
-                  setAuthError(null);
-                  setSuccessMsg("");
-                }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  mode === "register"
-                    ? "bg-white text-[var(--primary-dark)] shadow-sm"
-                    : "text-stone-500 hover:text-stone-800"
-                }`}
-              >
-                Register UMS ID
-              </button>
-            </div>
-          </div>
-
-          {/* Success Banner */}
-          {successMsg && (
-            <div className="mb-5 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-green-800 text-xs sm:text-sm font-semibold flex items-center gap-2.5">
-              <span className="text-base">✅</span>
-              <span>{successMsg}</span>
-            </div>
-          )}
-
-          {/* 401 / 403 Unauthorized & Validation Alert Banner */}
-          {authError && (
-            <div className="mb-5 rounded-xl bg-red-50 border-2 border-red-300 p-4 text-red-900 shadow-sm">
-              <div className="flex items-center justify-between gap-2 mb-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-red-600 text-white text-[10px] font-black uppercase tracking-wider">
-                    🔒 {authError.status}
-                  </span>
-                  <span className="text-xs font-extrabold text-red-900">
-                    {authError.title}
-                  </span>
-                </div>
-                <span className="text-[10px] font-mono font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded">
-                  {authError.code}
-                </span>
-              </div>
-              <p className="text-xs text-red-700 leading-relaxed font-medium">
-                {authError.message}
-              </p>
-            </div>
-          )}
-
-          {/* 1-Click Demo Autofill for Boys (BH), Girls (GH), and Unauthorized Test */}
-          <div className="mb-6">
-            <span className="block text-[11px] font-bold uppercase tracking-wider text-stone-400 mb-2">
-              Quick Demo Autofill &amp; Validation Test
-            </span>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => handleAutofill("Male")}
-                className="py-2 px-2.5 rounded-xl border border-orange-200 bg-orange-50/70 text-[var(--primary-dark)] hover:bg-orange-100/80 transition-all text-[11px] font-bold flex items-center justify-center gap-1"
-              >
-                <span>👦 Boy (12304567)</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAutofill("Female")}
-                className="py-2 px-2.5 rounded-xl border border-orange-200 bg-orange-50/70 text-[var(--primary-dark)] hover:bg-orange-100/80 transition-all text-[11px] font-bold flex items-center justify-center gap-1"
-              >
-                <span>👧 Girl (12304568)</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleTestUnauthorized}
-                className="py-2 px-2.5 rounded-xl border border-red-200 bg-red-50/70 text-red-700 hover:bg-red-100/80 transition-all text-[11px] font-bold flex items-center justify-center gap-1"
-              >
-                <span>🚫 Test Invalid</span>
-              </button>
-            </div>
-          </div>
-
-          <form
-            onSubmit={mode === "register" ? handleRegisterSubmit : handleSubmit}
-            className="space-y-5"
-          >
-            {/* STEP 1: Ask User Male or Female to Recommend BH to Boys and GH to Girls */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-stone-700">
-                  Step 1: Are you Male or Female? <span className="text-[var(--primary)]">*</span>
-                </label>
-                <span className="text-[11px] font-semibold text-[var(--primary)]">
-                  Auto-recommends BH / GH
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                {/* Male / Boy Option */}
+            {/* Quick Demo & Validation Bar */}
+            <div className="mb-4 p-2.5 rounded-xl bg-stone-50 border border-stone-200/80 flex flex-wrap items-center justify-between gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 pl-1">
+                Quick Autofill:
+              </span>
+              <div className="flex items-center gap-1.5 flex-wrap">
                 <button
                   type="button"
-                  onClick={() => handleGenderSelect("Male")}
-                  className={`group relative text-left rounded-xl p-3 border-2 transition-all overflow-hidden ${
-                    formData.gender === "Male"
-                      ? "border-[var(--primary)] bg-orange-50/70 shadow-sm"
-                      : "border-stone-200 bg-white hover:border-orange-300"
-                  }`}
+                  onClick={() => handleAutofill("Male")}
+                  className="py-1.5 px-3 rounded-lg border border-orange-200 bg-orange-50 text-[var(--primary-dark)] hover:bg-orange-100 transition-all text-xs font-bold"
                 >
-                  <div className="relative h-20 w-full rounded-lg overflow-hidden mb-2.5 border border-stone-200">
-                    <img
-                      src="/images/lpu/boys-hostel.webp"
-                      alt="LPU Boys Hostel BH"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                    <span className="absolute bottom-1.5 left-2 text-[10px] font-extrabold text-white bg-[var(--primary)] px-2 py-0.5 rounded-md">
-                      Recommends BH-1 to BH-9
+                  👦 Boy (12304567)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAutofill("Female")}
+                  className="py-1.5 px-3 rounded-lg border border-pink-200 bg-pink-50 text-pink-700 hover:bg-pink-100 transition-all text-xs font-bold"
+                >
+                  👧 Girl (12304568)
+                </button>
+                <button
+                  type="button"
+                  onClick={handleTestUnauthorized}
+                  className="py-1.5 px-3 rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition-all text-xs font-bold"
+                >
+                  🚫 Test Invalid (401)
+                </button>
+              </div>
+            </div>
+
+            {/* Success Alert */}
+            {successMsg && (
+              <div className="mb-4 px-3.5 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+                <span>✅</span>
+                <span>{successMsg}</span>
+              </div>
+            )}
+
+            {/* 401 / 403 / 400 / 409 Validation Alert Banner */}
+            {authError && (
+              <div className="mb-4 rounded-xl bg-red-50 border-2 border-red-300 p-3.5 text-red-900 shadow-xs">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-red-600 text-white text-[10px] font-black uppercase tracking-wider">
+                      🔒 {authError.status}
+                    </span>
+                    <span className="text-xs font-extrabold text-red-900">
+                      {authError.title}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-black text-stone-900">Male (Boy)</div>
-                      <div className="text-[11px] text-stone-500 font-medium">
-                        Boys Hostels (BH)
+                  <span className="text-[10px] font-mono font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded">
+                    {authError.code}
+                  </span>
+                </div>
+                <p className="text-xs text-red-700 leading-relaxed font-medium">
+                  {authError.message}
+                </p>
+              </div>
+            )}
+
+            {/* Main Authentication Form */}
+            <form
+              onSubmit={mode === "register" ? handleRegisterSubmit : handleSubmit}
+              className="space-y-4"
+            >
+              {/* STEP 1: Compact Gender Selector with Instant Wing Badge */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-stone-700">
+                    Step 1: Select Gender <span className="text-[var(--primary)]">*</span>
+                  </label>
+                  <span className="text-[11px] font-bold text-[var(--primary-dark)] bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200">
+                    {formData.gender === "Female"
+                      ? "★ Recommends Girls Hostels (GH-1 to GH-3)"
+                      : "★ Recommends Boys Hostels (BH-1 to BH-9)"}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleGenderSelect("Male")}
+                    className={`flex items-center gap-3 p-2.5 rounded-xl border-2 text-left transition-all ${
+                      formData.gender === "Male"
+                        ? "border-[var(--primary)] bg-orange-50/70 shadow-2xs"
+                        : "border-stone-200 bg-white hover:border-orange-300"
+                    }`}
+                  >
+                    <img
+                      src="/images/lpu/boys-hostel.webp"
+                      alt="Boys Hostel BH"
+                      className="w-12 h-12 rounded-lg object-cover border border-stone-200 flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-black text-stone-900 leading-tight">Male (Boy)</div>
+                      <div className="text-[11px] text-[var(--primary-dark)] font-bold truncate">
+                        BH-1 to BH-9 Wing
                       </div>
                     </div>
-                    <div
-                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold ${
+                    <span
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
                         formData.gender === "Male"
                           ? "border-[var(--primary)] bg-[var(--primary)] text-white"
                           : "border-stone-300 text-transparent"
                       }`}
                     >
                       ✓
-                    </div>
-                  </div>
-                </button>
+                    </span>
+                  </button>
 
-                {/* Female / Girl Option */}
-                <button
-                  type="button"
-                  onClick={() => handleGenderSelect("Female")}
-                  className={`group relative text-left rounded-xl p-3 border-2 transition-all overflow-hidden ${
-                    formData.gender === "Female"
-                      ? "border-[var(--primary)] bg-orange-50/70 shadow-sm"
-                      : "border-stone-200 bg-white hover:border-orange-300"
-                  }`}
-                >
-                  <div className="relative h-20 w-full rounded-lg overflow-hidden mb-2.5 border border-stone-200">
+                  <button
+                    type="button"
+                    onClick={() => handleGenderSelect("Female")}
+                    className={`flex items-center gap-3 p-2.5 rounded-xl border-2 text-left transition-all ${
+                      formData.gender === "Female"
+                        ? "border-[var(--primary)] bg-orange-50/70 shadow-2xs"
+                        : "border-stone-200 bg-white hover:border-orange-300"
+                    }`}
+                  >
                     <img
                       src="/images/lpu/girls-hostel-1.jpg"
-                      alt="LPU Girls Hostel GH"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      alt="Girls Hostel GH"
+                      className="w-12 h-12 rounded-lg object-cover border border-stone-200 flex-shrink-0"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                    <span className="absolute bottom-1.5 left-2 text-[10px] font-extrabold text-white bg-[var(--primary)] px-2 py-0.5 rounded-md">
-                      Recommends GH-1 to GH-3
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-black text-stone-900">Female (Girl)</div>
-                      <div className="text-[11px] text-stone-500 font-medium">
-                        Girls Hostels (GH)
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-black text-stone-900 leading-tight">Female (Girl)</div>
+                      <div className="text-[11px] text-pink-700 font-bold truncate">
+                        GH-1 to GH-3 Wing
                       </div>
                     </div>
-                    <div
-                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold ${
+                    <span
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
                         formData.gender === "Female"
                           ? "border-[var(--primary)] bg-[var(--primary)] text-white"
                           : "border-stone-300 text-transparent"
                       }`}
                     >
                       ✓
-                    </div>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            {/* Instant Recommendation Banner inside Login Form when Gender is chosen */}
-            {activeRec && (
-              <div className="rounded-xl bg-orange-50/90 border border-orange-200 p-3.5 text-xs">
-                <div className="flex items-center justify-between gap-2 mb-1">
-                  <span className="font-extrabold text-[var(--primary-dark)] uppercase tracking-wide text-[11px]">
-                    ★ System Recommendation for {formData.gender === "Male" ? "Boys" : "Girls"}
-                  </span>
-                  <span className="px-2 py-0.5 rounded-full bg-white text-[var(--primary-dark)] font-bold text-[10px] border border-orange-200">
-                    {formData.gender === "Male" ? "BH Wing Assigned" : "GH Wing Assigned"}
-                  </span>
-                </div>
-                <p className="font-bold text-stone-900 text-sm mb-1">{activeRec.title}</p>
-                <div className="flex flex-wrap gap-1 mt-1.5">
-                  {activeRec.blocks.map((code) => (
-                    <span
-                      key={code}
-                      className="px-2 py-0.5 rounded-md bg-white border border-orange-200 text-stone-800 font-bold text-[11px]"
-                    >
-                      {code}
                     </span>
-                  ))}
+                  </button>
                 </div>
               </div>
-            )}
 
-            {/* Extra Name Field when Registering a New UMS ID */}
-            {mode === "register" && (
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-1.5">
-                  Full Student Name <span className="text-[var(--primary)]">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Rohan Mehta"
-                  value={formData.studentName}
-                  onChange={(e) => {
-                    setFormData({ ...formData, studentName: e.target.value });
-                    setAuthError(null);
-                  }}
-                  className="input-light"
-                />
+              {/* Extra Name Field in Register Mode */}
+              {mode === "register" && (
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-1">
+                      Full Student Name <span className="text-[var(--primary)]">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Rohan Mehta"
+                      value={formData.studentName}
+                      onChange={(e) => {
+                        setFormData({ ...formData, studentName: e.target.value });
+                        setAuthError(null);
+                      }}
+                      className="input-light py-2.5"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-1">
+                      Department
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.department}
+                      onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                      className="input-light py-2.5"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 2: Credentials Row */}
+              <div className="grid sm:grid-cols-2 gap-3.5">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-bold uppercase tracking-wider text-stone-700">
+                      UMS Registration No <span className="text-[var(--primary)]">*</span>
+                    </label>
+                    <span className="text-[10px] font-mono text-stone-400">
+                      {formData.regNo.length}/8 digits
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    maxLength={12}
+                    placeholder="8-digit ID (e.g. 12304567)"
+                    value={formData.regNo}
+                    onChange={(e) => {
+                      setFormData({ ...formData, regNo: e.target.value });
+                      setAuthError(null);
+                    }}
+                    className={`input-light py-2.5 font-mono ${
+                      authError &&
+                      (authError.code === "UNREGISTERED_STUDENT" ||
+                        authError.code === "INVALID_FORMAT" ||
+                        authError.code === "ALREADY_REGISTERED")
+                        ? "border-red-400 bg-red-50/40"
+                        : ""
+                    }`}
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="text-xs font-bold uppercase tracking-wider text-stone-700">
+                      UMS Password <span className="text-[var(--primary)]">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="text-[11px] text-[var(--primary)] hover:text-[var(--primary-dark)] font-bold"
+                    >
+                      {showPassword ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    placeholder={mode === "register" ? "Min 6 characters" : "Demo: password123"}
+                    value={formData.password}
+                    onChange={(e) => {
+                      setFormData({ ...formData, password: e.target.value });
+                      setAuthError(null);
+                    }}
+                    className={`input-light py-2.5 ${
+                      authError && authError.code === "INVALID_PASSWORD"
+                        ? "border-red-400 bg-red-50/40"
+                        : ""
+                    }`}
+                  />
+                </div>
               </div>
-            )}
 
-            {/* Registration Number */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-bold uppercase tracking-wider text-stone-600">
-                  Registration Number (8-Digit UMS ID)
-                </label>
-                <span className="text-[10px] text-stone-400 font-medium">
-                  Registered IDs: 12304567, 12304568, 12345678–82
-                </span>
-              </div>
-              <input
-                type="text"
-                required
-                placeholder="e.g. 12304567"
-                value={formData.regNo}
-                onChange={(e) => {
-                  setFormData({ ...formData, regNo: e.target.value });
-                  setAuthError(null);
-                }}
-                className={`input-light ${
-                  authError &&
-                  (authError.code === "UNREGISTERED_STUDENT" ||
-                    authError.code === "INVALID_FORMAT")
-                    ? "border-red-400 bg-red-50/30"
-                    : ""
-                }`}
-              />
-            </div>
-
-            {/* Password */}
-            <div>
-              <div className="flex justify-between items-center mb-1.5">
-                <label className="block text-xs font-bold uppercase tracking-wider text-stone-600">
-                  Password
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="text-xs text-[var(--primary)] hover:text-[var(--primary-dark)] font-semibold"
-                >
-                  {showPassword ? "Hide" : "Show"}
-                </button>
-              </div>
-              <input
-                type={showPassword ? "text" : "password"}
-                required
-                placeholder={
-                  mode === "register"
-                    ? "Create password (min 8 characters)"
-                    : "Enter your UMS password (demo: password123)"
-                }
-                value={formData.password}
-                onChange={(e) => {
-                  setFormData({ ...formData, password: e.target.value });
-                  setAuthError(null);
-                }}
-                className={`input-light ${
-                  authError && authError.code === "INVALID_PASSWORD"
-                    ? "border-red-400 bg-red-50/30"
-                    : ""
-                }`}
-              />
-            </div>
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full py-3.5 rounded-xl text-sm font-bold disabled:opacity-60"
-            >
-              {loading ? (
-                <>
-                  <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                  <span>
-                    {mode === "register"
-                      ? "Registering UMS Account…"
-                      : "Verifying UMS Credentials…"}
-                  </span>
-                </>
-              ) : mode === "register" ? (
-                <>
-                  <span>Register New Student UMS Account</span>
-                  <span>→</span>
-                </>
-              ) : (
-                <>
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary w-full py-3 rounded-xl text-sm font-bold disabled:opacity-60 shadow-md"
+              >
+                {loading ? (
+                  <>
+                    <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                    <span>
+                      {mode === "register"
+                        ? "Registering UMS Account…"
+                        : "Verifying UMS Credentials…"}
+                    </span>
+                  </>
+                ) : mode === "register" ? (
+                  <span>Register New Student UMS Account →</span>
+                ) : (
                   <span>
                     Verify &amp; Sign In to{" "}
                     {formData.gender === "Female"
-                      ? "Girls Hostels (GH)"
-                      : formData.gender === "Male"
-                      ? "Boys Hostels (BH)"
-                      : "Hostel Portal"}
+                      ? "Girls Hostels (GH-1 to GH-3)"
+                      : "Boys Hostels (BH-1 to BH-9)"}{" "}
+                    →
                   </span>
-                  <span>→</span>
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Registered UMS Accounts Reference Box */}
-          <div className="mt-5 p-3.5 rounded-xl bg-stone-50 border border-stone-200 text-[11px] text-stone-600">
-            <div className="font-bold text-stone-800 mb-1 flex items-center justify-between">
-              <span>🔑 Verified Registered Student Credentials (Password: password123)</span>
-              <span className="text-[10px] text-green-700 font-bold bg-green-100 px-2 py-0.5 rounded">
-                Auth Guard Active
-              </span>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-1 text-stone-500">
-              <div>• <strong>12304567</strong> — Arjun Sharma (Male · BH)</div>
-              <div>• <strong>12304568</strong> — Priya Patel (Female · GH)</div>
-              <div>• <strong>12345680</strong> — Rahul Verma (Male · BH)</div>
-              <div>• <strong>12345681</strong> — Sneha Singh (Female · GH)</div>
-            </div>
+                )}
+              </button>
+            </form>
           </div>
 
-          <div className="mt-5 pt-4 border-t border-[var(--border)] flex items-center justify-between text-xs text-stone-400">
-            <span>
-              Helpdesk:{" "}
-              <a
-                href="mailto:hostel@lpu.co.in"
-                className="text-[var(--primary)] font-semibold hover:underline"
-              >
-                hostel@lpu.co.in
-              </a>
-            </span>
-            <Link
-              href="/admin/login"
-              className="text-[var(--primary)] hover:underline font-semibold"
-            >
-              Warden Admin Panel →
-            </Link>
-          </div>
-        </div>
-
-        {/* Right Column: Real LPU Hostel Photos & Live Gender Recommendation Preview */}
-        <div className="lg:col-span-5 space-y-4">
-          <div className="bg-white border border-[var(--border)] rounded-2xl overflow-hidden shadow-sm">
-            <div className="relative h-52 w-full">
-              <img
-                src={activeRec ? activeRec.buildingImg : "/images/lpu/hero-banner.webp"}
-                alt="Official LPU Residential Campus"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
-              <div className="absolute top-3 left-3">
-                <span className="px-3 py-1 rounded-full bg-[var(--primary)] text-white text-[11px] font-bold shadow-sm">
-                  {activeRec ? activeRec.badge : "Real LPU Residential Campus"}
+          {/* Bottom Reference & Admin Switcher */}
+          <div className="mt-5 pt-4 border-t border-stone-200/80">
+            <div className="p-3 rounded-xl bg-stone-50 border border-stone-200 text-[11px] text-stone-600 mb-3">
+              <div className="font-bold text-stone-800 mb-1 flex items-center justify-between">
+                <span>🔑 Verified Demo Accounts (Password: password123)</span>
+                <span className="text-[10px] text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded">
+                  JWT Auth Guard Active
                 </span>
               </div>
-              <div className="absolute bottom-3 left-3 right-3 text-white">
-                <div className="text-lg font-black leading-tight">
-                  {activeRec
-                    ? activeRec.title
-                    : "Select Male or Female to Preview Recommended Hostels"}
-                </div>
-                <p className="text-xs text-white/85 mt-0.5">
-                  {activeRec
-                    ? `Top Recommended Block: ${activeRec.topPick}`
-                    : "Boys are recommended BH-1 to BH-9 · Girls are recommended GH-1 to GH-3"}
-                </p>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-stone-500">
+                <div>• <strong>12304567</strong> — Arjun Sharma (Male · BH)</div>
+                <div>• <strong>12304568</strong> — Priya Patel (Female · GH)</div>
+                <div>• <strong>12345680</strong> — Rahul Verma (Male · BH)</div>
+                <div>• <strong>12345681</strong> — Sneha Singh (Female · GH)</div>
               </div>
             </div>
 
-            <div className="p-5">
-              <p className="text-xs text-stone-600 leading-relaxed mb-4">
-                {activeRec
-                  ? activeRec.desc
-                  : "At LPU, residential zones are gender-segregated for safety and comfort. Select Male or Female on the login form to automatically filter and recommend Boys Hostels (BH) or Girls Hostels (GH)."}
-              </p>
-
-              {/* Real Room Interior Preview */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl overflow-hidden border border-stone-200 bg-stone-50">
-                  <img
-                    src="/images/lpu/boys-hostel-room.webp"
-                    alt="Real LPU Boys Hostel Room"
-                    className="w-full h-24 object-cover"
-                  />
-                  <div className="p-2">
-                    <div className="text-[11px] font-bold text-stone-900">
-                      Boys Hostel (BH-1 to BH-9)
-                    </div>
-                    <div className="text-[10px] text-stone-500">
-                      Real LPU BH AC 4-Seater Room
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-xl overflow-hidden border border-stone-200 bg-stone-50">
-                  <img
-                    src="/images/lpu/girls-hostel-room.webp"
-                    alt="Real LPU Girls Hostel Room"
-                    className="w-full h-24 object-cover"
-                  />
-                  <div className="p-2">
-                    <div className="text-[11px] font-bold text-stone-900">
-                      Girls Hostel (GH-1 to GH-3)
-                    </div>
-                    <div className="text-[10px] text-stone-500">
-                      Real LPU GH AC Suite Room
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Campus Mess & Security Mini Card */}
-          <div className="bg-white border border-[var(--border)] rounded-2xl p-4 shadow-sm flex items-center gap-3.5">
-            <img
-              src="/images/lpu/turnstile-gates.jpg"
-              alt="LPU Biometric Turnstile Security"
-              className="w-20 h-16 rounded-xl object-cover flex-shrink-0 border border-stone-200"
-            />
-            <div>
-              <div className="text-xs font-bold text-stone-900">
-                Biometric Turnstile &amp; 24/7 Warden Security
-              </div>
-              <p className="text-[11px] text-stone-500 mt-0.5 leading-snug">
-                All BH and GH residential blocks feature automated biometric gates, FSSAI-certified dining halls, and Uni-Hospital support.
-              </p>
+            <div className="flex items-center justify-between text-xs text-stone-500">
+              <span>
+                Helpdesk:{" "}
+                <a
+                  href="mailto:hostel@lpu.co.in"
+                  className="text-[var(--primary)] font-semibold hover:underline"
+                >
+                  hostel@lpu.co.in
+                </a>
+              </span>
+              <Link
+                href="/admin/login"
+                className="text-[var(--primary-dark)] hover:underline font-bold"
+              >
+                Warden &amp; Admin Portal →
+              </Link>
             </div>
           </div>
         </div>
+
+        {/* ── RIGHT COLUMN: Matched-Height Visual Campus & Wing Preview ── */}
+        <div className="lg:col-span-5 bg-stone-900 text-white p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden">
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-400/30 text-orange-300 text-[11px] font-bold mb-4">
+              <span>★</span>
+              <span>{activeRec.badge}</span>
+            </div>
+
+            <h2 className="text-xl sm:text-2xl font-black text-white leading-tight mb-1.5">
+              {activeRec.title}
+            </h2>
+            <p className="text-xs text-stone-300 leading-relaxed mb-4">
+              {activeRec.desc}
+            </p>
+
+            {/* Primary Building Preview */}
+            <div className="relative h-44 w-full rounded-2xl overflow-hidden border border-white/15 mb-4 shadow-lg">
+              <img
+                src={activeRec.buildingImg}
+                alt={activeRec.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="absolute bottom-3 left-3 right-3">
+                <div className="text-xs font-bold text-orange-300">Top Recommended Block</div>
+                <div className="text-sm font-black text-white">{activeRec.topPick}</div>
+              </div>
+            </div>
+
+            {/* Eligible Block Chips */}
+            <div className="mb-4">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-1.5">
+                Assigned Residential Wing Blocks ({activeRec.blocks.length} Towers)
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {activeRec.blocks.map((code) => (
+                  <span
+                    key={code}
+                    className="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15 text-white font-bold text-xs"
+                  >
+                    {code}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Interior Room Preview Row */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5">
+                <img
+                  src="/images/lpu/boys-hostel-room.webp"
+                  alt="LPU Boys Hostel Room"
+                  className="w-full h-20 object-cover"
+                />
+                <div className="p-2">
+                  <div className="text-[11px] font-bold text-white">Boys Wing (BH-1..9)</div>
+                  <div className="text-[10px] text-stone-400">AC / Non-AC 2–4 Seater</div>
+                </div>
+              </div>
+              <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5">
+                <img
+                  src="/images/lpu/girls-hostel-room.webp"
+                  alt="LPU Girls Hostel Room"
+                  className="w-full h-20 object-cover"
+                />
+                <div className="p-2">
+                  <div className="text-[11px] font-bold text-white">Girls Wing (GH-1..3)</div>
+                  <div className="text-[10px] text-stone-400">Gated Enclave Suites</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Security Footer Card */}
+          <div className="relative z-10 mt-5 pt-4 border-t border-white/10 flex items-center gap-3">
+            <img
+              src="/images/lpu/turnstile-gates.jpg"
+              alt="Biometric Turnstile Security"
+              className="w-14 h-12 rounded-lg object-cover border border-white/15 flex-shrink-0"
+            />
+            <div className="text-[11px] text-stone-300 leading-snug">
+              <strong className="text-white block">Biometric Turnstile &amp; 24/7 Warden Security</strong>
+              Automated gate entry, FSSAI dining halls, and Uni-Hospital support.
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );

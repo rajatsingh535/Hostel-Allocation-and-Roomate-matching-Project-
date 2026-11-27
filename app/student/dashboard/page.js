@@ -78,6 +78,7 @@ export default function StudentDashboard() {
   const [consentGiven, setConsentGiven] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [confirmation, setConfirmation] = useState(null);
+  const [bookingError, setBookingError] = useState(null);
 
   const [bookingForm, setBookingForm] = useState({
     studentName: "Arjun Sharma",
@@ -238,19 +239,87 @@ export default function StudentDashboard() {
 
   const handleSubmitBooking = async (e) => {
     e.preventDefault();
+    setBookingError(null);
+
     if (!selectedCategory || !selectedHostel || !consentGiven) {
-      alert("Please select a room category, hostel, and agree to terms.");
+      setBookingError({
+        status: "400 VALIDATION ERROR",
+        code: "MISSING_SELECTION",
+        title: "Incomplete Booking Selection",
+        message: "Please select a room category, a hostel block, and confirm the residential consent checkbox.",
+      });
       return;
     }
+
+    const cleanRoll = String(bookingForm.studentRollNumber || "").trim();
+    if (!/^\d{8}$/.test(cleanRoll)) {
+      setBookingError({
+        status: "400 BAD REQUEST",
+        code: "INVALID_ROLL_FORMAT",
+        title: "Invalid UMS Registration Number Format",
+        message: `Registration Number '${cleanRoll}' is invalid. LPU UMS Registration Numbers must be an exact 8-digit numeric ID (e.g., 12304567).`,
+      });
+      return;
+    }
+
+    const numericCgpa = Number(bookingForm.cgpa);
+    if (Number.isNaN(numericCgpa) || numericCgpa < 0 || numericCgpa > 10) {
+      setBookingError({
+        status: "400 BAD REQUEST",
+        code: "INVALID_CGPA",
+        title: "Invalid CGPA Value",
+        message: "CGPA must be a valid number between 0.0 and 10.0.",
+      });
+      return;
+    }
+
+    if (
+      selectedHostel.genderAllowed &&
+      selectedHostel.genderAllowed !== "Co-ed" &&
+      selectedHostel.genderAllowed !== studentGender
+    ) {
+      setBookingError({
+        status: "400 BAD REQUEST",
+        code: "GENDER_POLICY_VIOLATION",
+        title: "Gender Policy Violation Blocked",
+        message: `Gender Policy Violation: ${selectedHostel.name} (${selectedHostel.code}) is reserved for ${selectedHostel.genderAllowed} students only, while your profile gender is set to ${studentGender}.`,
+      });
+      return;
+    }
+
+    if (bookingMode === "group") {
+      const validFriends = bookingForm.friendRollNumbers
+        .map((r) => String(r || "").trim())
+        .filter(Boolean);
+      if (validFriends.length === 0) {
+        setBookingError({
+          status: "400 VALIDATION ERROR",
+          code: "GROUP_FRIENDS_REQUIRED",
+          title: "Group Booking Requires Roommate Roll Number",
+          message: "Please enter at least one valid 8-digit Friend Registration Number for Group Booking.",
+        });
+        return;
+      }
+      if (validFriends.includes(cleanRoll)) {
+        setBookingError({
+          status: "400 BAD REQUEST",
+          code: "SELF_GROUP_FORBIDDEN",
+          title: "Cannot Add Yourself as Roommate",
+          message: "You cannot list your own Registration Number in the Friend Roll Numbers list.",
+        });
+        return;
+      }
+    }
+
     setSubmitting(true);
     const payload = {
       studentName: bookingForm.studentName,
-      studentRollNumber: bookingForm.studentRollNumber,
+      studentRollNumber: cleanRoll,
       studentEmail: bookingForm.studentEmail,
       department: bookingForm.department,
       year: Number(bookingForm.year),
-      gender: bookingForm.gender,
-      cgpa: Number(bookingForm.cgpa),
+      gender: studentGender,
+      cgpa: numericCgpa,
       specialAccommodations: bookingForm.specialAccommodations,
       bookingMode,
       friendRollNumbers: bookingMode === "group" ? bookingForm.friendRollNumbers.filter(Boolean) : [],
@@ -272,10 +341,35 @@ export default function StudentDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      if (data.success) app = data.data;
-    } catch (_) {}
-    if (!app) {
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        app = data.data;
+      } else if (res.status >= 400) {
+        setSubmitting(false);
+        setBookingError({
+          status:
+            res.status === 409
+              ? "409 CONFLICT"
+              : res.status === 403
+              ? "403 FORBIDDEN"
+              : `${res.status} BAD REQUEST`,
+          code:
+            res.status === 409
+              ? "DUPLICATE_ACTIVE_APPLICATION"
+              : data.code || "SERVER_VALIDATION_BLOCKED",
+          title:
+            res.status === 409
+              ? "409 Conflict — Active Hostel Application Already Exists"
+              : "Server-Side Validation Rejected Request",
+          message:
+            data.message ||
+            "Your booking request was blocked by server-side validation rules.",
+          existingAppId: data.data?.applicationId || null,
+        });
+        return;
+      }
+    } catch (_) {
+      // Offline fallback only when server is unreachable
       app = {
         _id: `local-${Date.now()}`,
         applicationId: `LPU-APP-${Date.now().toString().slice(-6)}`,
@@ -285,8 +379,10 @@ export default function StudentDashboard() {
         cgpa: bookingForm.cgpa,
       };
     }
-    setConfirmation(app);
-    setMyApplications((prev) => [app, ...prev]);
+    if (app) {
+      setConfirmation(app);
+      setMyApplications((prev) => [app, ...prev]);
+    }
     setSubmitting(false);
   };
 
@@ -773,6 +869,52 @@ export default function StudentDashboard() {
               )}
 
               <form onSubmit={handleSubmitBooking} className="space-y-4">
+                {bookingError && (
+                  <div className="rounded-xl bg-red-50 border-2 border-red-300 p-4 text-red-900 shadow-xs">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded bg-red-600 text-white text-[10px] font-black uppercase tracking-wider">
+                          🔒 {bookingError.status}
+                        </span>
+                        <span className="text-xs font-extrabold text-red-900">
+                          {bookingError.title}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded">
+                        {bookingError.code}
+                      </span>
+                    </div>
+                    <p className="text-xs text-red-700 leading-relaxed font-medium">
+                      {bookingError.message}
+                    </p>
+                    {bookingError.code === "DUPLICATE_ACTIVE_APPLICATION" && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setBookingError(null);
+                            setActiveTab("my-applications");
+                          }}
+                          className="text-xs font-bold px-3 py-1.5 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+                        >
+                          View Existing Application →
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const freshRoll = `1239${Math.floor(1000 + Math.random() * 8999)}`;
+                            setBookingForm((prev) => ({ ...prev, studentRollNumber: freshRoll }));
+                            setBookingError(null);
+                          }}
+                          className="text-xs font-bold px-3 py-1.5 rounded-lg bg-white border border-red-300 text-red-800 hover:bg-red-100 transition-colors"
+                        >
+                          Use Fresh Demo UMS ID
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="grid sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-stone-600 mb-1.5">Full Name *</label>
@@ -1597,14 +1739,15 @@ function RoomSwapTab({ studentRoll, studentName, studentGender }) {
   const [mySwaps, setMySwaps] = useState([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(true);
+  const [swapBanner, setSwapBanner] = useState(null); // { type: "error"|"success", status, code, message }
 
   const [formData, setFormData] = useState({
-    currentHostel: "",
-    currentRoom: "",
-    currentBedNumber: "",
-    targetStudentRoll: "",
-    reason: "",
+    currentHostel: studentGender === "Female" ? "GH-1" : "BH-1",
+    currentRoom: "101",
+    currentBedNumber: "1",
+    targetStudentRoll: studentGender === "Female" ? "12345681" : "12345680",
+    reason: "Mutual study partner room swap in same hostel wing",
   });
 
   // Load existing swap requests
@@ -1627,9 +1770,15 @@ function RoomSwapTab({ studentRoll, studentName, studentGender }) {
 
   const handleSubmitSwap = async (e) => {
     e.preventDefault();
-    
-    if (!formData.currentHostel || !formData.targetStudentRoll) {
-      alert("Please fill all required fields");
+    setSwapBanner(null);
+
+    if (!formData.currentHostel || !formData.targetStudentRoll || !formData.currentRoom || !formData.reason) {
+      setSwapBanner({
+        type: "error",
+        status: "400 VALIDATION ERROR",
+        code: "MISSING_FIELDS",
+        message: "Please fill in Current Hostel, Room Number, Target Student Roll Number, and Reason.",
+      });
       return;
     }
 
@@ -1652,23 +1801,30 @@ function RoomSwapTab({ studentRoll, studentName, studentGender }) {
         body: JSON.stringify(payload),
       });
       const data = await res.json();
-      
-      if (data.success) {
-        alert("✅ Room swap request submitted!");
-        setShowForm(false);
-        setFormData({
-          currentHostel: "",
-          currentRoom: "",
-          currentBedNumber: "",
-          targetStudentRoll: "",
-          reason: "",
+
+      if (res.ok && data.success) {
+        setSwapBanner({
+          type: "success",
+          status: "201 CREATED",
+          code: "SWAP_SUBMITTED",
+          message: "Room swap request submitted and sent to Chief Warden for approval!",
         });
         loadSwaps();
       } else {
-        alert(data.message || "Failed to submit request");
+        setSwapBanner({
+          type: "error",
+          status: `${res.status} BAD REQUEST`,
+          code: data.code || "SWAP_VALIDATION_FAILED",
+          message: data.message || "Failed to submit room swap request.",
+        });
       }
     } catch (err) {
-      alert("Error submitting swap request");
+      setSwapBanner({
+        type: "error",
+        status: "500 NETWORK ERROR",
+        code: "SERVER_UNREACHABLE",
+        message: "Error communicating with room swap service.",
+      });
     }
     setSubmitting(false);
   };
@@ -1725,7 +1881,81 @@ function RoomSwapTab({ studentRoll, studentName, studentGender }) {
       {/* Request Form */}
       {showForm && (
         <div className="bg-white border border-[var(--border)] rounded-2xl p-6">
-          <h3 className="text-lg font-bold text-stone-900 mb-4">Create Swap Request</h3>
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <h3 className="text-lg font-bold text-stone-900">Create Swap Request</h3>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <button
+                type="button"
+                onClick={() => {
+                  setSwapBanner(null);
+                  setFormData({
+                    currentHostel: studentGender === "Female" ? "GH-1" : "BH-1",
+                    currentRoom: "101",
+                    currentBedNumber: "1",
+                    targetStudentRoll: studentGender === "Female" ? "12345681" : "12345680",
+                    reason: "Mutual study partner room swap in same hostel wing",
+                  });
+                }}
+                className="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+              >
+                ✅ Valid Swap
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSwapBanner(null);
+                  setFormData({
+                    currentHostel: studentGender === "Female" ? "GH-1" : "BH-1",
+                    currentRoom: "101",
+                    currentBedNumber: "1",
+                    targetStudentRoll: studentRoll,
+                    reason: "Testing self-swap edge case validation",
+                  });
+                }}
+                className="text-xs font-bold px-2.5 py-1 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
+              >
+                🚫 Test Self-Swap (400)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSwapBanner(null);
+                  setFormData({
+                    currentHostel: studentGender === "Female" ? "BH-1" : "GH-1",
+                    currentRoom: "101",
+                    currentBedNumber: "1",
+                    targetStudentRoll: studentGender === "Female" ? "12304567" : "12304568",
+                    reason: "Testing cross-gender hostel swap restriction",
+                  });
+                }}
+                className="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100"
+              >
+                🚫 Test Cross-Gender (400)
+              </button>
+            </div>
+          </div>
+
+          {swapBanner && (
+            <div
+              className={`mb-4 rounded-xl p-3.5 border-2 text-xs ${
+                swapBanner.type === "error"
+                  ? "bg-red-50 border-red-300 text-red-900"
+                  : "bg-emerald-50 border-emerald-300 text-emerald-900"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <span
+                  className={`px-2 py-0.5 rounded font-black text-[10px] uppercase ${
+                    swapBanner.type === "error" ? "bg-red-600 text-white" : "bg-emerald-600 text-white"
+                  }`}
+                >
+                  {swapBanner.status}
+                </span>
+                <span className="font-mono font-bold text-[10px]">{swapBanner.code}</span>
+              </div>
+              <p className="font-medium leading-relaxed">{swapBanner.message}</p>
+            </div>
+          )}
           
           <form onSubmit={handleSubmitSwap} className="space-y-4">
             <div className="grid md:grid-cols-3 gap-4">
