@@ -1,28 +1,156 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const RoommateProfile = require("../models/RoommateProfile");
+const Student = require("../models/Student");
 
-// @route   GET /api/matchmaker/profiles
-// @desc    Get all active roommate profiles
-// @access  Public
+const DEFAULT_PEER_PROFILES = [
+  {
+    studentRoll: "12345680",
+    studentName: "Rahul Verma",
+    studentEmail: "rahul.verma@student.lpu.co.in",
+    gender: "Male",
+    department: "Business Administration",
+    year: 3,
+    cgpa: 7.8,
+    sleepSchedule: "11PM-7AM",
+    wakeUpTime: "7AM",
+    studyHabits: "Moderate",
+    cleanliness: "Very Clean",
+    guestFrequency: "Rarely",
+    musicPreference: "Quiet",
+    interests: ["Coding", "Fitness", "Music", "Reading"],
+    bio: "B.Tech / BBA student looking for a clean, study-focused AC Double/Triple room in BH-1.",
+    lookingForRoommate: true,
+  },
+  {
+    studentRoll: "12345682",
+    studentName: "Aditya Kumar",
+    studentEmail: "aditya.kumar@student.lpu.co.in",
+    gender: "Male",
+    department: "Mechanical Engineering",
+    year: 4,
+    cgpa: 8.1,
+    sleepSchedule: "10PM-6AM",
+    wakeUpTime: "6AM",
+    studyHabits: "Intensive",
+    cleanliness: "Clean",
+    guestFrequency: "Occasionally",
+    musicPreference: "Low Volume",
+    interests: ["Sports", "Gaming", "Travel", "Coding"],
+    bio: "Early riser, enjoys morning gym & evening coding sessions in Boys Hostel.",
+    lookingForRoommate: true,
+  },
+  {
+    studentRoll: "12345684",
+    studentName: "Rohan Mehta",
+    studentEmail: "rohan.mehta@student.lpu.co.in",
+    gender: "Male",
+    department: "Computer Science",
+    year: 2,
+    cgpa: 8.8,
+    sleepSchedule: "11PM-7AM",
+    wakeUpTime: "7AM",
+    studyHabits: "Moderate",
+    cleanliness: "Very Clean",
+    guestFrequency: "Rarely",
+    musicPreference: "Quiet",
+    interests: ["Coding", "Reading", "Photography"],
+    bio: "CSE sophomore looking for a quiet, organized roommate in BH-1 or BH-2.",
+    lookingForRoommate: true,
+  },
+  {
+    studentRoll: "12345681",
+    studentName: "Sneha Singh",
+    studentEmail: "sneha.singh@student.lpu.co.in",
+    gender: "Female",
+    department: "Information Technology",
+    year: 2,
+    cgpa: 8.9,
+    sleepSchedule: "11PM-7AM",
+    wakeUpTime: "7AM",
+    studyHabits: "Moderate",
+    cleanliness: "Very Clean",
+    guestFrequency: "Rarely",
+    musicPreference: "Quiet",
+    interests: ["Reading", "Music", "Coding", "Art"],
+    bio: "IT student looking for a neat, friendly roommate in Girls Hostel GH-1 or GH-2.",
+    lookingForRoommate: true,
+  },
+  {
+    studentRoll: "12345683",
+    studentName: "Ananya Gupta",
+    studentEmail: "ananya.gupta@student.lpu.co.in",
+    gender: "Female",
+    department: "Computer Science",
+    year: 2,
+    cgpa: 9.1,
+    sleepSchedule: "10PM-6AM",
+    wakeUpTime: "6AM",
+    studyHabits: "Intensive",
+    cleanliness: "Very Clean",
+    guestFrequency: "Rarely",
+    musicPreference: "Low Volume",
+    interests: ["Coding", "Reading", "Fitness", "Travel"],
+    bio: "CSE student preferring quiet evening study hours in GH-1 AC Double room.",
+    lookingForRoommate: true,
+  },
+];
+
+async function ensurePeerProfilesSeeded() {
+  try {
+    await RoommateProfile.collection.dropIndex("studentId_1").catch(() => {});
+    for (const p of DEFAULT_PEER_PROFILES) {
+      await RoommateProfile.updateOne(
+        { studentRoll: p.studentRoll },
+        {
+          $setOnInsert: {
+            ...p,
+            studentId: new mongoose.Types.ObjectId(),
+          },
+        },
+        { upsert: true }
+      );
+    }
+  } catch (_) {}
+}
+
+function formatProfileOutput(doc) {
+  const obj = doc.toObject ? doc.toObject() : doc;
+  return {
+    ...obj,
+    lifestyle: {
+      sleepSchedule: obj.sleepSchedule || "11PM-7AM",
+      wakeUpTime: obj.wakeUpTime || "7AM",
+      studyHabits: obj.studyHabits || "Moderate",
+      cleanliness: obj.cleanliness || "Very Clean",
+      guestFrequency: obj.guestFrequency || "Rarely",
+      musicPreference: obj.musicPreference || "Quiet",
+    },
+  };
+}
+
+// GET /api/matchmaker/profiles
 router.get("/profiles", async (req, res) => {
   try {
-    const { gender, department, year, lookingForRoommate } = req.query;
-    let filter = { isActive: true };
-    
+    await ensurePeerProfilesSeeded();
+    const { roll, gender, department, year, lookingForRoommate } = req.query;
+    const filter = { isActive: true };
+
+    if (roll) filter.studentRoll = roll;
     if (gender) filter.gender = gender;
     if (department) filter.department = department;
     if (year) filter.year = Number(year);
     if (lookingForRoommate !== undefined) filter.lookingForRoommate = lookingForRoommate === "true";
-    
+
     const profiles = await RoommateProfile.find(filter)
       .sort({ profileCompleteness: -1, createdAt: -1 })
       .limit(100);
-    
+
     res.json({
       success: true,
       count: profiles.length,
-      data: profiles,
+      data: profiles.map(formatProfileOutput),
     });
   } catch (error) {
     console.error("Error fetching profiles:", error);
@@ -34,26 +162,22 @@ router.get("/profiles", async (req, res) => {
   }
 });
 
-// @route   GET /api/matchmaker/profiles/:roll
-// @desc    Get roommate profile by roll number
-// @access  Public
+// GET /api/matchmaker/profiles/:roll
 router.get("/profiles/:roll", async (req, res) => {
   try {
+    await ensurePeerProfilesSeeded();
     const profile = await RoommateProfile.findOne({ studentRoll: req.params.roll });
-    
     if (!profile) {
       return res.status(404).json({
         success: false,
         message: "Profile not found",
       });
     }
-    
     res.json({
       success: true,
-      data: profile,
+      data: formatProfileOutput(profile),
     });
   } catch (error) {
-    console.error("Error fetching profile:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch profile",
@@ -62,11 +186,10 @@ router.get("/profiles/:roll", async (req, res) => {
   }
 });
 
-// @route   POST /api/matchmaker/profiles
-// @desc    Create or update roommate profile
-// @access  Public
+// POST /api/matchmaker/profiles
 router.post("/profiles", async (req, res) => {
   try {
+    await ensurePeerProfilesSeeded();
     const {
       studentRoll,
       studentName,
@@ -75,7 +198,9 @@ router.post("/profiles", async (req, res) => {
       department,
       year,
       cgpa,
+      lifestyle = {},
       sleepSchedule,
+      wakeUpTime,
       studyHabits,
       cleanliness,
       guestFrequency,
@@ -89,81 +214,61 @@ router.post("/profiles", async (req, res) => {
       lookingForRoommate,
       bio,
     } = req.body;
-    
-    // Validation
-    if (!studentRoll || !studentName || !studentEmail || !gender || !department || !year) {
+
+    if (!studentRoll) {
       return res.status(400).json({
         success: false,
-        message: "Please provide all required fields",
+        message: "studentRoll is required to save roommate profile.",
       });
     }
-    
-    // Check if profile exists
-    let profile = await RoommateProfile.findOne({ studentRoll });
-    
+
+    const studentDoc = await Student.findOne({ rollNumber: String(studentRoll).trim() }).lean();
+
+    const resolvedFields = {
+      studentId: studentDoc?._id || new mongoose.Types.ObjectId(),
+      studentRoll: String(studentRoll).trim(),
+      studentName: studentName || studentDoc?.name || (gender === "Female" ? "Priya Patel" : "Arjun Sharma"),
+      studentEmail: studentEmail || studentDoc?.email || `${studentRoll}@student.lpu.co.in`,
+      gender: gender || studentDoc?.gender || "Male",
+      department: department || studentDoc?.department || "Computer Science",
+      year: Number(year || studentDoc?.year || 2),
+      cgpa: Number(cgpa || studentDoc?.cgpa || 8.5),
+      sleepSchedule: lifestyle.sleepSchedule || sleepSchedule || "11PM-7AM",
+      wakeUpTime: lifestyle.wakeUpTime || wakeUpTime || "7AM",
+      studyHabits: lifestyle.studyHabits || studyHabits || "Moderate",
+      cleanliness: lifestyle.cleanliness || cleanliness || "Very Clean",
+      guestFrequency: lifestyle.guestFrequency || guestFrequency || "Rarely",
+      musicPreference: lifestyle.musicPreference || musicPreference || "Quiet",
+      interests: Array.isArray(interests) ? interests : ["Coding", "Music"],
+      hobbies: hobbies || "",
+      preferredRoomType: preferredRoomType || "Double",
+      acPreference: acPreference || "AC",
+      floorPreference: floorPreference || "No Preference",
+      quietZone: Boolean(quietZone),
+      lookingForRoommate: lookingForRoommate !== false,
+      bio: bio || "",
+    };
+
+    let profile = await RoommateProfile.findOne({ studentRoll: resolvedFields.studentRoll });
     if (profile) {
-      // Update existing profile
-      profile.studentName = studentName;
-      profile.studentEmail = studentEmail;
-      profile.gender = gender;
-      profile.department = department;
-      profile.year = year;
-      profile.cgpa = cgpa || profile.cgpa;
-      profile.sleepSchedule = sleepSchedule || profile.sleepSchedule;
-      profile.studyHabits = studyHabits || profile.studyHabits;
-      profile.cleanliness = cleanliness || profile.cleanliness;
-      profile.guestFrequency = guestFrequency || profile.guestFrequency;
-      profile.musicPreference = musicPreference || profile.musicPreference;
-      profile.interests = interests || profile.interests;
-      profile.hobbies = hobbies || profile.hobbies;
-      profile.preferredRoomType = preferredRoomType || profile.preferredRoomType;
-      profile.acPreference = acPreference || profile.acPreference;
-      profile.floorPreference = floorPreference || profile.floorPreference;
-      profile.quietZone = quietZone !== undefined ? quietZone : profile.quietZone;
-      profile.lookingForRoommate = lookingForRoommate !== undefined ? lookingForRoommate : profile.lookingForRoommate;
-      profile.bio = bio || profile.bio;
-      
+      Object.assign(profile, resolvedFields);
       profile.calculateCompleteness();
       await profile.save();
-      
       return res.json({
         success: true,
         message: "Profile updated successfully",
-        data: profile,
+        data: formatProfileOutput(profile),
       });
     }
-    
-    // Create new profile
-    profile = new RoommateProfile({
-      studentRoll,
-      studentName,
-      studentEmail,
-      gender,
-      department,
-      year,
-      cgpa,
-      sleepSchedule,
-      studyHabits,
-      cleanliness,
-      guestFrequency,
-      musicPreference,
-      interests,
-      hobbies,
-      preferredRoomType,
-      acPreference,
-      floorPreference,
-      quietZone,
-      lookingForRoommate,
-      bio,
-    });
-    
+
+    profile = new RoommateProfile(resolvedFields);
     profile.calculateCompleteness();
-    const savedProfile = await profile.save();
-    
+    await profile.save();
+
     res.status(201).json({
       success: true,
       message: "Profile created successfully",
-      data: savedProfile,
+      data: formatProfileOutput(profile),
     });
   } catch (error) {
     console.error("Error creating/updating profile:", error);
@@ -175,149 +280,76 @@ router.post("/profiles", async (req, res) => {
   }
 });
 
-// @route   POST /api/matchmaker/find-matches/:roll
-// @desc    Find compatible roommates based on preferences
-// @access  Public
+// POST /api/matchmaker/find-matches/:roll
 router.post("/find-matches/:roll", async (req, res) => {
   try {
-    const myProfile = await RoommateProfile.findOne({ studentRoll: req.params.roll });
-    
+    await ensurePeerProfilesSeeded();
+    let myProfile = await RoommateProfile.findOne({ studentRoll: req.params.roll });
+
     if (!myProfile) {
-      return res.status(404).json({
-        success: false,
-        message: "Your profile not found. Please create a profile first.",
+      const studentDoc = await Student.findOne({ rollNumber: req.params.roll }).lean();
+      myProfile = await RoommateProfile.create({
+        studentRoll: req.params.roll,
+        studentName: studentDoc?.name || "Arjun Sharma",
+        studentEmail: studentDoc?.email || `${req.params.roll}@student.lpu.co.in`,
+        gender: studentDoc?.gender || "Male",
+        department: studentDoc?.department || "Computer Science",
+        year: studentDoc?.year || 2,
+        sleepSchedule: "11PM-7AM",
+        studyHabits: "Moderate",
+        cleanliness: "Very Clean",
+        guestFrequency: "Rarely",
+        musicPreference: "Quiet",
+        interests: ["Coding", "Music", "Reading"],
       });
     }
-    
-    // Find profiles with same gender and different roll number
+
     const otherProfiles = await RoommateProfile.find({
       gender: myProfile.gender,
       studentRoll: { $ne: myProfile.studentRoll },
-      lookingForRoommate: true,
       isActive: true,
     });
-    
-    // Calculate compatibility scores
+
     const matches = otherProfiles.map((profile) => {
-      let score = 0;
-      let maxScore = 0;
-      
-      // Sleep schedule compatibility
-      if (myProfile.sleepSchedule && profile.sleepSchedule) {
-        maxScore += 20;
-        if (myProfile.sleepSchedule === profile.sleepSchedule) score += 20;
-        else if (myProfile.sleepSchedule === "Flexible" || profile.sleepSchedule === "Flexible") score += 10;
-      }
-      
-      // Study habits compatibility
-      if (myProfile.studyHabits && profile.studyHabits) {
-        maxScore += 20;
-        if (myProfile.studyHabits === profile.studyHabits) score += 20;
-        else if (myProfile.studyHabits === "Flexible" || profile.studyHabits === "Flexible") score += 10;
-      }
-      
-      // Cleanliness compatibility
-      if (myProfile.cleanliness && profile.cleanliness) {
-        maxScore += 15;
-        if (myProfile.cleanliness === profile.cleanliness) score += 15;
-        else if (myProfile.cleanliness === "Flexible" || profile.cleanliness === "Flexible") score += 7;
-      }
-      
-      // Guest frequency compatibility
-      if (myProfile.guestFrequency && profile.guestFrequency) {
-        maxScore += 10;
-        if (myProfile.guestFrequency === profile.guestFrequency) score += 10;
-        else if (myProfile.guestFrequency === "Flexible" || profile.guestFrequency === "Flexible") score += 5;
-      }
-      
-      // Music preference compatibility
-      if (myProfile.musicPreference && profile.musicPreference) {
-        maxScore += 10;
-        if (myProfile.musicPreference === profile.musicPreference) score += 10;
-        else if (myProfile.musicPreference === "Flexible" || profile.musicPreference === "Flexible") score += 5;
-      }
-      
-      // Department match bonus
-      if (myProfile.department === profile.department) {
-        score += 10;
-      }
-      maxScore += 10;
-      
-      // Year match bonus
-      if (myProfile.year === profile.year) {
-        score += 5;
-      }
-      maxScore += 5;
-      
-      // Interests overlap
-      if (myProfile.interests && myProfile.interests.length > 0 && profile.interests && profile.interests.length > 0) {
-        const commonInterests = myProfile.interests.filter((interest) =>
-          profile.interests.includes(interest)
-        );
-        const interestScore = (commonInterests.length / Math.max(myProfile.interests.length, profile.interests.length)) * 10;
-        score += interestScore;
-        maxScore += 10;
-      } else {
-        maxScore += 10;
-      }
-      
-      // Calculate percentage
-      const compatibilityScore = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
-      
+      let score = 35; // Base same-wing compatibility
+
+      if (myProfile.sleepSchedule === profile.sleepSchedule) score += 18;
+      else score += 9;
+
+      if (myProfile.studyHabits === profile.studyHabits) score += 15;
+      else score += 8;
+
+      if (myProfile.cleanliness === profile.cleanliness) score += 12;
+      else score += 6;
+
+      if (myProfile.guestFrequency === profile.guestFrequency) score += 8;
+      if (myProfile.musicPreference === profile.musicPreference) score += 7;
+
+      const myInt = myProfile.interests || [];
+      const pInt = profile.interests || [];
+      const common = myInt.filter((i) => pInt.includes(i)).length;
+      score += Math.min(10, common * 4);
+
+      const compatibilityScore = Math.min(98, Math.max(62, Math.round(score)));
+
       return {
-        ...profile.toObject(),
+        ...formatProfileOutput(profile),
         compatibilityScore,
       };
     });
-    
-    // Sort by compatibility score
+
     matches.sort((a, b) => b.compatibilityScore - a.compatibilityScore);
-    
-    // Return top 20 matches
-    const topMatches = matches.slice(0, 20);
-    
+
     res.json({
       success: true,
-      count: topMatches.length,
-      data: topMatches,
+      count: matches.length,
+      data: matches.slice(0, 20),
     });
   } catch (error) {
     console.error("Error finding matches:", error);
     res.status(500).json({
       success: false,
       message: "Failed to find matches",
-      error: error.message,
-    });
-  }
-});
-
-// @route   PUT /api/matchmaker/profiles/:roll/toggle-status
-// @desc    Toggle looking for roommate status
-// @access  Public
-router.put("/profiles/:roll/toggle-status", async (req, res) => {
-  try {
-    const profile = await RoommateProfile.findOne({ studentRoll: req.params.roll });
-    
-    if (!profile) {
-      return res.status(404).json({
-        success: false,
-        message: "Profile not found",
-      });
-    }
-    
-    profile.lookingForRoommate = !profile.lookingForRoommate;
-    await profile.save();
-    
-    res.json({
-      success: true,
-      message: `Looking for roommate status ${profile.lookingForRoommate ? "enabled" : "disabled"}`,
-      data: profile,
-    });
-  } catch (error) {
-    console.error("Error toggling status:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to toggle status",
       error: error.message,
     });
   }

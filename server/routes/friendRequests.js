@@ -1,29 +1,53 @@
 const express = require("express");
 const router = express.Router();
 
-// In-memory storage for friend requests (replace with MongoDB in production)
 let friendRequests = [];
 let groupBookings = [];
 
-// Send friend request
+// POST /api/friend-requests/send
 router.post("/send", async (req, res) => {
   try {
-    const { fromStudent, toStudent, message } = req.body;
-    
+    const { fromStudent, toStudent, senderRollNumber, receiverRollNumber, message } = req.body;
+
+    const normalizedFrom = fromStudent || {
+      rollNumber: String(senderRollNumber || "12304567").trim(),
+      name: req.body.senderName || "LPU Student",
+    };
+    const normalizedTo = toStudent || {
+      rollNumber: String(receiverRollNumber || "12345680").trim(),
+      name: req.body.receiverName || "Matched Roommate",
+    };
+
+    if (!normalizedFrom.rollNumber || !normalizedTo.rollNumber) {
+      return res.status(400).json({
+        success: false,
+        message: "Both sender and receiver roll numbers are required.",
+      });
+    }
+
+    if (normalizedFrom.rollNumber === normalizedTo.rollNumber) {
+      return res.status(400).json({
+        success: false,
+        code: "SELF_INVITE_FORBIDDEN",
+        message: "You cannot send a roommate pairing invite to your own Registration Number.",
+      });
+    }
+
     const request = {
       id: Date.now().toString(),
-      fromStudent,
-      toStudent,
-      message: message || `${fromStudent.name} wants to be your roommate!`,
+      pairingToken: `LPU-PAIR-${Date.now().toString().slice(-6)}`,
+      fromStudent: normalizedFrom,
+      toStudent: normalizedTo,
+      message: message || `${normalizedFrom.name} wants to be your roommate!`,
       status: "pending",
       createdAt: new Date(),
     };
-    
+
     friendRequests.push(request);
-    
-    res.json({
+
+    res.status(201).json({
       success: true,
-      message: "Friend request sent successfully",
+      message: "Roommate pairing invite sent successfully",
       data: request,
     });
   } catch (error) {
@@ -35,15 +59,13 @@ router.post("/send", async (req, res) => {
   }
 });
 
-// Get received friend requests
+// GET /api/friend-requests/received/:rollNumber
 router.get("/received/:rollNumber", async (req, res) => {
   try {
     const { rollNumber } = req.params;
-    
     const received = friendRequests.filter(
-      req => req.toStudent.rollNumber === rollNumber && req.status === "pending"
+      (r) => r.toStudent?.rollNumber === rollNumber && r.status === "pending"
     );
-    
     res.json({
       success: true,
       data: received,
@@ -57,15 +79,11 @@ router.get("/received/:rollNumber", async (req, res) => {
   }
 });
 
-// Get sent friend requests
+// GET /api/friend-requests/sent/:rollNumber
 router.get("/sent/:rollNumber", async (req, res) => {
   try {
     const { rollNumber } = req.params;
-    
-    const sent = friendRequests.filter(
-      req => req.fromStudent.rollNumber === rollNumber
-    );
-    
+    const sent = friendRequests.filter((r) => r.fromStudent?.rollNumber === rollNumber);
     res.json({
       success: true,
       data: sent,
@@ -79,24 +97,22 @@ router.get("/sent/:rollNumber", async (req, res) => {
   }
 });
 
-// Accept/Reject friend request
+// PATCH /api/friend-requests/:id/:action
 router.patch("/:id/:action", async (req, res) => {
   try {
     const { id, action } = req.params;
-    
-    const request = friendRequests.find(r => r.id === id);
-    
+    const request = friendRequests.find((r) => r.id === id);
+
     if (!request) {
       return res.status(404).json({
         success: false,
         message: "Friend request not found",
       });
     }
-    
+
     request.status = action === "accept" ? "accepted" : "rejected";
     request.updatedAt = new Date();
-    
-    // If accepted, create a group booking
+
     if (action === "accept") {
       const group = {
         id: Date.now().toString(),
@@ -106,7 +122,7 @@ router.patch("/:id/:action", async (req, res) => {
       };
       groupBookings.push(group);
     }
-    
+
     res.json({
       success: true,
       message: `Friend request ${action}ed successfully`,
@@ -121,22 +137,19 @@ router.patch("/:id/:action", async (req, res) => {
   }
 });
 
-// Create group booking
+// POST /api/friend-requests/group
 router.post("/group", async (req, res) => {
   try {
     const { students, preferences } = req.body;
-    
     const group = {
       id: Date.now().toString(),
-      students,
-      preferences,
+      students: students || [],
+      preferences: preferences || [],
       createdAt: new Date(),
       status: "active",
     };
-    
     groupBookings.push(group);
-    
-    res.json({
+    res.status(201).json({
       success: true,
       message: "Group booking created successfully",
       data: group,
@@ -150,15 +163,13 @@ router.post("/group", async (req, res) => {
   }
 });
 
-// Get my groups
+// GET /api/friend-requests/groups/:rollNumber
 router.get("/groups/:rollNumber", async (req, res) => {
   try {
     const { rollNumber } = req.params;
-    
-    const myGroups = groupBookings.filter(group =>
-      group.students.some(s => s.rollNumber === rollNumber)
+    const myGroups = groupBookings.filter((group) =>
+      (group.students || []).some((s) => s?.rollNumber === rollNumber)
     );
-    
     res.json({
       success: true,
       data: myGroups,
@@ -172,23 +183,15 @@ router.get("/groups/:rollNumber", async (req, res) => {
   }
 });
 
-// Get all friend requests (admin)
+// GET /api/friend-requests/all
 router.get("/all", async (req, res) => {
-  try {
-    res.json({
-      success: true,
-      data: {
-        requests: friendRequests,
-        groups: groupBookings,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error fetching data",
-      error: error.message,
-    });
-  }
+  res.json({
+    success: true,
+    data: {
+      requests: friendRequests,
+      groups: groupBookings,
+    },
+  });
 });
 
 module.exports = router;

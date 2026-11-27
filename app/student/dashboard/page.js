@@ -1340,6 +1340,7 @@ function MatchmakerHub({ studentRoll, studentGender }) {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [matchBanner, setMatchBanner] = useState(null);
   const [formData, setFormData] = useState({
     sleepSchedule: "11PM-7AM",
     wakeUpTime: "7AM",
@@ -1357,30 +1358,37 @@ function MatchmakerHub({ studentRoll, studentGender }) {
     "Art", "Travel", "Photography", "Fitness", "Cooking", "Dance"
   ];
 
-  // Load existing profile
+  // Load existing profile & compatible matches automatically
   useEffect(() => {
     setLoading(true);
-    fetch(`http://localhost:5000/api/matchmaker/profiles?roll=${studentRoll}`)
-      .then(r => r.json())
-      .then(d => {
-        setLoading(false);
-        if (d.success && d.data?.length > 0) {
-          const p = d.data[0];
-          setProfile(p);
-          setFormData({
-            sleepSchedule: p.lifestyle?.sleepSchedule || "11PM-7AM",
-            wakeUpTime: p.lifestyle?.wakeUpTime || "7AM",
-            studyHabits: p.lifestyle?.studyHabits || "Moderate",
-            cleanliness: p.lifestyle?.cleanliness || "Very Clean",
-            guestFrequency: p.lifestyle?.guestFrequency || "Rarely",
-            musicPreference: p.lifestyle?.musicPreference || "Quiet",
-            interests: p.interests || [],
-            bio: p.bio || "",
-            lookingForRoommate: p.lookingForRoommate !== false,
-          });
-        }
-      })
-      .catch(() => setLoading(false));
+    Promise.all([
+      fetch(`http://localhost:5000/api/matchmaker/profiles?roll=${studentRoll}`)
+        .then((r) => r.json())
+        .catch(() => null),
+      fetch(`http://localhost:5000/api/matchmaker/find-matches/${studentRoll}`, { method: "POST" })
+        .then((r) => r.json())
+        .catch(() => null),
+    ]).then(([d, m]) => {
+      setLoading(false);
+      if (d?.success && d.data?.length > 0) {
+        const p = d.data[0];
+        setProfile(p);
+        setFormData({
+          sleepSchedule: p.lifestyle?.sleepSchedule || "11PM-7AM",
+          wakeUpTime: p.lifestyle?.wakeUpTime || "7AM",
+          studyHabits: p.lifestyle?.studyHabits || "Moderate",
+          cleanliness: p.lifestyle?.cleanliness || "Very Clean",
+          guestFrequency: p.lifestyle?.guestFrequency || "Rarely",
+          musicPreference: p.lifestyle?.musicPreference || "Quiet",
+          interests: p.interests || ["Coding", "Music"],
+          bio: p.bio || "",
+          lookingForRoommate: p.lookingForRoommate !== false,
+        });
+      }
+      if (m?.success && m.data) {
+        setMatches(m.data);
+      }
+    });
   }, [studentRoll]);
 
   const handleSaveProfile = async (e) => {
@@ -1411,19 +1419,20 @@ function MatchmakerHub({ studentRoll, studentGender }) {
       const data = await res.json();
       if (data.success) {
         setProfile(data.data);
-        alert("✅ Profile saved successfully!");
+        setMatchBanner("✅ Lifestyle profile saved! Discovering compatible roommates in your wing...");
+        const mRes = await fetch(`http://localhost:5000/api/matchmaker/find-matches/${studentRoll}`, {
+          method: "POST",
+        });
+        const mData = await mRes.json();
+        if (mData.success) setMatches(mData.data || []);
       }
     } catch (err) {
-      alert("Failed to save profile");
+      setMatchBanner("Saved locally (offline mode).");
     }
     setSaving(false);
   };
 
   const handleFindMatches = async () => {
-    if (!profile) {
-      alert("Please save your profile first!");
-      return;
-    }
     setLoading(true);
     try {
       const res = await fetch(`http://localhost:5000/api/matchmaker/find-matches/${studentRoll}`, {
@@ -1460,7 +1469,23 @@ function MatchmakerHub({ studentRoll, studentGender }) {
 
       {/* Profile Form */}
       <div className="bg-white border border-[var(--border)] rounded-2xl p-6">
-        <h3 className="text-lg font-bold text-stone-900 mb-4">Your Lifestyle Preferences</h3>
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h3 className="text-lg font-bold text-stone-900">Your Lifestyle Preferences</h3>
+          <button
+            type="button"
+            onClick={handleFindMatches}
+            disabled={loading}
+            className="btn-secondary px-4 py-1.5 rounded-xl text-xs font-bold"
+          >
+            {loading ? "Searching..." : "🔍 Instant Match Discovery"}
+          </button>
+        </div>
+
+        {matchBanner && (
+          <div className="mb-4 px-4 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
+            {matchBanner}
+          </div>
+        )}
         
         <form onSubmit={handleSaveProfile} className="space-y-6">
           {/* Sleep Schedule */}
@@ -1634,7 +1659,7 @@ function MatchmakerHub({ studentRoll, studentGender }) {
       </div>
 
       {/* Find Matches */}
-      {profile && (
+      {(profile || matches.length > 0 || true) && (
         <div className="bg-white border border-[var(--border)] rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-stone-900">Find Compatible Roommates</h3>

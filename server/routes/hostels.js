@@ -138,6 +138,7 @@ router.post("/:id/rooms", adminMiddleware, async (req, res) => {
     if (!block) {
       block = await Block.create({
         name: "Block A",
+        code: `${hostel.code}-A`,
         hostelId: hostel._id,
         floorsCount: Number(floor) || 1,
       });
