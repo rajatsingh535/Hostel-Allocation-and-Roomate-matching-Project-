@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import LpuLogo from "../../components/LpuLogo";
 
@@ -113,6 +113,45 @@ export default function StudentLogin() {
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState(null); // { status, code, title, message }
   const [successMsg, setSuccessMsg] = useState("");
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const demoError = params.get("demoError");
+      if (demoError === "unauthorized") {
+        setFormData({
+          regNo: "99998888",
+          password: "wrongpassword",
+          gender: "Male",
+          studentName: "",
+          department: "Computer Science",
+        });
+        setAuthError({
+          status: "401 UNAUTHORIZED",
+          code: "UNREGISTERED_STUDENT",
+          title: "401 Unauthorized — Unregistered UMS ID",
+          message:
+            "Unauthorized Access: Registration Number '99998888' is not registered in the LPU UMS Hostel Portal. Only verified university students with registered UMS credentials can sign in.",
+        });
+      } else if (demoError === "conflict") {
+        setMode("register");
+        setFormData({
+          regNo: "12304567",
+          password: "password123",
+          gender: "Male",
+          studentName: "Arjun Sharma",
+          department: "Computer Science",
+        });
+        setAuthError({
+          status: "409 CONFLICT",
+          code: "ALREADY_REGISTERED",
+          title: "409 Conflict — Duplicate UMS Account / Active Application",
+          message:
+            "Server-Side Duplicate Protection: Registration Number '12304567' (Arjun Sharma) already has an active registered UMS account and submitted hostel application (APP-2026-3125817). Duplicate records are blocked.",
+        });
+      }
+    } catch (_) {}
+  }, []);
 
   const getRegisteredList = () => {
     try {

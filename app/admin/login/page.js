@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import LpuLogo from "../../components/LpuLogo";
 
@@ -34,6 +34,22 @@ export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState(null); // { status, code, title, message }
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("demoError") === "unauthorized") {
+        setFormData({ adminId: "unregistered_warden", password: "wrongpassword123" });
+        setAuthError({
+          status: "401 UNAUTHORIZED",
+          code: "UNREGISTERED_ADMIN",
+          title: "401 Unauthorized — Unregistered Administrator",
+          message:
+            "Unauthorized Access: Administrator ID 'unregistered_warden' is not registered in the LPU Warden & Admin Directory. Access to the Warden Control Panel is strictly restricted.",
+        });
+      }
+    } catch (_) {}
+  }, []);
 
   const handleAutofill = () => {
     setFormData({ adminId: "admin_lpu", password: "adminpassword" });

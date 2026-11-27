@@ -5,7 +5,7 @@ const roomSwapSchema = new mongoose.Schema(
     requestedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Student",
-      required: true,
+      required: false,
     },
     requestedByName: { type: String, required: true },
     requestedByRoll: { type: String, required: true },

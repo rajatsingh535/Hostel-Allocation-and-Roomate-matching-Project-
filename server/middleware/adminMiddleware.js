@@ -12,8 +12,9 @@ const adminMiddleware = (req, res, next) => {
     }
 
     const token = authHeader.split(" ")[1];
+    const jwtSecret = process.env.JWT_SECRET || "lpu_hostel_jwt_secret_2026";
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, jwtSecret);
 
     if (decoded.role !== "admin" || !decoded.adminId) {
       return res.status(403).json({

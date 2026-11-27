@@ -1,0 +1,30 @@
+name: LPU Hostel Portal — CI/CD & Production Build Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-verify:
+    name: Build Next.js Frontend & Verify Backend API
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Verify Production Build (Next.js App Router)
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:5000
+        run: npm run build

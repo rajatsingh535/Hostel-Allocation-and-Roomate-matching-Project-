@@ -87,6 +87,47 @@ router.post("/", async (req, res) => {
         message: "Please provide all required fields",
       });
     }
+
+    // Week 13 Edge Case 1: Block Self-Swap
+    if (
+      targetStudentRoll &&
+      String(requestedByRoll).trim().toUpperCase() === String(targetStudentRoll).trim().toUpperCase()
+    ) {
+      return res.status(400).json({
+        success: false,
+        code: "SELF_SWAP_FORBIDDEN",
+        message: "Edge Case Blocked: You cannot submit a room swap request with your own Registration Number.",
+      });
+    }
+
+    // Week 13 Edge Case 2: Block Cross-Gender Hostel Swap
+    const upperCurrentHostel = String(currentHostel).trim().toUpperCase();
+    const upperTargetHostel = targetHostel ? String(targetHostel).trim().toUpperCase() : "";
+    if (
+      (requestedByGender === "Male" && (upperCurrentHostel.startsWith("GH") || upperTargetHostel.startsWith("GH"))) ||
+      (requestedByGender === "Female" && (upperCurrentHostel.startsWith("BH") || upperTargetHostel.startsWith("BH")))
+    ) {
+      return res.status(400).json({
+        success: false,
+        code: "CROSS_GENDER_SWAP_FORBIDDEN",
+        message: "Gender Policy Violation: Cross-gender room swaps between Boys Hostels (BH) and Girls Hostels (GH) are strictly prohibited.",
+      });
+    }
+
+    // Verify target student gender if registered in DB
+    if (targetStudentRoll) {
+      const Student = require("../models/Student");
+      const targetStudent = await Student.findOne({
+        rollNumber: String(targetStudentRoll).trim().toUpperCase(),
+      });
+      if (targetStudent && targetStudent.gender && targetStudent.gender !== requestedByGender) {
+        return res.status(400).json({
+          success: false,
+          code: "CROSS_GENDER_SWAP_FORBIDDEN",
+          message: `Gender Policy Violation: Target student (${targetStudent.rollNumber}) belongs to ${targetStudent.gender} wing.`,
+        });
+      }
+    }
     
     // Check for existing pending swap for this student
     const existingSwap = await RoomSwap.findOne({

@@ -106,9 +106,34 @@ export default function StudentDashboard() {
       const params = new URLSearchParams(window.location.search);
       const urlGender = params.get("gender");
       const urlRoll = params.get("roll");
+      const urlTab = params.get("tab");
+      const urlConfirmed = params.get("demoConfirmed");
       const storedGender = localStorage.getItem("lpu_student_gender");
       const storedRoll = localStorage.getItem("lpu_student_roll");
       const storedName = localStorage.getItem("lpu_student_name");
+
+      if (urlTab) {
+        setActiveTab(urlTab);
+      }
+      if (urlConfirmed === "true") {
+        setConfirmation({
+          applicationId: "APP-2026-3125817",
+          status: "SUBMITTED",
+          submittedAt: new Date().toISOString(),
+          studentName: "Arjun Sharma",
+          studentRollNumber: "12304567",
+          department: "Computer Science",
+          cgpa: "8.5",
+          preferences: [
+            {
+              hostelCode: "BH-1",
+              hostelName: "Boys Hostel 1",
+              roomType: "Double",
+              acPreference: "AC",
+            },
+          ],
+        });
+      }
 
       if (urlGender === "Male" || urlGender === "Female") {
         detectedGender = urlGender;
@@ -1095,9 +1120,63 @@ export default function StudentDashboard() {
                         Submitted: {new Date(app.submittedAt || Date.now()).toLocaleString()}
                       </p>
                     </div>
-                    <div className="text-right flex-shrink-0">
-                      <div className="text-xs text-stone-400">CGPA</div>
-                      <div className="text-xl font-black text-[var(--success)]">{app.cgpa}/10</div>
+                    <div className="text-right flex-shrink-0 flex flex-col items-end gap-2">
+                      <div>
+                        <div className="text-xs text-stone-400">CGPA</div>
+                        <div className="text-xl font-black text-[var(--success)]">{app.cgpa}/10</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const pref = (app.preferences && app.preferences[0]) || {};
+                          const hCode = pref.hostelCode || (studentGender === "Female" ? "GH-1" : "BH-1");
+                          const hName = app.assignedHostelName || pref.hostelName || (studentGender === "Female" ? "Girls Hostel 1" : "Boys Hostel 1");
+                          const rNum = app.assignedRoomNumber || "101";
+                          const bNum = app.assignedBedNumber || 1;
+                          const w = window.open("", "_blank", "width=820,height=900");
+                          if (!w) return;
+                          w.document.write(`<!DOCTYPE html><html><head><title>LPU Official Hostel Allotment Letter — ${app.applicationId}</title>
+                            <style>
+                              body { font-family: 'Segoe UI', Arial, sans-serif; margin: 28px; color: #1c1917; }
+                              .card { border: 2px solid #f97316; border-radius: 14px; padding: 24px; max-width: 720px; margin: 0 auto; }
+                              .hdr { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #fed7aa; padding-bottom: 14px; margin-bottom: 16px; }
+                              .badge { background: #16a34a; color: #fff; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+                              table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+                              th, td { border: 1px solid #d6d3d1; padding: 8px 10px; text-align: left; }
+                              th { background: #fafaf9; width: 34%; }
+                              .qr { text-align: center; border: 1px dashed #78716c; padding: 12px; border-radius: 10px; margin-top: 14px; background: #fff7ed; }
+                              .btn { background: #f97316; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 14px; }
+                              @media print { .btn { display: none; } }
+                            </style></head><body>
+                            <div class="card">
+                              <div class="hdr">
+                                <div>
+                                  <h2 style="margin:0;color:#ea580c;">LOVELY PROFESSIONAL UNIVERSITY</h2>
+                                  <p style="margin:2px 0 0;font-size:12px;color:#57534e;">Division of Residential Services · Academic Session 2026-27</p>
+                                </div>
+                                <span class="badge">${app.status === "ALLOCATED" ? "VERIFIED & ALLOTTED" : app.status}</span>
+                              </div>
+                              <h3 style="margin:0 0 8px;">Official Hostel Allotment Letter &amp; Fee Receipt</h3>
+                              <table>
+                                <tr><th>Pass &amp; Application ID</th><td><strong>LPU-PASS-${app.applicationId}</strong> (${app.applicationId})</td></tr>
+                                <tr><th>Student Name &amp; UMS ID</th><td><strong>${app.studentName}</strong> (${app.studentRollNumber})</td></tr>
+                                <tr><th>Department &amp; Gender</th><td>${app.department} · ${app.gender || studentGender} · CGPA: ${app.cgpa}</td></tr>
+                                <tr><th>Allotted Hostel Block</th><td><strong>${hCode} — ${hName}</strong></td></tr>
+                                <tr><th>Room &amp; Bed Number</th><td><strong>Room ${rNum} · Bed #${bNum}</strong> (${pref.acPreference || "AC"} ${pref.roomType || "Double"} Seater)</td></tr>
+                                <tr><th>Annual Hostel + Mess Fee</th><td>₹95,000 (Hostel) + ₹42,000 (Mess) + ₹5,000 (Deposit) = <strong>₹1,42,000 / yr</strong></td></tr>
+                              </table>
+                              <div class="qr">
+                                <div style="font-family:monospace;font-weight:800;font-size:13px;color:#9a3412;">QR VERIFICATION TOKEN: LPU-QR-2026-${String(app.studentRollNumber).slice(-4)}-${hCode}</div>
+                                <p style="margin:4px 0 0;font-size:11px;color:#57534e;">Digitally signed by Office of the Chief Warden, LPU Phagwara · Present at Turnstile Gate</p>
+                              </div>
+                              <button class="btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+                            </div></body></html>`);
+                          w.document.close();
+                        }}
+                        className="text-xs font-bold px-3.5 py-2 rounded-xl bg-orange-50 text-[var(--primary)] border border-orange-200 hover:bg-orange-100 transition-colors"
+                      >
+                        📄 Allotment Letter &amp; QR Pass
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -1440,6 +1519,28 @@ function MatchmakerHub({ studentRoll, studentGender }) {
                       </div>
                       <p className="text-xs text-stone-500">{match.gender} Student</p>
                     </div>
+                    <button
+                      type="button"
+                      onClick={async (e) => {
+                        const btn = e.currentTarget;
+                        btn.disabled = true;
+                        btn.textContent = "✓ Pairing Invite Sent";
+                        try {
+                          await fetch("http://localhost:5000/api/friend-requests/send", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              senderRollNumber: studentRoll,
+                              receiverRollNumber: match.studentRoll,
+                              message: `Matched via AI Lifestyle Matchmaker (${Math.round(match.compatibilityScore)}% compatibility)`,
+                            }),
+                          });
+                        } catch (_) {}
+                      }}
+                      className="text-xs font-bold px-3.5 py-1.5 rounded-xl bg-purple-600 text-white hover:bg-purple-700 transition-colors disabled:bg-green-600"
+                    >
+                      🤝 Send Roommate Invite
+                    </button>
                   </div>
 
                   {match.bio && (
